@@ -85,7 +85,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
                   {extendedTricks.map((trick, index) => (
                     <li
                       key={index}
-                      className="h-[60px] flex items-center justify-center text-center text-black font-bold text-lg md:text-xl px-6"
+                      className="h-[60px] flex items-center justify-center text-center text-black font-bold text-xl md:text-2xl px-6"
                     >
                       {trick.name}
                     </li>

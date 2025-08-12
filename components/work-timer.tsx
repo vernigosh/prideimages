@@ -53,44 +53,15 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     }
   }, [isVisible, onConnectionChange])
 
-  useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            if (phase === "work") {
-              setPhase("break")
-              return 5 * 60 // 5 minutes for break
-            } else {
-              setPhase("complete")
-              setIsRunning(false)
-              if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-              }
-              return 0
-            }
-          }
-          return prev - 1
-        })
-      }, 1000)
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [isRunning, phase])
-
   const startTimer = () => {
-    // Reset to full time and start immediately
+    console.log("Work Timer: startTimer called - resetting and starting")
     setPhase("work")
     setTimeLeft(25 * 60)
-    setIsRunning(true)
+    // Use setTimeout to ensure state updates are processed
+    setTimeout(() => {
+      setIsRunning(true)
+      console.log("Work Timer: isRunning set to true via setTimeout")
+    }, 100)
   }
 
   const stopTimer = () => {
@@ -109,6 +80,53 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     setTimeLeft(25 * 60)
     onHide()
   }
+
+  useEffect(() => {
+    console.log("Work Timer: isRunning changed to:", isRunning)
+    if (isRunning) {
+      console.log("Work Timer: Starting interval")
+      intervalRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          console.log("Work Timer: Countdown tick, time left:", prev - 1)
+          if (prev <= 1) {
+            if (phase === "work") {
+              setPhase("break")
+              return 5 * 60 // 5 minutes for break
+            } else {
+              setPhase("complete")
+              setIsRunning(false)
+              if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+              }
+              return 0
+            }
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } else {
+      console.log("Work Timer: Clearing interval")
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [isRunning, phase])
+
+  // Auto-start timer when it becomes visible from a command
+  useEffect(() => {
+    if (isVisible && timeLeft === 25 * 60 && !isRunning && phase === "work") {
+      console.log("Work Timer: Auto-starting because timer just became visible")
+      setTimeout(() => {
+        setIsRunning(true)
+      }, 200)
+    }
+  }, [isVisible, timeLeft, isRunning, phase])
 
   const totalTime = phase === "work" ? 25 * 60 : 5 * 60
   const progress = (totalTime - timeLeft) / totalTime

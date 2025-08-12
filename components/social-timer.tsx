@@ -37,9 +37,12 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
   }, [isVisible, onConnectionChange])
 
   useEffect(() => {
+    console.log("Social Timer: isRunning changed to:", isRunning)
     if (isRunning) {
+      console.log("Social Timer: Starting interval")
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => {
+          console.log("Social Timer: Countdown tick, time left:", prev - 1)
           if (prev <= 1) {
             setIsRunning(false)
             if (intervalRef.current) {
@@ -55,6 +58,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
         })
       }, 1000)
     } else {
+      console.log("Social Timer: Clearing interval")
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
       }
@@ -67,9 +71,24 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
     }
   }, [isRunning, onHide])
 
+  // Auto-start timer when it becomes visible from a command
+  useEffect(() => {
+    if (isVisible && timeLeft === 2 * 60 && !isRunning) {
+      console.log("Social Timer: Auto-starting because timer just became visible")
+      setTimeout(() => {
+        setIsRunning(true)
+      }, 200)
+    }
+  }, [isVisible, timeLeft, isRunning])
+
   const startSocialTimer = () => {
+    console.log("Social Timer: startSocialTimer called - resetting and starting")
     setTimeLeft(2 * 60)
-    setIsRunning(true) // Start counting down immediately
+    // Use setTimeout to ensure state updates are processed
+    setTimeout(() => {
+      setIsRunning(true)
+      console.log("Social Timer: isRunning set to true via setTimeout")
+    }, 100)
   }
 
   const hideSocialTimer = () => {

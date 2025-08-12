@@ -5,6 +5,10 @@ import { SpinningWheel } from "@/components/spinning-wheel"
 import { AdminInterface } from "@/components/admin-interface"
 import { ResultDisplay } from "@/components/result-display"
 import { ChatIntegration } from "@/components/chat-integration"
+import { TimeOverlay } from "@/components/time-overlay"
+import { OverlaySettings } from "@/components/overlay-settings"
+import { WorkTimer } from "@/components/work-timer"
+import { SocialTimer } from "@/components/social-timer"
 
 // DJ Tricks data with definitions
 const initialTricks = [
@@ -39,6 +43,28 @@ export default function DJRandomizer() {
   const [chatConnected, setChatConnected] = useState(false)
   const [lastCommand, setLastCommand] = useState<string>("")
 
+  // Time overlay settings
+  const [showTimeOverlay, setShowTimeOverlay] = useState(true)
+  const [timePosition, setTimePosition] = useState<"top-left" | "top-right" | "bottom-left" | "bottom-right">(
+    "top-right",
+  )
+  const [timeZone, setTimeZone] = useState("America/New_York")
+  const [timeFontSize, setTimeFontSize] = useState(48)
+  const [showSeconds, setShowSeconds] = useState(false)
+  const [textColor, setTextColor] = useState("#ffffff")
+  const [shadowColor, setShadowColor] = useState("#000000")
+  const [shadowSize, setShadowSize] = useState(2)
+  const [fontWeight, setFontWeight] = useState<"normal" | "bold" | "black">("bold")
+  const [overlayBackground, setOverlayBackground] = useState<"transparent" | "black">("transparent")
+
+  // Work timer settings
+  const [showWorkTimer, setShowWorkTimer] = useState(false)
+  const [workTimerConnected, setWorkTimerConnected] = useState(false)
+
+  // Social timer settings
+  const [showSocialTimer, setShowSocialTimer] = useState(false)
+  const [socialTimerConnected, setSocialTimerConnected] = useState(false)
+
   // Simulate chat command integration
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -59,6 +85,11 @@ export default function DJRandomizer() {
   const handleSpin = (username: string) => {
     if (isSpinning) return
 
+    // Hide work timer if active when spinning
+    if (showWorkTimer) {
+      setShowWorkTimer(false)
+    }
+
     setIsVisible(true)
     setIsSpinning(true)
     setShowResult(false)
@@ -72,6 +103,11 @@ export default function DJRandomizer() {
     setShowResult(false)
     setSelectedTrick(null)
     setLastCommand(`!hidespin by ${username}`)
+
+    // Show work timer again if it was hidden
+    if (workTimerConnected) {
+      setShowWorkTimer(true)
+    }
   }
 
   const addTrick = (name: string, definition: string) => {
@@ -88,30 +124,85 @@ export default function DJRandomizer() {
     setTricks(updatedTricks)
   }
 
+  // Determine which upper-left element to show (DJ Spinner only)
+  const getUpperLeftElement = () => {
+    if (isVisible) {
+      return (
+        <>
+          <SpinningWheel
+            tricks={tricks}
+            isSpinning={isSpinning}
+            onSpinComplete={(trick) => {
+              setSelectedTrick(trick)
+              setIsSpinning(false)
+              setShowResult(true)
+
+              // Hide result after 2 minutes
+              setTimeout(() => {
+                setShowResult(false)
+                setIsVisible(false)
+              }, 120000)
+            }}
+          />
+          {showResult && selectedTrick && <ResultDisplay trick={selectedTrick} />}
+        </>
+      )
+    }
+    return null
+  }
+
+  // Determine which right-side element to show (Social Timer > Work Timer)
+  const getRightSideElement = () => {
+    if (showSocialTimer) {
+      return (
+        <SocialTimer
+          isVisible={showSocialTimer}
+          onConnectionChange={setSocialTimerConnected}
+          onHide={() => setShowSocialTimer(false)}
+        />
+      )
+    }
+
+    if (showWorkTimer) {
+      return (
+        <WorkTimer
+          isVisible={showWorkTimer}
+          onConnectionChange={setWorkTimerConnected}
+          onHide={() => setShowWorkTimer(false)}
+        />
+      )
+    }
+
+    return null
+  }
+
   return (
     <div className="min-h-screen">
-      {/* OBS Overlay Section - COMPLETELY TRANSPARENT BACKGROUND */}
-      <div className="h-screen flex items-center justify-center relative">
-        {isVisible && (
-          <>
-            <SpinningWheel
-              tricks={tricks}
-              isSpinning={isSpinning}
-              onSpinComplete={(trick) => {
-                setSelectedTrick(trick)
-                setIsSpinning(false)
-                setShowResult(true)
-
-                // Hide result after 2 minutes
-                setTimeout(() => {
-                  setShowResult(false)
-                  setIsVisible(false)
-                }, 120000)
-              }}
-            />
-            {showResult && selectedTrick && <ResultDisplay trick={selectedTrick} />}
-          </>
+      {/* OBS Overlay Section */}
+      <div
+        className={`h-screen flex items-center justify-center relative ${
+          overlayBackground === "black" ? "bg-black" : ""
+        }`}
+      >
+        {/* Time Overlay */}
+        {showTimeOverlay && (
+          <TimeOverlay
+            position={timePosition}
+            timeZone={timeZone}
+            fontSize={timeFontSize}
+            showSeconds={showSeconds}
+            textColor={textColor}
+            shadowColor={shadowColor}
+            shadowSize={shadowSize}
+            fontWeight={fontWeight}
+          />
         )}
+
+        {/* Upper Left Elements (DJ Spinner only) */}
+        {getUpperLeftElement()}
+
+        {/* Right Side Elements (Social Timer or Work Timer) */}
+        {getRightSideElement()}
       </div>
 
       {/* Separator Line */}
@@ -119,17 +210,68 @@ export default function DJRandomizer() {
 
       {/* Status Text - Below the line, above admin */}
       <div className="py-8 text-center" style={{ backgroundColor: "#ffb8ad" }}>
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <div className={`w-3 h-3 rounded-full ${chatConnected ? "bg-green-500" : "bg-red-500"}`}></div>
-          <span className="text-lg font-semibold text-black">
-            {chatConnected ? "Chat Connected" : "Chat Disconnected"}
-          </span>
+        <h2 className="text-3xl font-bold text-black mb-4">🎮 Unified Stream Overlay 🎮</h2>
+        <div className="grid md:grid-cols-4 gap-6 max-w-8xl mx-auto">
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">⏰ Time Display</h3>
+            <p className="text-black/70">
+              {showTimeOverlay ? `Showing in ${timePosition.replace("-", " ")}` : "Hidden"}
+            </p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">⏱️ Work Timer</h3>
+            <p className="text-black/70">
+              {showWorkTimer ? (workTimerConnected ? "Ready for commands" : "Connecting...") : "Hidden"}
+            </p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">📱 Social Timer</h3>
+            <p className="text-black/70">
+              {showSocialTimer ? (socialTimerConnected ? "Ready for commands" : "Connecting...") : "Hidden"}
+            </p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">🎵 DJ Spinner</h3>
+            <p className="text-black/70">{chatConnected ? "Ready for chat commands" : "Manual mode only"}</p>
+          </div>
         </div>
-        <p className="text-xl text-black/70">
-          {chatConnected ? "Type !spin in chat to spin the wheel" : "Press Ctrl+S to simulate !spin command"}
+        <p className="text-lg text-black/70 mt-4">One overlay source for multiple stream elements!</p>
+        <p className="text-sm text-black/50 mt-2">
+          Background: {overlayBackground === "transparent" ? "Transparent (Stream Ready)" : "Black (Editing Mode)"}
         </p>
-        {lastCommand && <p className="text-sm mt-2 text-black/70">Last command: {lastCommand}</p>}
       </div>
+
+      {/* Unified Overlay Settings */}
+      <OverlaySettings
+        showTimeOverlay={showTimeOverlay}
+        setShowTimeOverlay={setShowTimeOverlay}
+        timePosition={timePosition}
+        setTimePosition={setTimePosition}
+        timeZone={timeZone}
+        setTimeZone={setTimeZone}
+        timeFontSize={timeFontSize}
+        setTimeFontSize={setTimeFontSize}
+        showSeconds={showSeconds}
+        setShowSeconds={setShowSeconds}
+        textColor={textColor}
+        setTextColor={setTextColor}
+        shadowColor={shadowColor}
+        setShadowColor={setShadowColor}
+        shadowSize={shadowSize}
+        setShadowSize={setShadowSize}
+        fontWeight={fontWeight}
+        setFontWeight={setFontWeight}
+        showWorkTimer={showWorkTimer}
+        setShowWorkTimer={setShowWorkTimer}
+        workTimerConnected={workTimerConnected}
+        showSocialTimer={showSocialTimer}
+        setShowSocialTimer={setShowSocialTimer}
+        socialTimerConnected={socialTimerConnected}
+        overlayBackground={overlayBackground}
+        setOverlayBackground={setOverlayBackground}
+        chatConnected={chatConnected}
+        lastCommand={lastCommand}
+      />
 
       {/* Chat Integration Setup */}
       <div className="bg-white border-b-4 border-black">

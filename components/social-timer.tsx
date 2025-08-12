@@ -30,22 +30,32 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
 
   useEffect(() => {
     const connectToTwitchChat = () => {
+      // Close existing connection if any
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+
       const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443")
       wsRef.current = ws
 
       ws.onopen = () => {
-        ws.send("CAP REQ :twitch.tv/tags")
+        console.log("Social Timer: WebSocket opened")
+        ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands")
         ws.send("PASS SCHMOOPIIE")
-        ws.send("NICK justinfan54321")
+        ws.send("NICK justinfan" + Math.floor(Math.random() * 100000))
         ws.send("JOIN #vernigosh")
-        setIsConnected(true)
-        onConnectionChange(true)
-        console.log("Social Timer: Connected to Twitch chat")
       }
 
       ws.onmessage = (event) => {
         const message = event.data
         console.log("Social Timer received:", message)
+
+        // Handle successful join
+        if (message.includes("366")) {
+          console.log("Social Timer: Successfully joined channel")
+          setIsConnected(true)
+          onConnectionChange(true)
+        }
 
         if (message.startsWith("PING")) {
           ws.send("PONG :tmi.twitch.tv")
@@ -79,26 +89,35 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
         }
       }
 
-      ws.onclose = () => {
-        console.log("Social Timer: Disconnected from Twitch chat")
+      ws.onclose = (event) => {
+        console.log("Social Timer: WebSocket closed", event.code, event.reason)
         setIsConnected(false)
         onConnectionChange(false)
-        setTimeout(connectToTwitchChat, 5000)
+        // Reconnect after 3 seconds if not manually closed
+        if (event.code !== 1000) {
+          setTimeout(connectToTwitchChat, 3000)
+        }
       }
 
       ws.onerror = (error) => {
         console.error("Social Timer: WebSocket error:", error)
+        setIsConnected(false)
+        onConnectionChange(false)
       }
     }
 
-    connectToTwitchChat()
+    // Only connect if the timer is visible
+    if (isVisible) {
+      connectToTwitchChat()
+    }
 
     return () => {
       if (wsRef.current) {
         wsRef.current.close()
+        wsRef.current = null
       }
     }
-  }, [onConnectionChange])
+  }, [isVisible, onConnectionChange])
 
   useEffect(() => {
     if (isRunning) {

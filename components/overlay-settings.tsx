@@ -370,9 +370,13 @@ export function OverlaySettings({
               </div>
               <div className="mt-4 p-3 bg-gray-100 rounded">
                 <h4 className="font-semibold text-black mb-2">Connection Status</h4>
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${workTimerConnected ? "bg-green-500" : "bg-red-500"}`}></div>
-                  <span className="text-sm">{workTimerConnected ? "Connected to Twitch Chat" : "Disconnected"}</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${workTimerConnected ? "bg-green-500" : "bg-red-500"}`}></div>
+                    <span className="text-sm">{workTimerConnected ? "Connected to Twitch Chat" : "Disconnected"}</span>
+                  </div>
+                  <div className="text-xs text-gray-600">Timer must be visible to connect to chat</div>
+                  <div className="text-xs text-gray-600">Check browser console (F12) for connection logs</div>
                 </div>
               </div>
               <p className="text-xs mt-2 text-black/70">💡 Only broadcasters and moderators can control the timer</p>
@@ -414,9 +418,17 @@ export function OverlaySettings({
               </div>
               <div className="mt-4 p-3 bg-gray-100 rounded">
                 <h4 className="font-semibold text-black mb-2">Connection Status</h4>
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${socialTimerConnected ? "bg-green-500" : "bg-red-500"}`}></div>
-                  <span className="text-sm">{socialTimerConnected ? "Connected to Twitch Chat" : "Disconnected"}</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-3 h-3 rounded-full ${socialTimerConnected ? "bg-green-500" : "bg-red-500"}`}
+                    ></div>
+                    <span className="text-sm">
+                      {socialTimerConnected ? "Connected to Twitch Chat" : "Disconnected"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-600">Timer must be visible to connect to chat</div>
+                  <div className="text-xs text-gray-600">Check browser console (F12) for connection logs</div>
                 </div>
               </div>
               <p className="text-xs mt-2 text-black/70">💡 Only broadcasters and moderators can control the timer</p>

@@ -15,10 +15,10 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
 
-  const isAuthorizedUser = (tags: string) => {
-    // Parse tags properly - they're semicolon-separated key=value pairs
-    const tagPairs = tags.split(";")
-    const badges = tagPairs.find((tag) => tag.startsWith("badges="))?.split("=")[1] || ""
+  const isAuthorizedUser = (message: string) => {
+    // Extract badges from the IRC message tags
+    const badgeMatch = message.match(/badges=([^;]*)/)
+    const badges = badgeMatch ? badgeMatch[1] : ""
 
     // Check for broadcaster, moderator, or VIP badges
     if (badges.includes("broadcaster/1")) return true
@@ -42,7 +42,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
         console.log("Social Timer: WebSocket opened")
         ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands")
         ws.send("PASS SCHMOOPIIE")
-        ws.send("NICK justinfan" + Math.floor(Math.random() * 100000))
+        ws.send("NICK justinfan" + Math.floor(Math.random() + 50000))
         ws.send("JOIN #vernigosh")
       }
 
@@ -62,25 +62,26 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
           return
         }
 
-        if (message.includes("PRIVMSG")) {
+        if (message.includes("PRIVMSG #vernigosh")) {
           try {
-            const parts = message.split(" ")
-            const tags = parts[0].startsWith("@") ? parts[0].substring(1) : ""
-            const messageContent = message.split("PRIVMSG")[1]?.split(":").slice(1).join(":").trim().toLowerCase()
+            // Extract the actual message content after the second colon
+            const messageParts = message.split(":")
+            const messageContent = messageParts.length >= 3 ? messageParts.slice(2).join(":").trim().toLowerCase() : ""
 
-            console.log("Social Timer - Tags:", tags)
-            console.log("Social Timer - Message:", messageContent)
-            console.log("Social Timer - Is Authorized:", isAuthorizedUser(tags))
+            console.log("Social Timer - Full message:", message)
+            console.log("Social Timer - Extracted content:", messageContent)
+            console.log("Social Timer - Is Authorized:", isAuthorizedUser(message))
 
-            if (!isAuthorizedUser(tags)) {
+            if (!isAuthorizedUser(message)) {
+              console.log("Social Timer: User not authorized")
               return
             }
 
             if (messageContent === "!social") {
-              console.log("Social Timer: Starting social timer")
+              console.log("Social Timer: Starting social timer via chat command")
               startSocialTimer()
             } else if (messageContent === "!hidesocial") {
-              console.log("Social Timer: Hiding social timer")
+              console.log("Social Timer: Hiding social timer via chat command")
               hideSocialTimer()
             }
           } catch (error) {

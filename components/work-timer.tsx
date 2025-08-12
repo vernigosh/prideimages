@@ -16,10 +16,10 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
 
-  const isAuthorizedUser = (tags: string) => {
-    // Parse tags properly - they're semicolon-separated key=value pairs
-    const tagPairs = tags.split(";")
-    const badges = tagPairs.find((tag) => tag.startsWith("badges="))?.split("=")[1] || ""
+  const isAuthorizedUser = (message: string) => {
+    // Extract badges from the IRC message tags
+    const badgeMatch = message.match(/badges=([^;]*)/)
+    const badges = badgeMatch ? badgeMatch[1] : ""
 
     // Check for broadcaster, moderator, or VIP badges
     if (badges.includes("broadcaster/1")) return true
@@ -65,31 +65,32 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         }
 
         // Parse chat messages for commands
-        if (message.includes("PRIVMSG")) {
+        if (message.includes("PRIVMSG #vernigosh")) {
           try {
-            const parts = message.split(" ")
-            const tags = parts[0].startsWith("@") ? parts[0].substring(1) : ""
-            const messageContent = message.split("PRIVMSG")[1]?.split(":").slice(1).join(":").trim().toLowerCase()
+            // Extract the actual message content after the second colon
+            const messageParts = message.split(":")
+            const messageContent = messageParts.length >= 3 ? messageParts.slice(2).join(":").trim().toLowerCase() : ""
 
-            console.log("Work Timer - Tags:", tags)
-            console.log("Work Timer - Message:", messageContent)
-            console.log("Work Timer - Is Authorized:", isAuthorizedUser(tags))
+            console.log("Work Timer - Full message:", message)
+            console.log("Work Timer - Extracted content:", messageContent)
+            console.log("Work Timer - Is Authorized:", isAuthorizedUser(message))
 
-            if (!isAuthorizedUser(tags)) {
+            if (!isAuthorizedUser(message)) {
+              console.log("Work Timer: User not authorized")
               return
             }
 
             if (messageContent === "!worktimer" || messageContent === "!timer") {
-              console.log("Work Timer: Starting timer")
+              console.log("Work Timer: Starting timer via chat command")
               startTimer()
             } else if (messageContent === "!stoptimer") {
-              console.log("Work Timer: Stopping timer")
+              console.log("Work Timer: Stopping timer via chat command")
               stopTimer()
             } else if (messageContent === "!resettimer") {
-              console.log("Work Timer: Resetting timer")
+              console.log("Work Timer: Resetting timer via chat command")
               resetTimer()
             } else if (messageContent === "!hidetimer") {
-              console.log("Work Timer: Hiding timer")
+              console.log("Work Timer: Hiding timer via chat command")
               hideTimer()
             }
           } catch (error) {

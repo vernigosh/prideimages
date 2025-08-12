@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Wifi, WifiOff, Settings } from 'lucide-react'
+import { Wifi, WifiOff, Settings, Play } from "lucide-react"
 
 interface ChatIntegrationProps {
   onSpin: (username: string) => void
@@ -32,21 +32,47 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
     if (savedCooldown) setCooldownSeconds(Number.parseInt(savedCooldown))
   }, [])
 
+  // Manual test functions
+  const testWorkTimer = () => {
+    console.log("Manual test: Starting work timer")
+    window.dispatchEvent(new CustomEvent("startWorkTimer", { detail: { username: "Manual Test" } }))
+    addRecentCommand("!worktimer by Manual Test (manual)")
+  }
+
+  const testSocialTimer = () => {
+    console.log("Manual test: Starting social timer")
+    window.dispatchEvent(new CustomEvent("startSocialTimer", { detail: { username: "Manual Test" } }))
+    addRecentCommand("!social by Manual Test (manual)")
+  }
+
   const connectToTwitch = async () => {
     if (!channel.trim()) return
 
     setIsConnecting(true)
+    console.log("Attempting to connect to Twitch chat...")
 
     try {
       // Dynamic import to avoid SSR issues
       const tmi = await import("tmi.js")
+      console.log("TMI.js loaded successfully")
 
       const client = new tmi.default.Client({
         channels: [channel.toLowerCase().replace("#", "")],
       })
 
+      console.log("TMI client created, setting up event handlers...")
+
       client.on("message", (channel, tags, message, self) => {
-        if (self) return
+        console.log("=== CHAT MESSAGE RECEIVED ===")
+        console.log("Channel:", channel)
+        console.log("Message:", message)
+        console.log("Self:", self)
+        console.log("Tags:", tags)
+
+        if (self) {
+          console.log("Ignoring own message")
+          return
+        }
 
         const username = tags["display-name"] || tags.username || "Unknown"
         const isMod = tags.mod || tags["user-type"] === "mod"
@@ -120,7 +146,8 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         }
       })
 
-      client.on("connected", () => {
+      client.on("connected", (addr, port) => {
+        console.log("Connected to Twitch IRC:", addr, port)
         setIsConnected(true)
         setIsConnecting(false)
         onConnectionChange(true)
@@ -132,14 +159,25 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         localStorage.setItem("cooldown-seconds", cooldownSeconds.toString())
       })
 
-      client.on("disconnected", () => {
+      client.on("disconnected", (reason) => {
+        console.log("Disconnected from Twitch IRC:", reason)
         setIsConnected(false)
         onConnectionChange(false)
         addRecentCommand("Disconnected from Twitch ❌")
       })
 
+      client.on("join", (channel, username, self) => {
+        console.log("Joined channel:", channel, "as", username, "self:", self)
+      })
+
+      client.on("part", (channel, username, self) => {
+        console.log("Left channel:", channel, "as", username, "self:", self)
+      })
+
+      console.log("Connecting to Twitch...")
       await client.connect()
       clientRef.current = client
+      console.log("Connection attempt completed")
     } catch (error) {
       console.error("Failed to connect to Twitch:", error)
       setIsConnecting(false)
@@ -187,6 +225,30 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             <Settings className="w-4 h-4" />
             {showSettings ? "Hide Settings" : "Show Settings"}
           </button>
+        </div>
+
+        {/* Manual Test Buttons */}
+        <div className="mb-6 p-4 border-2 border-black rounded bg-yellow-100">
+          <h3 className="font-bold text-black mb-2">Manual Timer Tests</h3>
+          <div className="flex gap-4">
+            <button
+              onClick={testWorkTimer}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-red-400 hover:bg-red-500 text-white"
+            >
+              <Play className="w-4 h-4" />
+              Test Work Timer
+            </button>
+            <button
+              onClick={testSocialTimer}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-lime-400 hover:bg-lime-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Test Social Timer
+            </button>
+          </div>
+          <p className="text-xs mt-2 text-black/70">
+            Use these buttons to test timer functionality without chat commands
+          </p>
         </div>
 
         {showSettings && (

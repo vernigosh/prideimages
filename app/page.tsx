@@ -65,6 +65,47 @@ export default function DJRandomizer() {
   const [showSocialTimer, setShowSocialTimer] = useState(false)
   const [socialTimerConnected, setSocialTimerConnected] = useState(false)
 
+  // Add event listeners for timer commands
+  useEffect(() => {
+    const handleStartWorkTimer = (event: CustomEvent) => {
+      console.log("Page: Received startWorkTimer event", event.detail)
+      if (!showWorkTimer) {
+        console.log("Page: Enabling work timer")
+        setShowWorkTimer(true)
+      }
+    }
+
+    const handleStartSocialTimer = (event: CustomEvent) => {
+      console.log("Page: Received startSocialTimer event", event.detail)
+      if (!showSocialTimer) {
+        console.log("Page: Enabling social timer")
+        setShowSocialTimer(true)
+      }
+    }
+
+    const handleHideWorkTimer = (event: CustomEvent) => {
+      console.log("Page: Received hideWorkTimer event", event.detail)
+      setShowWorkTimer(false)
+    }
+
+    const handleHideSocialTimer = (event: CustomEvent) => {
+      console.log("Page: Received hideSocialTimer event", event.detail)
+      setShowSocialTimer(false)
+    }
+
+    window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
+    window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
+    window.addEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
+    window.addEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
+
+    return () => {
+      window.removeEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
+      window.removeEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
+      window.removeEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
+      window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
+    }
+  }, [showWorkTimer, showSocialTimer])
+
   // Simulate chat command integration
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

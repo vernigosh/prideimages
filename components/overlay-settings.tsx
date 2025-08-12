@@ -364,7 +364,7 @@ export function OverlaySettings({
                   <span className="ml-2">Reset timer to 25 minutes</span>
                 </div>
                 <div>
-                  <code className="bg-black text-white px-2 py-1 rounded">!hidetimer</code>
+                  <code className="bg-black text-white px-2 py-1 rounded">!hidework</code>
                   <span className="ml-2">Hide timer (mods only)</span>
                 </div>
               </div>

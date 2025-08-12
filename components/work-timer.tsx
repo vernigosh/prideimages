@@ -19,7 +19,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   useEffect(() => {
     const handleStartTimer = (event: CustomEvent) => {
       console.log("Work Timer: Received start command from", event.detail.username)
-      startTimer()
+      startTimer() // This will automatically start the countdown
     }
 
     const handleStopTimer = (event: CustomEvent) => {
@@ -87,9 +87,9 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   }, [isRunning, phase])
 
   const startTimer = () => {
-    if (phase === "complete") {
-      resetTimer()
-    }
+    // Reset to full time and start immediately
+    setPhase("work")
+    setTimeLeft(25 * 60)
     setIsRunning(true)
   }
 

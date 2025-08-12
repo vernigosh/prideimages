@@ -129,7 +129,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Work timer reset command detected")
           window.dispatchEvent(new CustomEvent("resetWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!hidetimer" && (isMod || isBroadcaster || isVip)) {
+        } else if (command === "!hidework" && (isMod || isBroadcaster || isVip)) {
           console.log("Hide work timer command detected")
           window.dispatchEvent(new CustomEvent("hideWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
@@ -384,6 +384,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             <div>
               <code className="bg-black text-white px-2 py-1 rounded">!social</code>
               <span className="ml-2">Start social timer (mods/VIPs only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-white px-2 py-1 rounded">!hidework</code>
+              <span className="ml-2">Hide work timer (mods/VIPs only)</span>
             </div>
           </div>
           <p className="text-xs mt-2 text-black/70">

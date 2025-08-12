@@ -16,7 +16,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
   useEffect(() => {
     const handleStartSocialTimer = (event: CustomEvent) => {
       console.log("Social Timer: Received start command from", event.detail.username)
-      startSocialTimer()
+      startSocialTimer() // This will automatically start the countdown
     }
 
     const handleHideSocialTimer = (event: CustomEvent) => {
@@ -69,7 +69,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
 
   const startSocialTimer = () => {
     setTimeLeft(2 * 60)
-    setIsRunning(true)
+    setIsRunning(true) // Start counting down immediately
   }
 
   const hideSocialTimer = () => {

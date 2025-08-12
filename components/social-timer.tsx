@@ -164,7 +164,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
           </div>
         </div>
 
-        <div className="text-xl text-white text-center drop-shadow-lg">Social Timer</div>
+        <div className="text-4xl text-white text-center drop-shadow-lg">Social Timer</div>
       </div>
     </div>
   )

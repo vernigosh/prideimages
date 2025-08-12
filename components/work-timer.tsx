@@ -224,7 +224,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
           </div>
         </div>
 
-        <div className="text-xl text-white text-center drop-shadow-lg font-semibold">
+        <div className="text-4xl text-white text-center drop-shadow-lg font-semibold">
           {phase === "work" ? "25 No Mic Work Challenge" : "Break time!"}
         </div>
       </div>

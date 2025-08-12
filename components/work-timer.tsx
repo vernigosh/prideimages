@@ -161,12 +161,12 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     }, 60000) // Changed from 3000ms to 60000ms (1 minute)
 
     return (
-      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+      <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-4xl text-white mb-2 drop-shadow-lg font-bold">{"Time's up!"}</div>
-              <div className="text-2xl text-green-400 drop-shadow-lg font-bold">Great job!</div>
+              <div className="text-4xl text-white mb-2 drop-shadow-lg font-bold uppercase">TIME'S UP!</div>
+              <div className="text-2xl text-green-400 drop-shadow-lg font-bold uppercase">GREAT JOB!</div>
             </div>
           </div>
         </div>
@@ -175,7 +175,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   }
 
   return (
-    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+    <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
       <div className="flex flex-col items-center justify-center gap-4 font-bold">
         <div className="relative w-64 h-64">
           <div className="absolute inset-0">
@@ -224,8 +224,15 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
           </div>
         </div>
 
-        <div className="text-4xl text-white text-center drop-shadow-lg font-semibold">
-          {phase === "work" ? "25 No Mic Work Challenge" : "Break time!"}
+        <div className="text-4xl text-white text-center drop-shadow-lg font-semibold leading-tight uppercase">
+          {phase === "work" ? (
+            <>
+              <div>25 MIN NO MIC</div>
+              <div>WORK CHALLENGE</div>
+            </>
+          ) : (
+            "BREAK TIME!"
+          )}
         </div>
       </div>
     </div>

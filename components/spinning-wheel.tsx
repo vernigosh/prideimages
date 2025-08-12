@@ -62,13 +62,13 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
       <div
         className="rounded-3xl p-4 shadow-2xl border-2 border-black"
         style={{
-          backgroundColor: "#ffb8ad",
+          background: "linear-gradient(135deg, #ffb8ad 0%, #ff9a8b 50%, #ff7a6b 100%)",
           width: "600px",
           height: "200px",
         }}
       >
         <div className="text-center h-full flex flex-col justify-center">
-          <h2 className="text-xl md:text-2xl font-bold text-black mb-2">DJ Trick Spinner</h2>
+          <h2 className="text-4xl font-bold text-black mb-2 uppercase">DJ CHALLENGE ROULETTE</h2>
 
           <div className="rounded-xl p-3 relative border-2 border-black bg-white flex-1 flex items-center">
             <div className="relative w-full h-[60px] overflow-hidden">
@@ -99,7 +99,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
 
           {isSpinning && (
             <div className="mt-3">
-              <div className="text-black text-lg font-bold animate-pulse mb-1">SPINNING...</div>
+              <div className="text-black text-4xl font-bold animate-pulse mb-1 uppercase">SPINNING...</div>
             </div>
           )}
         </div>

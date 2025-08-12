@@ -125,7 +125,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
 
   if (timeLeft === 0) {
     return (
-      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+      <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
@@ -139,7 +139,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
   }
 
   return (
-    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+    <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
       <div className="flex flex-col items-center justify-center gap-4 font-bold">
         <div className="relative w-64 h-64">
           <div className="absolute inset-6 flex items-center justify-center">
@@ -164,7 +164,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
           </div>
         </div>
 
-        <div className="text-4xl text-white text-center drop-shadow-lg">Social Timer</div>
+        <div className="text-4xl text-white text-center drop-shadow-lg font-bold">SOCIAL!</div>
       </div>
     </div>
   )

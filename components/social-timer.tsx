@@ -16,11 +16,14 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
   const wsRef = useRef<WebSocket | null>(null)
 
   const isAuthorizedUser = (tags: string) => {
-    // Check for broadcaster badge
-    if (tags.includes("broadcaster/1")) return true
+    // Parse tags properly - they're semicolon-separated key=value pairs
+    const tagPairs = tags.split(";")
+    const badges = tagPairs.find((tag) => tag.startsWith("badges="))?.split("=")[1] || ""
 
-    // Check for moderator badge
-    if (tags.includes("moderator/1")) return true
+    // Check for broadcaster, moderator, or VIP badges
+    if (badges.includes("broadcaster/1")) return true
+    if (badges.includes("moderator/1")) return true
+    if (badges.includes("vip/1")) return true
 
     return false
   }
@@ -37,10 +40,12 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
         ws.send("JOIN #vernigosh")
         setIsConnected(true)
         onConnectionChange(true)
+        console.log("Social Timer: Connected to Twitch chat")
       }
 
       ws.onmessage = (event) => {
         const message = event.data
+        console.log("Social Timer received:", message)
 
         if (message.startsWith("PING")) {
           ws.send("PONG :tmi.twitch.tv")
@@ -48,25 +53,41 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
         }
 
         if (message.includes("PRIVMSG")) {
-          const tags = message.split(" ")[0]
-          const chatMessage = message.split("PRIVMSG")[1]?.split(":")[1]?.trim().toLowerCase()
+          try {
+            const parts = message.split(" ")
+            const tags = parts[0].startsWith("@") ? parts[0].substring(1) : ""
+            const messageContent = message.split("PRIVMSG")[1]?.split(":").slice(1).join(":").trim().toLowerCase()
 
-          if (!isAuthorizedUser(tags)) {
-            return
-          }
+            console.log("Social Timer - Tags:", tags)
+            console.log("Social Timer - Message:", messageContent)
+            console.log("Social Timer - Is Authorized:", isAuthorizedUser(tags))
 
-          if (chatMessage === "!social") {
-            startSocialTimer()
-          } else if (chatMessage === "!hidesocial") {
-            hideSocialTimer()
+            if (!isAuthorizedUser(tags)) {
+              return
+            }
+
+            if (messageContent === "!social") {
+              console.log("Social Timer: Starting social timer")
+              startSocialTimer()
+            } else if (messageContent === "!hidesocial") {
+              console.log("Social Timer: Hiding social timer")
+              hideSocialTimer()
+            }
+          } catch (error) {
+            console.error("Social Timer: Error parsing message:", error)
           }
         }
       }
 
       ws.onclose = () => {
+        console.log("Social Timer: Disconnected from Twitch chat")
         setIsConnected(false)
         onConnectionChange(false)
         setTimeout(connectToTwitchChat, 5000)
+      }
+
+      ws.onerror = (error) => {
+        console.error("Social Timer: WebSocket error:", error)
       }
     }
 

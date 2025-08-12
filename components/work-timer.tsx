@@ -17,11 +17,14 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const wsRef = useRef<WebSocket | null>(null)
 
   const isAuthorizedUser = (tags: string) => {
-    // Check for broadcaster badge
-    if (tags.includes("broadcaster/1")) return true
+    // Parse tags properly - they're semicolon-separated key=value pairs
+    const tagPairs = tags.split(";")
+    const badges = tagPairs.find((tag) => tag.startsWith("badges="))?.split("=")[1] || ""
 
-    // Check for moderator badge
-    if (tags.includes("moderator/1")) return true
+    // Check for broadcaster, moderator, or VIP badges
+    if (badges.includes("broadcaster/1")) return true
+    if (badges.includes("moderator/1")) return true
+    if (badges.includes("vip/1")) return true
 
     return false
   }
@@ -36,13 +39,15 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         // Anonymous connection to Twitch IRC
         ws.send("PASS SCHMOOPIIE")
         ws.send("NICK justinfan12345")
-        ws.send("JOIN #vernigosh") // Updated to use vernigosh channel
+        ws.send("JOIN #vernigosh")
         setIsConnected(true)
         onConnectionChange(true)
+        console.log("Work Timer: Connected to Twitch chat")
       }
 
       ws.onmessage = (event) => {
         const message = event.data
+        console.log("Work Timer received:", message)
 
         // Handle PING/PONG to keep connection alive
         if (message.startsWith("PING")) {
@@ -52,30 +57,48 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
 
         // Parse chat messages for commands
         if (message.includes("PRIVMSG")) {
-          const tags = message.split(" ")[0] // Tags are at the beginning
-          const chatMessage = message.split("PRIVMSG")[1]?.split(":")[1]?.trim().toLowerCase()
+          try {
+            const parts = message.split(" ")
+            const tags = parts[0].startsWith("@") ? parts[0].substring(1) : ""
+            const messageContent = message.split("PRIVMSG")[1]?.split(":").slice(1).join(":").trim().toLowerCase()
 
-          if (!isAuthorizedUser(tags)) {
-            return // Ignore commands from non-authorized users
-          }
+            console.log("Work Timer - Tags:", tags)
+            console.log("Work Timer - Message:", messageContent)
+            console.log("Work Timer - Is Authorized:", isAuthorizedUser(tags))
 
-          if (chatMessage === "!worktimer" || chatMessage === "!timer") {
-            startTimer()
-          } else if (chatMessage === "!stoptimer") {
-            stopTimer()
-          } else if (chatMessage === "!resettimer") {
-            resetTimer()
-          } else if (chatMessage === "!hidetimer") {
-            hideTimer()
+            if (!isAuthorizedUser(tags)) {
+              return // Ignore commands from non-authorized users
+            }
+
+            if (messageContent === "!worktimer" || messageContent === "!timer") {
+              console.log("Work Timer: Starting timer")
+              startTimer()
+            } else if (messageContent === "!stoptimer") {
+              console.log("Work Timer: Stopping timer")
+              stopTimer()
+            } else if (messageContent === "!resettimer") {
+              console.log("Work Timer: Resetting timer")
+              resetTimer()
+            } else if (messageContent === "!hidetimer") {
+              console.log("Work Timer: Hiding timer")
+              hideTimer()
+            }
+          } catch (error) {
+            console.error("Work Timer: Error parsing message:", error)
           }
         }
       }
 
       ws.onclose = () => {
+        console.log("Work Timer: Disconnected from Twitch chat")
         setIsConnected(false)
         onConnectionChange(false)
         // Reconnect after 5 seconds
         setTimeout(connectToTwitchChat, 5000)
+      }
+
+      ws.onerror = (error) => {
+        console.error("Work Timer: WebSocket error:", error)
       }
     }
 

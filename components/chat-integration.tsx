@@ -15,16 +15,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
   const [isConnecting, setIsConnecting] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [recentCommands, setRecentCommands] = useState<string[]>([])
-  const [allowedUsers, setAllowedUsers] = useState("everyone") // "everyone", "mods", "broadcaster"
+  const [allowedUsers, setAllowedUsers] = useState("mods") // Changed default from "everyone" to "mods"
   const [cooldownSeconds, setCooldownSeconds] = useState(10)
   const [lastSpinTime, setLastSpinTime] = useState(0)
 
   const clientRef = useRef<any>(null)
 
   useEffect(() => {
-    // Load saved settings, but keep vernigosh as default
+    // Load saved settings, but keep vernigosh as default and mods as default permission
     const savedChannel = localStorage.getItem("twitch-channel") || "vernigosh"
-    const savedAllowedUsers = localStorage.getItem("allowed-users")
+    const savedAllowedUsers = localStorage.getItem("allowed-users") || "mods" // Default to mods
     const savedCooldown = localStorage.getItem("cooldown-seconds")
 
     if (savedChannel) setChannel(savedChannel)
@@ -54,10 +54,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         const isSubscriber = tags.subscriber
         const isVip = tags.badges?.vip === "1"
 
-        // Check permissions
+        // Check permissions - Updated to include VIPs by default
         let canUseCommand = false
         if (allowedUsers === "everyone") canUseCommand = true
-        else if (allowedUsers === "mods" && (isMod || isBroadcaster || isVip)) canUseCommand = true
+        else if (allowedUsers === "mods" && (isMod || isBroadcaster || isVip))
+          canUseCommand = true // Added VIP here
         else if (allowedUsers === "broadcaster" && isBroadcaster) canUseCommand = true
 
         if (!canUseCommand) return
@@ -72,7 +73,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           setLastSpinTime(now)
           onSpin(username)
           addRecentCommand(`${command} by ${username}`)
-        } else if ((command === "!hidespin" || command === "!hidedj") && (isMod || isBroadcaster)) {
+        } else if ((command === "!hidespin" || command === "!hidedj") && (isMod || isBroadcaster || isVip)) {
           onHide(username)
           addRecentCommand(`${command} by ${username}`)
         }
@@ -140,7 +141,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           </h2>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center gap-2 px-4 py-2 border-2 border-black rounded bg-gray-100 hover:bg-gray-200"
+            className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-gray-100 hover:bg-gray-200"
           >
             <Settings className="w-4 h-4" />
             {showSettings ? "Hide Settings" : "Show Settings"}
@@ -271,10 +272,20 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </div>
             <div>
               <code className="bg-black text-white px-2 py-1 rounded">!hidespin</code>
-              <span className="ml-2">Hide spinner (mods only)</span>
+              <span className="ml-2">Hide spinner (mods/VIPs only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-white px-2 py-1 rounded">!worktimer</code>
+              <span className="ml-2">Start work timer (mods/VIPs only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-white px-2 py-1 rounded">!social</code>
+              <span className="ml-2">Start social timer (mods/VIPs only)</span>
             </div>
           </div>
-          <p className="text-xs mt-2 text-black/70">💡 Tip: The overlay will auto-connect to @vernigosh when loaded!</p>
+          <p className="text-xs mt-2 text-black/70">
+            💡 Default: Only mods, VIPs, and broadcaster can use timer commands!
+          </p>
         </div>
       </div>
     </div>

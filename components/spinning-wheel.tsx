@@ -95,8 +95,8 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
 
           {isSpinning && (
             <div className="mt-6">
-              <div className="text-black text-3xl font-bold animate-pulse mb-2">SPINNING...</div>
-              <div className="text-black text-xl font-semibold">Finding your next challenge!</div>
+              <div className="text-black text-5xl font-bold animate-pulse mb-2">SPINNING...</div>
+              <div className="text-black text-4xl font-bold">Finding your next challenge!</div>
             </div>
           )}
         </div>

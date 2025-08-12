@@ -139,9 +139,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Work timer stop command detected")
           window.dispatchEvent(new CustomEvent("stopWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!resettimer") {
-          console.log("Work timer reset command detected")
-          window.dispatchEvent(new CustomEvent("resetWorkTimer", { detail: { username } }))
+        } else if (command === "!resettimer" && (isMod || isBroadcaster || isVip)) {
+          console.log("Universal reset timer command detected")
+          // Dispatch event to reset any visible timer
+          window.dispatchEvent(new CustomEvent("resetAnyTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!hidework" && (isMod || isBroadcaster || isVip)) {
           console.log("Hide work timer command detected")
@@ -154,6 +155,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         } else if (command === "!hidesocial" && (isMod || isBroadcaster || isVip)) {
           console.log("Hide social timer command detected")
           window.dispatchEvent(new CustomEvent("hideSocialTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidetimer" && (isMod || isBroadcaster || isVip)) {
+          console.log("Universal hide timer command detected")
+          // Dispatch event to hide any visible timer
+          window.dispatchEvent(new CustomEvent("hideAnyTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
@@ -415,12 +421,18 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <span className="ml-2">Start social timer (mods/VIPs only)</span>
             </div>
             <div>
-              <code className="bg-black text-white px-2 py-1 rounded">!hidework</code>
-              <span className="ml-2">Hide work timer (mods/VIPs only)</span>
+              <code className="bg-black text-red-400 px-2 py-1 rounded font-bold">!hidetimer</code>
+              <span className="ml-2 font-bold">Hide any visible timer (mods/VIPs only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-green-400 px-2 py-1 rounded font-bold">!resettimer</code>
+              <span className="ml-2 font-bold">Reset & restart any active timer (mods/VIPs only)</span>
             </div>
           </div>
           <p className="text-xs mt-2 text-black/70">
-            💡 Default: Only mods, VIPs, and broadcaster can use timer commands!
+            💡 Universal commands: <code className="bg-black text-red-400 px-1 rounded">!hidetimer</code> hides any
+            visible timer, <code className="bg-black text-green-400 px-1 rounded">!resettimer</code> resets & restarts
+            any active timer!
           </p>
         </div>
       </div>

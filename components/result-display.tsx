@@ -22,11 +22,11 @@ export function ResultDisplay({ trick }: ResultDisplayProps) {
         }}
       >
         <div className="text-center h-full flex flex-col justify-center">
-          <h2 className="text-4xl font-bold text-black mb-3 uppercase">{trick.name}</h2>
+          <h2 className="text-4xl font-bold text-black mb-3 uppercase font-sans">{trick.name}</h2>
           <div className="rounded-xl p-3 border-2 border-black bg-white flex-1 flex items-center justify-center">
-            <p className="text-xl md:text-2xl text-black font-bold leading-relaxed">{trick.definition}</p>
+            <p className="text-xl md:text-2xl text-black font-bold leading-relaxed font-sans">{trick.definition}</p>
           </div>
-          <div className="mt-3 text-black text-lg font-bold uppercase">ACCEPTED, YOU HAVE 2 MINUTES.</div>
+          <div className="mt-3 text-black text-lg font-bold uppercase font-sans">ACCEPTED, YOU HAVE 2 MINUTES.</div>
         </div>
       </div>
     </div>

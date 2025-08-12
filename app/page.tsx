@@ -33,6 +33,37 @@ const initialTricks = [
   { name: "Word Play", definition: "Isolate and repeat vocal phrases for creative mixing" },
   { name: "Air Horn Drop", definition: "Use air horn sample before major drop or transition" },
   { name: "Bass Drop Isolation", definition: "Cut all frequencies except bass for dramatic drop effect" },
+
+  // New CDJ-3000 Specific Tricks
+  {
+    name: "Harmonic Key Shift",
+    definition: "Use CDJ-3000's key shift feature to create perfect harmonic transitions between tracks",
+  },
+  {
+    name: "Slip Mode Scratch",
+    definition: "Scratch using slip mode to manipulate audio while keeping the timeline intact",
+  },
+  {
+    name: "Loop Shortening",
+    definition: "Progressively shorten loop lengths to build intensity and create rolling effects",
+  },
+
+  // New V10 Mixer Specific Tricks
+  { name: "Send FX", definition: "Use V10's send effects to add depth and space without affecting the dry signal" },
+  { name: "Use Big Knobs", definition: "Utilize the V10's large parameter knobs for smooth, precise effect control" },
+  { name: "Apply Filter to Master", definition: "Use the master filter on the V10 to affect the entire mix output" },
+  {
+    name: "Mix Only Using Trim",
+    definition: "Create transitions using only the trim knobs without touching faders or EQ",
+  },
+
+  // New Genre-Specific House/Techno Tricks
+  { name: "Bass Line Swap", definition: "Switch basslines between tracks while keeping the drum patterns intact" },
+  { name: "Extend Breakdown", definition: "Use loops and effects to extend breakdown sections for longer build-ups" },
+  {
+    name: "Tension and Release",
+    definition: "Build musical tension with filters/effects, then release for maximum impact",
+  },
 ]
 
 export default function DJRandomizer() {
@@ -111,12 +142,48 @@ export default function DJRandomizer() {
       setShowSocialTimer(false)
     }
 
+    const handleHideAnyTimer = (event: CustomEvent) => {
+      console.log("Page: Received hideAnyTimer event", event.detail)
+      // Hide whichever timer is currently visible (priority order: Dark > Social > Work)
+      if (showDarkTimer) {
+        console.log("Page: Hiding dark timer via !hidetimer")
+        setShowDarkTimer(false)
+      } else if (showSocialTimer) {
+        console.log("Page: Hiding social timer via !hidetimer")
+        setShowSocialTimer(false)
+      } else if (showWorkTimer) {
+        console.log("Page: Hiding work timer via !hidetimer")
+        setShowWorkTimer(false)
+      } else {
+        console.log("Page: No timer visible to hide")
+      }
+    }
+
+    const handleResetAnyTimer = (event: CustomEvent) => {
+      console.log("Page: Received resetAnyTimer event", event.detail)
+      // Reset whichever timer is currently visible (priority order: Dark > Social > Work)
+      if (showDarkTimer) {
+        console.log("Page: Resetting dark timer via !resettimer")
+        window.dispatchEvent(new CustomEvent("resetDarkTimer", { detail: event.detail }))
+      } else if (showSocialTimer) {
+        console.log("Page: Resetting social timer via !resettimer")
+        window.dispatchEvent(new CustomEvent("resetSocialTimer", { detail: event.detail }))
+      } else if (showWorkTimer) {
+        console.log("Page: Resetting work timer via !resettimer")
+        window.dispatchEvent(new CustomEvent("resetWorkTimer", { detail: event.detail }))
+      } else {
+        console.log("Page: No timer visible to reset")
+      }
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
     window.addEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
     window.addEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
     window.addEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
+    window.addEventListener("hideAnyTimer", handleHideAnyTimer as EventListener)
+    window.addEventListener("resetAnyTimer", handleResetAnyTimer as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -125,6 +192,8 @@ export default function DJRandomizer() {
       window.removeEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
       window.removeEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
       window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
+      window.removeEventListener("hideAnyTimer", handleHideAnyTimer as EventListener)
+      window.removeEventListener("resetAnyTimer", handleResetAnyTimer as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer])
 

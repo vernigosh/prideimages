@@ -24,8 +24,14 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerPr
       hideDarkTimer()
     }
 
+    const handleResetDarkTimer = (event: CustomEvent) => {
+      console.log("Dark Timer: Received reset command from", event.detail.username)
+      resetDarkTimer()
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
+    window.addEventListener("resetDarkTimer", handleResetDarkTimer as EventListener)
 
     // Set connected status based on visibility
     onConnectionChange(isVisible)
@@ -33,6 +39,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerPr
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
       window.removeEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
+      window.removeEventListener("resetDarkTimer", handleResetDarkTimer as EventListener)
     }
   }, [isVisible, onConnectionChange])
 
@@ -87,6 +94,15 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerPr
     setTimeout(() => {
       setIsRunning(true)
       console.log("Dark Timer: isRunning set to true via setTimeout")
+    }, 100)
+  }
+
+  const resetDarkTimer = () => {
+    console.log("Dark Timer: resetDarkTimer called - resetting and restarting")
+    setTimeLeft(20 * 60)
+    setTimeout(() => {
+      setIsRunning(true)
+      console.log("Dark Timer: isRunning set to true via reset")
     }, 100)
   }
 

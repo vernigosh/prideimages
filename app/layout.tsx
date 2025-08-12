@@ -12,7 +12,7 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "DJ Trick Randomizer",
   description: "Random DJ trick generator for live streaming",
-    generator: 'v0.dev'
+    generator: 'v0.app'
 }
 
 export default function RootLayout({

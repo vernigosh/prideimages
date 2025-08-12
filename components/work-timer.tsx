@@ -165,8 +165,8 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-4xl text-white mb-2 drop-shadow-lg font-bold uppercase">TIME'S UP!</div>
-              <div className="text-2xl text-green-400 drop-shadow-lg font-bold uppercase">GREAT JOB!</div>
+              <div className="text-4xl text-white mb-2 drop-shadow-lg font-bold uppercase font-sans">TIME'S UP!</div>
+              <div className="text-4xl text-green-400 drop-shadow-lg font-bold uppercase font-sans">GREAT JOB!</div>
             </div>
           </div>
         </div>
@@ -214,7 +214,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
             </svg>
 
             <div className="text-center z-10 relative">
-              <div className="text-4xl text-white drop-shadow-lg font-bold">
+              <div className="text-4xl text-white drop-shadow-lg font-bold font-sans">
                 {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
               </div>
               <div className="text-sm text-gray-300 mt-1 drop-shadow-md font-semibold">
@@ -224,7 +224,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
           </div>
         </div>
 
-        <div className="text-4xl text-white text-center drop-shadow-lg font-semibold leading-tight uppercase">
+        <div className="text-4xl text-white text-center drop-shadow-lg font-semibold leading-tight uppercase font-sans">
           {phase === "work" ? (
             <>
               <div>25 MIN NO MIC</div>

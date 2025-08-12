@@ -69,7 +69,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
         }}
       >
         <div className="text-center h-full flex flex-col justify-center">
-          <h2 className="text-4xl font-bold text-black mb-2 uppercase">DJ TECHNIQUE CHALLENGE</h2>
+          <h2 className="text-4xl font-bold text-black mb-2 uppercase font-sans">DJ TECHNIQUE CHALLENGE</h2>
 
           <div className="rounded-xl p-3 relative border-2 border-black bg-white flex-1 flex items-center">
             <div className="relative w-full h-[60px] overflow-hidden">
@@ -85,7 +85,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
                   {extendedTricks.map((trick, index) => (
                     <li
                       key={index}
-                      className="h-[60px] flex items-center justify-center text-center text-black font-bold text-xl md:text-2xl px-6"
+                      className="h-[60px] flex items-center justify-center text-center text-black font-bold text-xl md:text-2xl px-6 font-sans"
                     >
                       {trick.name}
                     </li>
@@ -100,7 +100,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
 
           {isSpinning && (
             <div className="mt-3">
-              <div className="text-black text-4xl font-bold animate-pulse mb-1 uppercase">SPINNING...</div>
+              <div className="text-black text-4xl font-bold animate-pulse mb-1 uppercase font-sans">SPINNING...</div>
             </div>
           )}
         </div>

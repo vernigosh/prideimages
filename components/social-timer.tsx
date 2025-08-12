@@ -24,8 +24,14 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
       hideSocialTimer()
     }
 
+    const handleResetSocialTimer = (event: CustomEvent) => {
+      console.log("Social Timer: Received reset command from", event.detail.username)
+      resetSocialTimer()
+    }
+
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
     window.addEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
+    window.addEventListener("resetSocialTimer", handleResetSocialTimer as EventListener)
 
     // Set connected status based on visibility
     onConnectionChange(isVisible)
@@ -33,6 +39,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
     return () => {
       window.removeEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
       window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
+      window.removeEventListener("resetSocialTimer", handleResetSocialTimer as EventListener)
     }
   }, [isVisible, onConnectionChange])
 
@@ -91,6 +98,15 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
     }, 100)
   }
 
+  const resetSocialTimer = () => {
+    console.log("Social Timer: resetSocialTimer called - resetting and restarting")
+    setTimeLeft(2 * 60)
+    setTimeout(() => {
+      setIsRunning(true)
+      console.log("Social Timer: isRunning set to true via reset")
+    }, 100)
+  }
+
   const hideSocialTimer = () => {
     setIsRunning(false)
     setTimeLeft(2 * 60)
@@ -130,7 +146,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
               <div className="text-4xl text-white mb-2 drop-shadow-lg">Cheers everyone!</div>
-              <div className="text-2xl text-lime-400 drop-shadow-lg">Thank you for being here!</div>
+              <div className="text-4xl text-white drop-shadow-lg">Thank you for being here!</div>
             </div>
           </div>
         </div>

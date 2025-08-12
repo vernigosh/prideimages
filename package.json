@@ -16,12 +16,14 @@
     "react": "^19",
     "react-dom": "^19",
     "tailwind-merge": "^2.5.5",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tmi.js": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/tmi.js": "^1.8.6",
     "autoprefixer": "^10.4.20",
     "eslint": "^8",
     "eslint-config-next": "15.2.4",

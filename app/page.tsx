@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { SpinningWheel } from "@/components/spinning-wheel"
 import { AdminInterface } from "@/components/admin-interface"
 import { ResultDisplay } from "@/components/result-display"
+import { ChatIntegration } from "@/components/chat-integration"
 
 // DJ Tricks data with definitions
 const initialTricks = [
@@ -35,17 +36,19 @@ export default function DJRandomizer() {
   const [isSpinning, setIsSpinning] = useState(false)
   const [selectedTrick, setSelectedTrick] = useState<{ name: string; definition: string } | null>(null)
   const [showResult, setShowResult] = useState(false)
+  const [chatConnected, setChatConnected] = useState(false)
+  const [lastCommand, setLastCommand] = useState<string>("")
 
   // Simulate chat command integration
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "s" && e.ctrlKey) {
         e.preventDefault()
-        handleSpin()
+        handleSpin("Manual Test")
       }
       if (e.key === "h" && e.ctrlKey) {
         e.preventDefault()
-        handleHide()
+        handleHide("Manual Test")
       }
     }
 
@@ -53,22 +56,22 @@ export default function DJRandomizer() {
     return () => window.removeEventListener("keydown", handleKeyPress)
   }, [])
 
-  const handleSpin = () => {
+  const handleSpin = (username: string) => {
     if (isSpinning) return
 
     setIsVisible(true)
     setIsSpinning(true)
     setShowResult(false)
     setSelectedTrick(null)
-
-    // The spinner will call onSpinComplete when it's done
+    setLastCommand(`!spin by ${username}`)
   }
 
-  const handleHide = () => {
+  const handleHide = (username: string) => {
     setIsVisible(false)
     setIsSpinning(false)
     setShowResult(false)
     setSelectedTrick(null)
+    setLastCommand(`!hidespin by ${username}`)
   }
 
   const addTrick = (name: string, definition: string) => {
@@ -116,8 +119,21 @@ export default function DJRandomizer() {
 
       {/* Status Text - Below the line, above admin */}
       <div className="py-8 text-center" style={{ backgroundColor: "#ffb8ad" }}>
-        <p className="text-xl text-black/70">Press Ctrl+S to simulate !spin command</p>
-        <p className="text-sm mt-2 text-black/70">Waiting for chat command...</p>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <div className={`w-3 h-3 rounded-full ${chatConnected ? "bg-green-500" : "bg-red-500"}`}></div>
+          <span className="text-lg font-semibold text-black">
+            {chatConnected ? "Chat Connected" : "Chat Disconnected"}
+          </span>
+        </div>
+        <p className="text-xl text-black/70">
+          {chatConnected ? "Type !spin in chat to spin the wheel" : "Press Ctrl+S to simulate !spin command"}
+        </p>
+        {lastCommand && <p className="text-sm mt-2 text-black/70">Last command: {lastCommand}</p>}
+      </div>
+
+      {/* Chat Integration Setup */}
+      <div className="bg-white border-b-4 border-black">
+        <ChatIntegration onSpin={handleSpin} onHide={handleHide} onConnectionChange={setChatConnected} />
       </div>
 
       {/* Admin Interface - Bottom Section */}

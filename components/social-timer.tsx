@@ -88,10 +88,10 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
             if (intervalRef.current) {
               clearInterval(intervalRef.current)
             }
-            // Auto-hide after completion
+            // Auto-hide after 1 minute instead of 3 seconds
             setTimeout(() => {
               onHide()
-            }, 3000)
+            }, 60000) // Changed from 3000ms to 60000ms (1 minute)
             return 0
           }
           return prev - 1

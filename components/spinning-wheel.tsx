@@ -19,14 +19,14 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
 
   useEffect(() => {
     if (isSpinning && listRef.current) {
-      const itemHeight = 60 // 50% of original 120px
+      const itemHeight = 60
       const totalItems = tricks.length
       const repetitions = Math.ceil(15000 / (totalItems * itemHeight))
       const randomIndex = Math.floor(Math.random() * totalItems)
       const finalPosition = (repetitions * totalItems + randomIndex) * itemHeight
 
       let startTime: number
-      const duration = 12000
+      const duration = 8000 // Reduced from 12000 for more consistent timing
 
       const animate = (currentTime: number) => {
         if (!startTime) startTime = currentTime
@@ -41,8 +41,13 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
         if (progress < 1) {
           requestAnimationFrame(animate)
         } else {
+          // Ensure we're exactly on the selected item
+          setScrollPosition(finalPosition)
           const selectedTrick = tricks[randomIndex]
-          onSpinComplete(selectedTrick)
+          // Add a small delay to ensure the final position is visible
+          setTimeout(() => {
+            onSpinComplete(selectedTrick)
+          }, 500)
         }
       }
 
@@ -58,8 +63,8 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
         className="rounded-3xl p-4 shadow-2xl border-2 border-black"
         style={{
           backgroundColor: "#ffb8ad",
-          width: "600px", // 50% of original 1200px
-          height: "200px", // 50% of original 400px
+          width: "600px",
+          height: "200px",
         }}
       >
         <div className="text-center h-full flex flex-col justify-center">
@@ -67,8 +72,6 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
 
           <div className="rounded-xl p-3 relative border-2 border-black bg-white flex-1 flex items-center">
             <div className="relative w-full h-[60px] overflow-hidden">
-              {" "}
-              {/* 50% of original 120px */}
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-[60px] overflow-hidden">
                 <ul
                   ref={listRef}
@@ -89,20 +92,14 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
                 </ul>
               </div>
               <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
-                {" "}
-                {/* Reduced from left-8 */}
-                <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-b-[15px] border-l-transparent border-r-transparent border-b-black drop-shadow-lg rotate-90"></div>{" "}
-                {/* 50% smaller arrow */}
+                <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-b-[15px] border-l-transparent border-r-transparent border-b-black drop-shadow-lg rotate-90"></div>
               </div>
             </div>
           </div>
 
           {isSpinning && (
             <div className="mt-3">
-              {" "}
-              {/* Reduced from mt-6 */}
-              <div className="text-black text-lg font-bold animate-pulse mb-1">SPINNING...</div>{" "}
-              {/* Reduced from 5xl and mb-2 */}
+              <div className="text-black text-lg font-bold animate-pulse mb-1">SPINNING...</div>
             </div>
           )}
         </div>

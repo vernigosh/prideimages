@@ -172,6 +172,11 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   if (!isVisible) return null
 
   if (phase === "complete") {
+    // Auto-hide after 1 minute instead of immediately
+    setTimeout(() => {
+      onHide()
+    }, 60000) // Changed from 3000ms to 60000ms (1 minute)
+
     return (
       <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
         <div className="flex flex-col items-center justify-center font-bold">

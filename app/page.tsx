@@ -43,17 +43,17 @@ export default function DJRandomizer() {
   const [chatConnected, setChatConnected] = useState(false)
   const [lastCommand, setLastCommand] = useState<string>("")
 
-  // Time overlay settings
+  // Time overlay settings - Updated defaults
   const [showTimeOverlay, setShowTimeOverlay] = useState(true)
   const [timePosition, setTimePosition] = useState<"top-left" | "top-right" | "bottom-left" | "bottom-right">(
     "top-right",
   )
-  const [timeZone, setTimeZone] = useState("America/New_York")
-  const [timeFontSize, setTimeFontSize] = useState(48)
+  const [timeZone, setTimeZone] = useState("Europe/Rome") // Changed default to Rome
+  const [timeFontSize, setTimeFontSize] = useState(40) // Changed default from 48 to 40
   const [showSeconds, setShowSeconds] = useState(false)
   const [textColor, setTextColor] = useState("#ffffff")
   const [shadowColor, setShadowColor] = useState("#000000")
-  const [shadowSize, setShadowSize] = useState(2)
+  const [shadowSize, setShadowSize] = useState(0) // Changed default from 2 to 0 (no shadow)
   const [fontWeight, setFontWeight] = useState<"normal" | "bold" | "black">("bold")
   const [overlayBackground, setOverlayBackground] = useState<"transparent" | "black">("transparent")
 

@@ -15,14 +15,12 @@ interface SpinningWheelProps {
 
 export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWheelProps) {
   const [scrollPosition, setScrollPosition] = useState(0)
-  const tickerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
 
   useEffect(() => {
     if (isSpinning && listRef.current) {
       const itemHeight = 120
       const totalItems = tricks.length
-
       const repetitions = Math.ceil(15000 / (totalItems * itemHeight))
       const randomIndex = Math.floor(Math.random() * totalItems)
       const finalPosition = (repetitions * totalItems + randomIndex) * itemHeight
@@ -55,20 +53,17 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
   const extendedTricks = Array(20).fill(tricks).flat()
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-brand-black/20 backdrop-blur-sm">
+    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
       <div
+        className="rounded-3xl p-8 w-full max-w-5xl mx-4 shadow-2xl border-4 border-black"
         style={{ backgroundColor: "#ffb8ad" }}
-        className="rounded-3xl p-8 w-full max-w-5xl mx-4 shadow-2xl border-4 border-brand-black"
       >
         <div className="text-center">
-          <h2 className="text-4xl md:text-6xl font-bold text-brand-black font-sans mb-6">DJ Trick Spinner</h2>
+          <h2 className="text-4xl md:text-6xl font-bold text-black mb-6">DJ Trick Spinner</h2>
 
-          <div style={{ backgroundColor: "#ffffff" }} className="rounded-xl p-6 relative border-2 border-brand-black">
+          <div className="rounded-xl p-6 relative border-2 border-black bg-white">
             <div className="relative w-full h-[120px] overflow-hidden">
-              <div
-                ref={tickerRef}
-                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-[120px] overflow-hidden"
-              >
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-[120px] overflow-hidden">
                 <ul
                   ref={listRef}
                   className="list-none p-0 m-0 absolute w-full"
@@ -80,7 +75,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
                   {extendedTricks.map((trick, index) => (
                     <li
                       key={index}
-                      className="h-[120px] leading-[120px] text-center text-brand-black font-bold text-5xl px-16 font-sans"
+                      className="h-[120px] leading-[120px] text-center text-black font-bold text-5xl px-16"
                     >
                       {trick.name}
                     </li>
@@ -89,15 +84,15 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
               </div>
 
               <div className="absolute top-1/2 left-8 transform -translate-y-1/2">
-                <div className="w-0 h-0 border-l-[25px] border-r-[25px] border-b-[30px] border-l-transparent border-r-transparent border-b-brand-black drop-shadow-lg rotate-90"></div>
+                <div className="w-0 h-0 border-l-[25px] border-r-[25px] border-b-[30px] border-l-transparent border-r-transparent border-b-black drop-shadow-lg rotate-90"></div>
               </div>
             </div>
           </div>
 
           {isSpinning && (
             <div className="mt-6">
-              <div className="text-brand-black text-3xl font-bold animate-pulse mb-2 font-sans">SPINNING...</div>
-              <div className="text-brand-black text-xl font-semibold font-sans">Finding your next challenge!</div>
+              <div className="text-black text-3xl font-bold animate-pulse mb-2">SPINNING...</div>
+              <div className="text-black text-xl font-semibold">Finding your next challenge!</div>
             </div>
           )}
         </div>

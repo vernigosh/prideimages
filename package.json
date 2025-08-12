@@ -1,5 +1,5 @@
 {
-  "name": "my-v0-project",
+  "name": "dj-randomizer",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -15,7 +15,6 @@
     "next": "15.2.4",
     "react": "^19",
     "react-dom": "^19",
-    "shadcn": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7"
   },

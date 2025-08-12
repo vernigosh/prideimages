@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { SpinningWheel } from "@/components/spinning-wheel"
-import { AdminInterface } from "@/components/admin-interface"
 import { ResultDisplay } from "@/components/result-display"
 
-// DJ Tricks data with definitions
 const initialTricks = [
   { name: "Backspin + Echo", definition: "Reverse the track while adding echo effect for dramatic transition" },
   { name: "Beat Chopping", definition: "Cut and rearrange beats using hot cues for rhythmic variation" },
@@ -17,26 +15,14 @@ const initialTricks = [
   { name: "Hot Cue Juggling", definition: "Use hot cues to create new rhythmic patterns and loops" },
   { name: "Loop Roll", definition: "Create rolling effect by looping small sections with decreasing lengths" },
   { name: "Phrase Matching", definition: "Align musical phrases (8/16/32 bars) for seamless transitions" },
-  { name: "Quick Cut", definition: "Sharp, immediate cut between tracks without blending" },
-  { name: "Reverb Throw", definition: "Add reverb before cutting to create space and atmosphere" },
-  { name: "Scratch Transition", definition: "Use turntable scratching techniques to transition between tracks" },
-  { name: "Slip Mode Tricks", definition: "Use slip mode to manipulate audio while maintaining timeline" },
-  { name: "Stutter Effect", definition: "Create stuttering rhythm using beat effects or manual techniques" },
-  { name: "Transform Scratch", definition: "Use crossfader to create rhythmic on/off patterns while scratching" },
-  { name: "Vinyl Brake", definition: "Simulate vinyl stopping effect using brake/spindown" },
-  { name: "Word Play", definition: "Isolate and repeat vocal phrases for creative mixing" },
-  { name: "Air Horn Drop", definition: "Use air horn sample before major drop or transition" },
-  { name: "Bass Drop Isolation", definition: "Cut all frequencies except bass for dramatic drop effect" },
 ]
 
 export default function DJRandomizer() {
-  const [tricks, setTricks] = useState(initialTricks)
   const [isVisible, setIsVisible] = useState(false)
   const [isSpinning, setIsSpinning] = useState(false)
   const [selectedTrick, setSelectedTrick] = useState<{ name: string; definition: string } | null>(null)
   const [showResult, setShowResult] = useState(false)
 
-  // Simulate chat command integration
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "s" && e.ctrlKey) {
@@ -60,8 +46,6 @@ export default function DJRandomizer() {
     setIsSpinning(true)
     setShowResult(false)
     setSelectedTrick(null)
-
-    // The spinner will call onSpinComplete when it's done
   }
 
   const handleHide = () => {
@@ -71,35 +55,19 @@ export default function DJRandomizer() {
     setSelectedTrick(null)
   }
 
-  const addTrick = (name: string, definition: string) => {
-    setTricks([...tricks, { name, definition }])
-  }
-
-  const removeTrick = (index: number) => {
-    setTricks(tricks.filter((_, i) => i !== index))
-  }
-
-  const updateTrick = (index: number, name: string, definition: string) => {
-    const updatedTricks = [...tricks]
-    updatedTricks[index] = { name, definition }
-    setTricks(updatedTricks)
-  }
-
   return (
-    <div className="min-h-screen bg-brand-coral">
-      {/* Spinner Section - Top Half */}
+    <div className="min-h-screen" style={{ backgroundColor: "#ffb8ad" }}>
       <div className="h-screen flex items-center justify-center relative">
         {isVisible && (
           <>
             <SpinningWheel
-              tricks={tricks}
+              tricks={initialTricks}
               isSpinning={isSpinning}
               onSpinComplete={(trick) => {
                 setSelectedTrick(trick)
                 setIsSpinning(false)
                 setShowResult(true)
 
-                // Hide result after 2 minutes
                 setTimeout(() => {
                   setShowResult(false)
                   setIsVisible(false)
@@ -111,16 +79,11 @@ export default function DJRandomizer() {
         )}
 
         {!isVisible && (
-          <div className="text-center text-brand-black/70">
+          <div className="text-center text-black/70">
             <p className="text-xl">Press Ctrl+S to simulate !spin command</p>
             <p className="text-sm mt-2">Waiting for chat command...</p>
           </div>
         )}
-      </div>
-
-      {/* Admin Interface - Bottom Half */}
-      <div className="min-h-screen bg-brand-white border-t-4 border-brand-black">
-        <AdminInterface tricks={tricks} onAddTrick={addTrick} onRemoveTrick={removeTrick} onUpdateTrick={updateTrick} />
       </div>
     </div>
   )

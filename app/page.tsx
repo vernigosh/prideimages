@@ -9,6 +9,7 @@ import { TimeOverlay } from "@/components/time-overlay"
 import { OverlaySettings } from "@/components/overlay-settings"
 import { WorkTimer } from "@/components/work-timer"
 import { SocialTimer } from "@/components/social-timer"
+import { DarkTimer } from "@/components/dark-timer"
 
 // DJ Tricks data with definitions
 const initialTricks = [
@@ -57,6 +58,10 @@ export default function DJRandomizer() {
   const [fontWeight, setFontWeight] = useState<"normal" | "bold" | "black">("bold")
   const [overlayBackground, setOverlayBackground] = useState<"transparent" | "black">("transparent")
 
+  // Dark timer settings
+  const [showDarkTimer, setShowDarkTimer] = useState(false)
+  const [darkTimerConnected, setDarkTimerConnected] = useState(false)
+
   // Work timer settings
   const [showWorkTimer, setShowWorkTimer] = useState(false)
   const [workTimerConnected, setWorkTimerConnected] = useState(false)
@@ -67,6 +72,14 @@ export default function DJRandomizer() {
 
   // Add event listeners for timer commands
   useEffect(() => {
+    const handleStartDarkTimer = (event: CustomEvent) => {
+      console.log("Page: Received startDarkTimer event", event.detail)
+      if (!showDarkTimer) {
+        console.log("Page: Enabling dark timer")
+        setShowDarkTimer(true)
+      }
+    }
+
     const handleStartWorkTimer = (event: CustomEvent) => {
       console.log("Page: Received startWorkTimer event", event.detail)
       if (!showWorkTimer) {
@@ -83,6 +96,11 @@ export default function DJRandomizer() {
       }
     }
 
+    const handleHideDarkTimer = (event: CustomEvent) => {
+      console.log("Page: Received hideDarkTimer event", event.detail)
+      setShowDarkTimer(false)
+    }
+
     const handleHideWorkTimer = (event: CustomEvent) => {
       console.log("Page: Received hideWorkTimer event", event.detail)
       setShowWorkTimer(false)
@@ -93,18 +111,22 @@ export default function DJRandomizer() {
       setShowSocialTimer(false)
     }
 
+    window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
+    window.addEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
     window.addEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
     window.addEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
 
     return () => {
+      window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
       window.removeEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
       window.removeEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
+      window.removeEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
       window.removeEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
       window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
     }
-  }, [showWorkTimer, showSocialTimer])
+  }, [showDarkTimer, showWorkTimer, showSocialTimer])
 
   // Simulate chat command integration
   useEffect(() => {
@@ -126,10 +148,10 @@ export default function DJRandomizer() {
   const handleSpin = (username: string) => {
     if (isSpinning) return
 
-    // Hide work timer if active when spinning
-    if (showWorkTimer) {
-      setShowWorkTimer(false)
-    }
+    // Hide all timers when spinning
+    if (showDarkTimer) setShowDarkTimer(false)
+    if (showWorkTimer) setShowWorkTimer(false)
+    if (showSocialTimer) setShowSocialTimer(false)
 
     setIsVisible(true)
     setIsSpinning(true)
@@ -145,8 +167,12 @@ export default function DJRandomizer() {
     setSelectedTrick(null)
     setLastCommand(`!hidespin by ${username}`)
 
-    // Show work timer again if it was hidden
-    if (workTimerConnected) {
+    // Restore timers based on connection status (highest priority first)
+    if (darkTimerConnected) {
+      setShowDarkTimer(true)
+    } else if (socialTimerConnected) {
+      setShowSocialTimer(true)
+    } else if (workTimerConnected) {
       setShowWorkTimer(true)
     }
   }
@@ -165,35 +191,85 @@ export default function DJRandomizer() {
     setTricks(updatedTricks)
   }
 
-  // Determine which upper-left element to show (DJ Spinner only)
+  // Determine which upper-left element to show with flip transition
   const getUpperLeftElement = () => {
     if (isVisible) {
       return (
-        <>
-          <SpinningWheel
-            tricks={tricks}
-            isSpinning={isSpinning}
-            onSpinComplete={(trick) => {
-              setSelectedTrick(trick)
-              setIsSpinning(false)
-              setShowResult(true)
-
-              // Hide result after 2 minutes
-              setTimeout(() => {
-                setShowResult(false)
-                setIsVisible(false)
-              }, 120000)
+        <div className="absolute left-8 top-6">
+          {/* Flip Container */}
+          <div
+            className="relative transition-transform duration-700 ease-in-out"
+            style={{
+              transformStyle: "preserve-3d",
+              transform: showResult ? "rotateX(180deg)" : "rotateX(0deg)",
+              width: "600px",
+              height: "200px",
             }}
-          />
-          {showResult && selectedTrick && <ResultDisplay trick={selectedTrick} />}
-        </>
+          >
+            {/* Front Side - Spinning Wheel */}
+            <div
+              className="absolute inset-0"
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "rotateX(0deg)",
+              }}
+            >
+              <SpinningWheel
+                tricks={tricks}
+                isSpinning={isSpinning}
+                onSpinComplete={(trick) => {
+                  console.log("Spin completed with trick:", trick)
+                  setSelectedTrick(trick)
+                  setIsSpinning(false)
+
+                  // Give 3 seconds to read the selected trick before flipping
+                  setTimeout(() => {
+                    console.log("About to flip to result display")
+                    setShowResult(true)
+                  }, 3000) // Changed from 500ms to 3000ms (3 seconds)
+
+                  // Hide result after 2 minutes
+                  setTimeout(() => {
+                    setShowResult(false)
+                    setIsVisible(false)
+                  }, 123000) // Adjusted to account for the 3 second delay
+                }}
+              />
+            </div>
+
+            {/* Back Side - Result Display */}
+            <div
+              className="absolute inset-0"
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "rotateX(180deg)",
+              }}
+            >
+              {selectedTrick && (
+                <div>
+                  <ResultDisplay trick={selectedTrick} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )
     }
     return null
   }
 
-  // Determine which right-side element to show (Social Timer > Work Timer)
+  // Determine which right-side element to show (Dark Timer > Social Timer > Work Timer)
   const getRightSideElement = () => {
+    if (showDarkTimer) {
+      return (
+        <DarkTimer
+          isVisible={showDarkTimer}
+          onConnectionChange={setDarkTimerConnected}
+          onHide={() => setShowDarkTimer(false)}
+        />
+      )
+    }
+
     if (showSocialTimer) {
       return (
         <SocialTimer
@@ -239,10 +315,10 @@ export default function DJRandomizer() {
           />
         )}
 
-        {/* Upper Left Elements (DJ Spinner only) */}
+        {/* Upper Left Elements (DJ Spinner with flip transition) */}
         {getUpperLeftElement()}
 
-        {/* Right Side Elements (Social Timer or Work Timer) */}
+        {/* Right Side Elements (Dark Timer > Social Timer > Work Timer) */}
         {getRightSideElement()}
       </div>
 
@@ -260,6 +336,12 @@ export default function DJRandomizer() {
             </p>
           </div>
           <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">🌑 Dark Timer</h3>
+            <p className="text-black/70">
+              {showDarkTimer ? (darkTimerConnected ? "Ready for commands" : "Connecting...") : "Hidden"}
+            </p>
+          </div>
+          <div className="text-center">
             <h3 className="text-xl font-bold text-black mb-2">⏱️ Work Timer</h3>
             <p className="text-black/70">
               {showWorkTimer ? (workTimerConnected ? "Ready for commands" : "Connecting...") : "Hidden"}
@@ -271,10 +353,10 @@ export default function DJRandomizer() {
               {showSocialTimer ? (socialTimerConnected ? "Ready for commands" : "Connecting...") : "Hidden"}
             </p>
           </div>
-          <div className="text-center">
-            <h3 className="text-xl font-bold text-black mb-2">🎵 DJ Spinner</h3>
-            <p className="text-black/70">{chatConnected ? "Ready for chat commands" : "Manual mode only"}</p>
-          </div>
+        </div>
+        <div className="text-center mt-4">
+          <h3 className="text-xl font-bold text-black mb-2">🎵 DJ Spinner</h3>
+          <p className="text-black/70">{chatConnected ? "Ready for chat commands" : "Manual mode only"}</p>
         </div>
         <p className="text-lg text-black/70 mt-4">One overlay source for multiple stream elements!</p>
         <p className="text-sm text-black/50 mt-2">
@@ -302,6 +384,9 @@ export default function DJRandomizer() {
         setShadowSize={setShadowSize}
         fontWeight={fontWeight}
         setFontWeight={setFontWeight}
+        showDarkTimer={showDarkTimer}
+        setShowDarkTimer={setShowDarkTimer}
+        darkTimerConnected={darkTimerConnected}
         showWorkTimer={showWorkTimer}
         setShowWorkTimer={setShowWorkTimer}
         workTimerConnected={workTimerConnected}

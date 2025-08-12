@@ -45,6 +45,12 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
     addRecentCommand("!social by Manual Test (manual)")
   }
 
+  const testDarkTimer = () => {
+    console.log("Manual test: Starting dark timer")
+    window.dispatchEvent(new CustomEvent("startDarkTimer", { detail: { username: "Manual Test" } }))
+    addRecentCommand("!dark by Manual Test (manual)")
+  }
+
   const connectToTwitch = async () => {
     if (!channel.trim()) return
 
@@ -115,6 +121,14 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         } else if ((command === "!hidespin" || command === "!hidedj") && (isMod || isBroadcaster || isVip)) {
           console.log("Hide DJ command detected")
           onHide(username)
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!dark") {
+          console.log("Dark timer start command detected")
+          window.dispatchEvent(new CustomEvent("startDarkTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidedark" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide dark timer command detected")
+          window.dispatchEvent(new CustomEvent("hideDarkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!worktimer" || command === "!timer") {
           console.log("Work timer start command detected")
@@ -230,7 +244,14 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         {/* Manual Test Buttons */}
         <div className="mb-6 p-4 border-2 border-black rounded bg-yellow-100">
           <h3 className="font-bold text-black mb-2">Manual Timer Tests</h3>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
+            <button
+              onClick={testDarkTimer}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-black hover:bg-gray-800 text-white"
+            >
+              <Play className="w-4 h-4" />
+              Test Dark Timer
+            </button>
             <button
               onClick={testWorkTimer}
               className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-red-400 hover:bg-red-500 text-white"
@@ -362,8 +383,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           <h3 className="font-bold text-black mb-2">Available Chat Commands:</h3>
           <div className="grid md:grid-cols-2 gap-4 text-sm">
             <div>
+              <code className="bg-black text-white px-2 py-1 rounded">!dark</code>
+              <span className="ml-2">Start 20min Dark Vernigosh mode</span>
+            </div>
+            <div>
+              <code className="bg-black text-white px-2 py-1 rounded">!hidedark</code>
+              <span className="ml-2">Hide dark timer (mods/VIPs only)</span>
+            </div>
+            <div>
               <code className="bg-black text-white px-2 py-1 rounded">!spin</code>
-              <span className="ml-2">Spin the DJ trick wheel</span>
+              <span className="ml-2">Spin the DJ technique wheel</span>
             </div>
             <div>
               <code className="bg-black text-white px-2 py-1 rounded">!djspin</code>

@@ -146,7 +146,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
             <svg className="absolute w-full h-full" viewBox="0 0 200 200">
               <path
                 d={createPieSlicePath(1 - progress)}
-                fill="#32cd32"
+                fill="rgba(50, 205, 50, 0.8)"
                 style={{
                   transition: "d 1s ease-linear",
                 }}

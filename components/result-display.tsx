@@ -15,7 +15,8 @@ export function ResultDisplay({ trick }: ResultDisplayProps) {
       <div
         className="rounded-3xl p-4 shadow-2xl border-2 border-black"
         style={{
-          background: "linear-gradient(135deg, #ffb8ad 0%, #ff9a8b 50%, #ff7a6b 100%)",
+          background:
+            "linear-gradient(180deg, rgba(255, 184, 173, 0.8) 0%, rgba(255, 154, 139, 0.8) 50%, rgba(255, 122, 107, 0.8) 100%)",
           width: "600px", // 50% of original 1200px
           height: "200px", // 50% of original 400px
         }}

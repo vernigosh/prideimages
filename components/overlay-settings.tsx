@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Settings, Clock, Gamepad2, MessageSquare, Eye, EyeOff, Palette, Timer, Smartphone } from "lucide-react"
+import { Settings, Clock, Gamepad2, MessageSquare, Eye, EyeOff, Palette, Timer, Smartphone, Moon } from "lucide-react"
 
 interface OverlaySettingsProps {
   // Time settings
@@ -23,6 +23,11 @@ interface OverlaySettingsProps {
   setShadowSize: (size: number) => void
   fontWeight: "normal" | "bold" | "black"
   setFontWeight: (weight: "normal" | "bold" | "black") => void
+
+  // Dark Timer settings
+  showDarkTimer: boolean
+  setShowDarkTimer: (show: boolean) => void
+  darkTimerConnected: boolean
 
   // Work Timer settings
   showWorkTimer: boolean
@@ -66,6 +71,9 @@ export function OverlaySettings({
   setOverlayBackground,
   chatConnected,
   lastCommand,
+  showDarkTimer,
+  setShowDarkTimer,
+  darkTimerConnected,
   showWorkTimer,
   setShowWorkTimer,
   workTimerConnected,
@@ -73,7 +81,7 @@ export function OverlaySettings({
   setShowSocialTimer,
   socialTimerConnected,
 }: OverlaySettingsProps) {
-  const [activeTab, setActiveTab] = useState<"time" | "timer" | "social" | "dj" | "chat">("time")
+  const [activeTab, setActiveTab] = useState<"time" | "dark" | "timer" | "social" | "dj" | "chat">("time")
 
   const colorPresets = [
     { name: "White", value: "#ffffff" },
@@ -117,6 +125,15 @@ export function OverlaySettings({
           >
             <Clock className="w-4 h-4" />
             Time Display
+          </button>
+          <button
+            onClick={() => setActiveTab("dark")}
+            className={`flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded ${
+              activeTab === "dark" ? "bg-coral text-black" : "bg-white text-black hover:bg-gray-100"
+            }`}
+          >
+            <Moon className="w-4 h-4" />
+            Dark Timer
           </button>
           <button
             onClick={() => setActiveTab("timer")}
@@ -333,6 +350,57 @@ export function OverlaySettings({
           </div>
         )}
 
+        {activeTab === "dark" && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">Show Dark Timer</label>
+              <input
+                type="checkbox"
+                checked={showDarkTimer}
+                onChange={(e) => setShowDarkTimer(e.target.checked)}
+                className="w-5 h-5"
+              />
+            </div>
+            <div className="p-4 border-2 border-black rounded bg-black text-white">
+              <h3 className="font-bold mb-2 text-red-400">Dark Vernigosh Commands</h3>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <code className="bg-red-900 text-white px-2 py-1 rounded">!dark</code>
+                  <span className="ml-2">Start 20-minute Dark Vernigosh mode</span>
+                </div>
+                <div>
+                  <code className="bg-red-900 text-white px-2 py-1 rounded">!hidedark</code>
+                  <span className="ml-2">Hide dark timer (mods only)</span>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-gray-900 rounded">
+                <h4 className="font-semibold text-red-400 mb-2">Dark Timer Features</h4>
+                <ul className="text-sm text-white space-y-1">
+                  <li>• 20-minute countdown timer</li>
+                  <li>• Futuristic Orbitron font with red glow</li>
+                  <li>• No circle - pure countdown display</li>
+                  <li>• Pulsing animation effects</li>
+                  <li>• Highest priority (overrides all other timers)</li>
+                </ul>
+              </div>
+              <div className="mt-4 p-3 bg-gray-900 rounded">
+                <h4 className="font-semibold text-red-400 mb-2">Connection Status</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${darkTimerConnected ? "bg-red-500" : "bg-gray-500"}`}></div>
+                    <span className="text-sm">{darkTimerConnected ? "Connected to Twitch Chat" : "Disconnected"}</span>
+                  </div>
+                  <div className="text-xs text-gray-400">Timer must be visible to connect to chat</div>
+                  <div className="text-xs text-gray-400">Check browser console (F12) for connection logs</div>
+                </div>
+              </div>
+              <p className="text-xs mt-2 text-red-300">
+                💀 Only broadcasters and moderators can control the dark timer
+              </p>
+            </div>
+          </div>
+        )}
+
         {activeTab === "timer" && (
           <div className="space-y-4">
             <div>
@@ -443,7 +511,7 @@ export function OverlaySettings({
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <code className="bg-black text-white px-2 py-1 rounded">!spin</code>
-                  <span className="ml-2">Spin the DJ trick wheel</span>
+                  <span className="ml-2">Spin the DJ technique wheel</span>
                 </div>
                 <div>
                   <code className="bg-black text-white px-2 py-1 rounded">!djspin</code>
@@ -461,8 +529,8 @@ export function OverlaySettings({
               <div className="mt-4 p-3 bg-orange-100 rounded">
                 <h4 className="font-semibold text-black mb-2">Priority System</h4>
                 <p className="text-sm text-black">
-                  When DJ Spinner is active, it will temporarily hide the Work Timer. The Work Timer will return when
-                  the spinner finishes.
+                  When DJ Spinner is active, it will temporarily hide all timers. Timers will return when the spinner
+                  finishes based on priority: Dark Timer &gt; Social Timer &gt; Work Timer.
                 </p>
               </div>
               <p className="text-xs mt-2 text-black/70">💡 Manual controls: Ctrl+S to spin, Ctrl+H to hide</p>
@@ -481,12 +549,12 @@ export function OverlaySettings({
               {lastCommand && <p className="text-sm text-gray-600">Last command: {lastCommand}</p>}
             </div>
             <div className="p-4 border-2 border-black rounded bg-white">
-              <h3 className="font-bold text-black mb-2">Left Side Priority</h3>
+              <h3 className="font-bold text-black mb-2">Right Side Priority</h3>
               <div className="text-sm text-gray-600 space-y-1">
-                <p>1. 🎵 DJ Spinner (highest priority)</p>
+                <p>1. 🌑 Dark Timer (highest priority)</p>
                 <p>2. 📱 Social Timer</p>
                 <p>3. ⏱️ Work Timer (lowest priority)</p>
-                <p className="text-xs mt-2 italic">Only one element shows at a time on the left side</p>
+                <p className="text-xs mt-2 italic">Only one element shows at a time on the right side</p>
               </div>
             </div>
           </div>

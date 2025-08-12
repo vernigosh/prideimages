@@ -11,112 +11,28 @@ interface SocialTimerProps {
 export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTimerProps) {
   const [timeLeft, setTimeLeft] = useState(2 * 60) // 2 minutes for social
   const [isRunning, setIsRunning] = useState(false)
-  const [isConnected, setIsConnected] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const wsRef = useRef<WebSocket | null>(null)
-
-  const isAuthorizedUser = (message: string) => {
-    // Extract badges from the IRC message tags
-    const badgeMatch = message.match(/badges=([^;]*)/)
-    const badges = badgeMatch ? badgeMatch[1] : ""
-
-    // Check for broadcaster, moderator, or VIP badges
-    if (badges.includes("broadcaster/1")) return true
-    if (badges.includes("moderator/1")) return true
-    if (badges.includes("vip/1")) return true
-
-    return false
-  }
 
   useEffect(() => {
-    const connectToTwitchChat = () => {
-      // Close existing connection if any
-      if (wsRef.current) {
-        wsRef.current.close()
-      }
-
-      const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443")
-      wsRef.current = ws
-
-      ws.onopen = () => {
-        console.log("Social Timer: WebSocket opened")
-        ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands")
-        ws.send("PASS SCHMOOPIIE")
-        ws.send("NICK justinfan" + Math.floor(Math.random() + 50000))
-        ws.send("JOIN #vernigosh")
-      }
-
-      ws.onmessage = (event) => {
-        const message = event.data
-        console.log("Social Timer received:", message)
-
-        // Handle successful join
-        if (message.includes("366")) {
-          console.log("Social Timer: Successfully joined channel")
-          setIsConnected(true)
-          onConnectionChange(true)
-        }
-
-        if (message.startsWith("PING")) {
-          ws.send("PONG :tmi.twitch.tv")
-          return
-        }
-
-        if (message.includes("PRIVMSG #vernigosh")) {
-          try {
-            // Extract the actual message content after the second colon
-            const messageParts = message.split(":")
-            const messageContent = messageParts.length >= 3 ? messageParts.slice(2).join(":").trim().toLowerCase() : ""
-
-            console.log("Social Timer - Full message:", message)
-            console.log("Social Timer - Extracted content:", messageContent)
-            console.log("Social Timer - Is Authorized:", isAuthorizedUser(message))
-
-            if (!isAuthorizedUser(message)) {
-              console.log("Social Timer: User not authorized")
-              return
-            }
-
-            if (messageContent === "!social") {
-              console.log("Social Timer: Starting social timer via chat command")
-              startSocialTimer()
-            } else if (messageContent === "!hidesocial") {
-              console.log("Social Timer: Hiding social timer via chat command")
-              hideSocialTimer()
-            }
-          } catch (error) {
-            console.error("Social Timer: Error parsing message:", error)
-          }
-        }
-      }
-
-      ws.onclose = (event) => {
-        console.log("Social Timer: WebSocket closed", event.code, event.reason)
-        setIsConnected(false)
-        onConnectionChange(false)
-        // Reconnect after 3 seconds if not manually closed
-        if (event.code !== 1000) {
-          setTimeout(connectToTwitchChat, 3000)
-        }
-      }
-
-      ws.onerror = (error) => {
-        console.error("Social Timer: WebSocket error:", error)
-        setIsConnected(false)
-        onConnectionChange(false)
-      }
+    const handleStartSocialTimer = (event: CustomEvent) => {
+      console.log("Social Timer: Received start command from", event.detail.username)
+      startSocialTimer()
     }
 
-    // Only connect if the timer is visible
-    if (isVisible) {
-      connectToTwitchChat()
+    const handleHideSocialTimer = (event: CustomEvent) => {
+      console.log("Social Timer: Received hide command from", event.detail.username)
+      hideSocialTimer()
     }
+
+    window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
+    window.addEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
+
+    // Set connected status based on visibility
+    onConnectionChange(isVisible)
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close()
-        wsRef.current = null
-      }
+      window.removeEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
+      window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
     }
   }, [isVisible, onConnectionChange])
 

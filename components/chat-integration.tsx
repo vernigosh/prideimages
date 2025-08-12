@@ -76,6 +76,25 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         } else if ((command === "!hidespin" || command === "!hidedj") && (isMod || isBroadcaster || isVip)) {
           onHide(username)
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!worktimer" || command === "!timer") {
+          // Trigger work timer start
+          window.dispatchEvent(new CustomEvent("startWorkTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!stoptimer") {
+          window.dispatchEvent(new CustomEvent("stopWorkTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!resettimer") {
+          window.dispatchEvent(new CustomEvent("resetWorkTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidetimer" && (isMod || isBroadcaster || isVip)) {
+          window.dispatchEvent(new CustomEvent("hideWorkTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!social") {
+          window.dispatchEvent(new CustomEvent("startSocialTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidesocial" && (isMod || isBroadcaster || isVip)) {
+          window.dispatchEvent(new CustomEvent("hideSocialTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         }
       })
 

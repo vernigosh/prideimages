@@ -16,116 +16,40 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
 
-  const isAuthorizedUser = (message: string) => {
-    // Extract badges from the IRC message tags
-    const badgeMatch = message.match(/badges=([^;]*)/)
-    const badges = badgeMatch ? badgeMatch[1] : ""
-
-    // Check for broadcaster, moderator, or VIP badges
-    if (badges.includes("broadcaster/1")) return true
-    if (badges.includes("moderator/1")) return true
-    if (badges.includes("vip/1")) return true
-
-    return false
-  }
-
   useEffect(() => {
-    const connectToTwitchChat = () => {
-      // Close existing connection if any
-      if (wsRef.current) {
-        wsRef.current.close()
-      }
-
-      const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443")
-      wsRef.current = ws
-
-      ws.onopen = () => {
-        console.log("Work Timer: WebSocket opened")
-        ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands")
-        ws.send("PASS SCHMOOPIIE")
-        ws.send("NICK justinfan" + Math.floor(Math.random() * 100000))
-        ws.send("JOIN #vernigosh")
-      }
-
-      ws.onmessage = (event) => {
-        const message = event.data
-        console.log("Work Timer received:", message)
-
-        // Handle successful join
-        if (message.includes("366")) {
-          console.log("Work Timer: Successfully joined channel")
-          setIsConnected(true)
-          onConnectionChange(true)
-        }
-
-        // Handle PING/PONG to keep connection alive
-        if (message.startsWith("PING")) {
-          ws.send("PONG :tmi.twitch.tv")
-          return
-        }
-
-        // Parse chat messages for commands
-        if (message.includes("PRIVMSG #vernigosh")) {
-          try {
-            // Extract the actual message content after the second colon
-            const messageParts = message.split(":")
-            const messageContent = messageParts.length >= 3 ? messageParts.slice(2).join(":").trim().toLowerCase() : ""
-
-            console.log("Work Timer - Full message:", message)
-            console.log("Work Timer - Extracted content:", messageContent)
-            console.log("Work Timer - Is Authorized:", isAuthorizedUser(message))
-
-            if (!isAuthorizedUser(message)) {
-              console.log("Work Timer: User not authorized")
-              return
-            }
-
-            if (messageContent === "!worktimer" || messageContent === "!timer") {
-              console.log("Work Timer: Starting timer via chat command")
-              startTimer()
-            } else if (messageContent === "!stoptimer") {
-              console.log("Work Timer: Stopping timer via chat command")
-              stopTimer()
-            } else if (messageContent === "!resettimer") {
-              console.log("Work Timer: Resetting timer via chat command")
-              resetTimer()
-            } else if (messageContent === "!hidetimer") {
-              console.log("Work Timer: Hiding timer via chat command")
-              hideTimer()
-            }
-          } catch (error) {
-            console.error("Work Timer: Error parsing message:", error)
-          }
-        }
-      }
-
-      ws.onclose = (event) => {
-        console.log("Work Timer: WebSocket closed", event.code, event.reason)
-        setIsConnected(false)
-        onConnectionChange(false)
-        // Reconnect after 3 seconds if not manually closed
-        if (event.code !== 1000) {
-          setTimeout(connectToTwitchChat, 3000)
-        }
-      }
-
-      ws.onerror = (error) => {
-        console.error("Work Timer: WebSocket error:", error)
-        setIsConnected(false)
-        onConnectionChange(false)
-      }
+    const handleStartTimer = (event: CustomEvent) => {
+      console.log("Work Timer: Received start command from", event.detail.username)
+      startTimer()
     }
 
-    // Only connect if the timer is visible
-    if (isVisible) {
-      connectToTwitchChat()
+    const handleStopTimer = (event: CustomEvent) => {
+      console.log("Work Timer: Received stop command from", event.detail.username)
+      stopTimer()
     }
+
+    const handleResetTimer = (event: CustomEvent) => {
+      console.log("Work Timer: Received reset command from", event.detail.username)
+      resetTimer()
+    }
+
+    const handleHideTimer = (event: CustomEvent) => {
+      console.log("Work Timer: Received hide command from", event.detail.username)
+      hideTimer()
+    }
+
+    window.addEventListener("startWorkTimer", handleStartTimer as EventListener)
+    window.addEventListener("stopWorkTimer", handleStopTimer as EventListener)
+    window.addEventListener("resetWorkTimer", handleResetTimer as EventListener)
+    window.addEventListener("hideWorkTimer", handleHideTimer as EventListener)
+
+    // Set connected status based on visibility
+    onConnectionChange(isVisible)
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close()
-        wsRef.current = null
-      }
+      window.removeEventListener("startWorkTimer", handleStartTimer as EventListener)
+      window.removeEventListener("stopWorkTimer", handleStopTimer as EventListener)
+      window.removeEventListener("resetWorkTimer", handleResetTimer as EventListener)
+      window.removeEventListener("hideWorkTimer", handleHideTimer as EventListener)
     }
   }, [isVisible, onConnectionChange])
 

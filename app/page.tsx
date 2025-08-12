@@ -86,7 +86,7 @@ export default function DJRandomizer() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen bg-brand-coral">
       {/* Spinner Section - Top Half */}
       <div className="h-screen flex items-center justify-center relative">
         {isVisible && (
@@ -111,7 +111,7 @@ export default function DJRandomizer() {
         )}
 
         {!isVisible && (
-          <div className="text-center text-white/50">
+          <div className="text-center text-brand-black/70">
             <p className="text-xl">Press Ctrl+S to simulate !spin command</p>
             <p className="text-sm mt-2">Waiting for chat command...</p>
           </div>
@@ -119,7 +119,7 @@ export default function DJRandomizer() {
       </div>
 
       {/* Admin Interface - Bottom Half */}
-      <div className="min-h-screen bg-gray-900 border-t-4 border-purple-500">
+      <div className="min-h-screen bg-brand-white border-t-4 border-brand-black">
         <AdminInterface tricks={tricks} onAddTrick={addTrick} onRemoveTrick={removeTrick} onUpdateTrick={updateTrick} />
       </div>
     </div>

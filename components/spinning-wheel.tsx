@@ -20,7 +20,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
 
   useEffect(() => {
     if (isSpinning && listRef.current) {
-      const itemHeight = 80
+      const itemHeight = 120
       const totalItems = tricks.length
 
       const repetitions = Math.ceil(15000 / (totalItems * itemHeight))
@@ -55,39 +55,52 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
   const extendedTricks = Array(20).fill(tricks).flat()
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl p-8 max-w-4xl mx-4 shadow-2xl animate-in zoom-in duration-500">
-        <div className="relative w-full h-[200px] bg-black/20 rounded-xl overflow-hidden">
-          <div
-            ref={tickerRef}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95%] h-[80px] bg-black/30 rounded-xl overflow-hidden"
-          >
-            <ul
-              ref={listRef}
-              className="list-none p-0 m-0 absolute w-full"
-              style={{
-                transform: `translateY(-${scrollPosition}px)`,
-                transition: isSpinning ? "none" : "transform 0.3s ease",
-              }}
-            >
-              {extendedTricks.map((trick, index) => (
-                <li key={index} className="h-[80px] leading-[80px] text-center text-black font-bold text-3xl px-4">
-                  {trick.name}
-                </li>
-              ))}
-            </ul>
+    <div className="absolute inset-0 flex items-center justify-center bg-brand-black/20 backdrop-blur-sm">
+      <div
+        style={{ backgroundColor: "#ffb8ad" }}
+        className="rounded-3xl p-8 w-full max-w-5xl mx-4 shadow-2xl border-4 border-brand-black"
+      >
+        <div className="text-center">
+          <h2 className="text-4xl md:text-6xl font-bold text-brand-black font-sans mb-6">DJ Trick Spinner</h2>
+
+          <div style={{ backgroundColor: "#ffffff" }} className="rounded-xl p-6 relative border-2 border-brand-black">
+            <div className="relative w-full h-[120px] overflow-hidden">
+              <div
+                ref={tickerRef}
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-[120px] overflow-hidden"
+              >
+                <ul
+                  ref={listRef}
+                  className="list-none p-0 m-0 absolute w-full"
+                  style={{
+                    transform: `translateY(-${scrollPosition}px)`,
+                    transition: isSpinning ? "none" : "transform 0.3s ease",
+                  }}
+                >
+                  {extendedTricks.map((trick, index) => (
+                    <li
+                      key={index}
+                      className="h-[120px] leading-[120px] text-center text-brand-black font-bold text-5xl px-16 font-sans"
+                    >
+                      {trick.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="absolute top-1/2 left-8 transform -translate-y-1/2">
+                <div className="w-0 h-0 border-l-[25px] border-r-[25px] border-b-[30px] border-l-transparent border-r-transparent border-b-brand-black drop-shadow-lg rotate-90"></div>
+              </div>
+            </div>
           </div>
 
-          <div className="absolute top-1/2 left-12 transform -translate-y-1/2">
-            <div className="w-0 h-0 border-t-[20px] border-b-[20px] border-r-[25px] border-t-transparent border-b-transparent border-r-black drop-shadow-lg"></div>
-          </div>
+          {isSpinning && (
+            <div className="mt-6">
+              <div className="text-brand-black text-3xl font-bold animate-pulse mb-2 font-sans">SPINNING...</div>
+              <div className="text-brand-black text-xl font-semibold font-sans">Finding your next challenge!</div>
+            </div>
+          )}
         </div>
-        {isSpinning && (
-          <div className="mt-6 text-center">
-            <div className="text-black text-2xl font-bold animate-pulse">SPINNING...</div>
-            <div className="text-black/70 text-lg">Finding your next challenge!</div>
-          </div>
-        )}
       </div>
     </div>
   )

@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Roboto } from "next/font/google"
 import "./globals.css"
+import "./styles.css"
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -22,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={roboto.variable}>
-      <body className={`${roboto.className} antialiased`}>{children}</body>
+      <body className={`${roboto.className} antialiased bg-white text-black`}>{children}</body>
     </html>
   )
 }

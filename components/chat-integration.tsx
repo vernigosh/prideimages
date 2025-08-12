@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Wifi, WifiOff, Settings } from "lucide-react"
+import { Wifi, WifiOff, Settings } from 'lucide-react'
 
 interface ChatIntegrationProps {
   onSpin: (username: string) => void
@@ -54,6 +54,9 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         const isSubscriber = tags.subscriber
         const isVip = tags.badges?.vip === "1"
 
+        console.log("Chat message received:", message, "from", username)
+        console.log("User permissions:", { isMod, isBroadcaster, isVip })
+
         // Check permissions - Updated to include VIPs by default
         let canUseCommand = false
         if (allowedUsers === "everyone") canUseCommand = true
@@ -61,40 +64,59 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           canUseCommand = true // Added VIP here
         else if (allowedUsers === "broadcaster" && isBroadcaster) canUseCommand = true
 
-        if (!canUseCommand) return
+        console.log("Can use command:", canUseCommand, "allowedUsers setting:", allowedUsers)
+
+        if (!canUseCommand) {
+          console.log("User not authorized for commands")
+          return
+        }
 
         // Check cooldown
         const now = Date.now()
-        if (now - lastSpinTime < cooldownSeconds * 1000) return
+        if (now - lastSpinTime < cooldownSeconds * 1000) {
+          console.log("Command on cooldown")
+          return
+        }
 
         const command = message.toLowerCase().trim()
+        console.log("Processing command:", command)
 
         if (command === "!spin" || command === "!djspin" || command === "!trick") {
+          console.log("DJ Spinner command detected")
           setLastSpinTime(now)
           onSpin(username)
           addRecentCommand(`${command} by ${username}`)
         } else if ((command === "!hidespin" || command === "!hidedj") && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide DJ command detected")
           onHide(username)
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!worktimer" || command === "!timer") {
+          console.log("Work timer start command detected")
           // Trigger work timer start
           window.dispatchEvent(new CustomEvent("startWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!stoptimer") {
+          console.log("Work timer stop command detected")
           window.dispatchEvent(new CustomEvent("stopWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!resettimer") {
+          console.log("Work timer reset command detected")
           window.dispatchEvent(new CustomEvent("resetWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!hidetimer" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide work timer command detected")
           window.dispatchEvent(new CustomEvent("hideWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!social") {
+          console.log("Social timer start command detected")
           window.dispatchEvent(new CustomEvent("startSocialTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!hidesocial" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide social timer command detected")
           window.dispatchEvent(new CustomEvent("hideSocialTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else {
+          console.log("Unknown command:", command)
         }
       })
 

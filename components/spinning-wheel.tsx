@@ -53,15 +53,19 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
   const extendedTricks = Array(20).fill(tricks).flat()
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+    <div className="absolute inset-0 flex items-center justify-center">
       <div
-        className="rounded-3xl p-8 w-full max-w-5xl mx-4 shadow-2xl border-4 border-black"
-        style={{ backgroundColor: "#ffb8ad" }}
+        className="rounded-3xl p-8 shadow-2xl border-4 border-black"
+        style={{
+          backgroundColor: "#ffb8ad",
+          width: "1200px",
+          height: "400px",
+        }}
       >
-        <div className="text-center">
+        <div className="text-center h-full flex flex-col justify-center">
           <h2 className="text-4xl md:text-6xl font-bold text-black mb-6">DJ Trick Spinner</h2>
 
-          <div className="rounded-xl p-6 relative border-2 border-black bg-white">
+          <div className="rounded-xl p-6 relative border-2 border-black bg-white flex-1 flex items-center">
             <div className="relative w-full h-[120px] overflow-hidden">
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-[120px] overflow-hidden">
                 <ul

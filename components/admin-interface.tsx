@@ -1,10 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, Edit, Plus, Save, X } from "lucide-react"
 
 interface Trick {
@@ -56,106 +52,103 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
   }
 
   return (
-    <div className="p-8 bg-brand-white">
+    <div className="p-8 bg-white">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-brand-black mb-8 font-sans">DJ Trick Manager</h1>
+        <h1 className="text-3xl font-bold text-black mb-8">DJ Trick Manager</h1>
 
         {/* Add New Trick */}
-        <Card className="mb-8 bg-brand-gray border-2 border-brand-black">
-          <CardHeader className="bg-brand-coral">
-            <CardTitle className="text-brand-black flex items-center gap-2 font-sans">
-              <Plus className="w-5 h-5 text-brand-lime" />
+        <div className="mb-8 bg-gray-100 border-2 border-black rounded-lg">
+          <div className="p-4" style={{ backgroundColor: "#ffb8ad" }}>
+            <h2 className="text-black flex items-center gap-2 font-bold text-xl">
+              <Plus className="w-5 h-5" style={{ color: "#32cd32" }} />
               Add New Trick
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-6">
-            <Input
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <input
+              type="text"
               placeholder="Trick name (e.g., 'Filter Sweep')"
               value={newTrickName}
               onChange={(e) => setNewTrickName(e.target.value)}
-              className="bg-brand-white border-2 border-brand-black text-brand-black placeholder:text-brand-darkGray font-sans"
+              className="w-full p-3 bg-white border-2 border-black text-black placeholder:text-gray-500 rounded"
             />
-            <Textarea
+            <textarea
               placeholder="Trick definition (e.g., 'Use high/low pass filters to create sweeping transition effects')"
               value={newTrickDefinition}
               onChange={(e) => setNewTrickDefinition(e.target.value)}
-              className="bg-brand-white border-2 border-brand-black text-brand-black placeholder:text-brand-darkGray min-h-20 font-sans"
+              className="w-full p-3 bg-white border-2 border-black text-black placeholder:text-gray-500 min-h-20 rounded"
             />
-            <Button
+            <button
               onClick={handleAddTrick}
-              className="bg-brand-coral hover:bg-coral-400 text-brand-black font-bold border-2 border-brand-black font-sans"
+              className="px-6 py-3 font-bold border-2 border-black rounded flex items-center gap-2"
+              style={{ backgroundColor: "#ffb8ad", color: "black" }}
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4" />
               Add Trick
-            </Button>
-          </CardContent>
-        </Card>
+            </button>
+          </div>
+        </div>
 
         {/* Tricks List */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {tricks.map((trick, index) => (
-            <Card key={index} className="bg-brand-gray border-2 border-brand-black">
-              <CardContent className="p-4">
+            <div key={index} className="bg-gray-100 border-2 border-black rounded-lg">
+              <div className="p-4">
                 {editingIndex === index ? (
                   <div className="space-y-3">
-                    <Input
+                    <input
+                      type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      className="bg-brand-white border-2 border-brand-black text-brand-black font-sans"
+                      className="w-full p-2 bg-white border-2 border-black text-black rounded"
                     />
-                    <Textarea
+                    <textarea
                       value={editDefinition}
                       onChange={(e) => setEditDefinition(e.target.value)}
-                      className="bg-brand-white border-2 border-brand-black text-brand-black min-h-20 font-sans"
+                      className="w-full p-2 bg-white border-2 border-black text-black min-h-20 rounded"
                     />
                     <div className="flex gap-2">
-                      <Button
+                      <button
                         onClick={saveEdit}
-                        size="sm"
-                        className="bg-brand-lime hover:bg-green-400 text-brand-black font-bold border-2 border-brand-black font-sans"
+                        className="px-3 py-2 font-bold border-2 border-black rounded flex items-center"
+                        style={{ backgroundColor: "#32cd32", color: "black" }}
                       >
                         <Save className="w-4 h-4" />
-                      </Button>
-                      <Button
+                      </button>
+                      <button
                         onClick={cancelEdit}
-                        size="sm"
-                        variant="outline"
-                        className="border-2 border-brand-black text-brand-black hover:bg-brand-coral/20 bg-brand-white font-sans"
+                        className="px-3 py-2 border-2 border-black text-black bg-white rounded flex items-center"
                       >
                         <X className="w-4 h-4" />
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <h3 className="font-bold text-brand-black mb-2 font-sans">{trick.name}</h3>
-                    <p className="text-brand-darkGray text-sm mb-4 font-sans">{trick.definition}</p>
+                    <h3 className="font-bold text-black mb-2">{trick.name}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{trick.definition}</p>
                     <div className="flex gap-2">
-                      <Button
+                      <button
                         onClick={() => startEditing(index)}
-                        size="sm"
-                        variant="outline"
-                        className="border-2 border-brand-black text-brand-black hover:bg-brand-coral/20 font-sans"
+                        className="px-3 py-2 border-2 border-black text-black bg-white rounded flex items-center"
                       >
                         <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
+                      </button>
+                      <button
                         onClick={() => onRemoveTrick(index)}
-                        size="sm"
-                        variant="destructive"
-                        className="border-2 border-brand-black font-sans"
+                        className="px-3 py-2 border-2 border-black bg-red-500 text-white rounded flex items-center"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
-        <div className="mt-8 text-center text-brand-darkGray font-sans">
+        <div className="mt-8 text-center text-gray-600">
           <p>Total Tricks: {tricks.length}</p>
           <p className="text-sm mt-2">Use Ctrl+S to simulate !spin command | Ctrl+H to simulate !hidespin command</p>
         </div>

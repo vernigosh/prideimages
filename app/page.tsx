@@ -90,7 +90,7 @@ export default function DJRandomizer() {
 
   return (
     <div className="min-h-screen">
-      {/* OBS Overlay Section - Top Half - Transparent Background */}
+      {/* OBS Overlay Section - COMPLETELY TRANSPARENT BACKGROUND */}
       <div className="h-screen flex items-center justify-center relative">
         {isVisible && (
           <>

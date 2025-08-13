@@ -1,7 +1,31 @@
 "use client"
 
 import { useState } from "react"
-import { Settings, Clock, Gamepad2, MessageSquare, Eye, EyeOff, Palette, Timer, Smartphone, Moon } from "lucide-react"
+import {
+  Settings,
+  Clock,
+  Gamepad2,
+  MessageSquare,
+  Eye,
+  EyeOff,
+  Palette,
+  Timer,
+  Smartphone,
+  Moon,
+  MessageCircle,
+  Plus,
+  Trash2,
+  Edit,
+  Save,
+  X,
+  Type,
+} from "lucide-react"
+
+interface Blurb {
+  id: string
+  text: string
+  enabled: boolean
+}
 
 interface OverlaySettingsProps {
   // Time settings
@@ -23,6 +47,32 @@ interface OverlaySettingsProps {
   setShadowSize: (size: number) => void
   fontWeight: "normal" | "bold" | "black"
   setFontWeight: (weight: "normal" | "bold" | "black") => void
+
+  // Blurb settings
+  blurbs: Blurb[]
+  setBlurbs: (blurbs: Blurb[]) => void
+  showBlurbs: boolean
+  setShowBlurbs: (show: boolean) => void
+  blurbIntervalMinutes: number
+  setBlurbIntervalMinutes: (minutes: number) => void
+  blurbDisplaySeconds: number
+  setBlurbDisplaySeconds: (seconds: number) => void
+  blurbPosition: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"
+  setBlurbPosition: (position: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center") => void
+  blurbFontSize: number
+  setBlurbFontSize: (size: number) => void
+  blurbFontFamily: string
+  setBlurbFontFamily: (family: string) => void
+  blurbTextColor: string
+  setBlurbTextColor: (color: string) => void
+  blurbBackgroundColor: string
+  setBlurbBackgroundColor: (color: string) => void
+  blurbShadowColor: string
+  setBlurbShadowColor: (color: string) => void
+  blurbShadowSize: number
+  setBlurbShadowSize: (size: number) => void
+  blurbFontWeight: "normal" | "bold" | "black"
+  setBlurbFontWeight: (weight: "normal" | "bold" | "black") => void
 
   // Dark Timer settings
   showDarkTimer: boolean
@@ -67,6 +117,30 @@ export function OverlaySettings({
   setShadowSize,
   fontWeight,
   setFontWeight,
+  blurbs,
+  setBlurbs,
+  showBlurbs,
+  setShowBlurbs,
+  blurbIntervalMinutes,
+  setBlurbIntervalMinutes,
+  blurbDisplaySeconds,
+  setBlurbDisplaySeconds,
+  blurbPosition,
+  setBlurbPosition,
+  blurbFontSize,
+  setBlurbFontSize,
+  blurbFontFamily,
+  setBlurbFontFamily,
+  blurbTextColor,
+  setBlurbTextColor,
+  blurbBackgroundColor,
+  setBlurbBackgroundColor,
+  blurbShadowColor,
+  setBlurbShadowColor,
+  blurbShadowSize,
+  setBlurbShadowSize,
+  blurbFontWeight,
+  setBlurbFontWeight,
   overlayBackground,
   setOverlayBackground,
   chatConnected,
@@ -81,7 +155,10 @@ export function OverlaySettings({
   setShowSocialTimer,
   socialTimerConnected,
 }: OverlaySettingsProps) {
-  const [activeTab, setActiveTab] = useState<"time" | "dark" | "timer" | "social" | "dj" | "chat">("time")
+  const [activeTab, setActiveTab] = useState<"time" | "blurbs" | "dark" | "timer" | "social" | "dj" | "chat">("time")
+  const [editingBlurbId, setEditingBlurbId] = useState<string | null>(null)
+  const [editingText, setEditingText] = useState("")
+  const [newBlurbText, setNewBlurbText] = useState("")
 
   const colorPresets = [
     { name: "White", value: "#ffffff" },
@@ -93,6 +170,63 @@ export function OverlaySettings({
     { name: "Orange", value: "#ff6600" },
     { name: "Pink", value: "#ff00ff" },
   ]
+
+  const fontFamilies = [
+    { name: "Roboto", value: "Roboto, sans-serif" },
+    { name: "Arial", value: "Arial, sans-serif" },
+    { name: "Helvetica", value: "Helvetica, sans-serif" },
+    { name: "Inter", value: "Inter, sans-serif" },
+    { name: "Poppins", value: "Poppins, sans-serif" },
+    { name: "Montserrat", value: "Montserrat, sans-serif" },
+    { name: "Open Sans", value: "Open Sans, sans-serif" },
+    { name: "Lato", value: "Lato, sans-serif" },
+    { name: "Nunito", value: "Nunito, sans-serif" },
+    { name: "Source Sans Pro", value: "Source Sans Pro, sans-serif" },
+    { name: "Orbitron (Futuristic)", value: "Orbitron, monospace" },
+    { name: "Courier New (Mono)", value: "Courier New, monospace" },
+  ]
+
+  const addBlurb = () => {
+    if (newBlurbText.trim()) {
+      const newBlurb: Blurb = {
+        id: Date.now().toString(),
+        text: newBlurbText.trim(),
+        enabled: true,
+      }
+      setBlurbs([...blurbs, newBlurb])
+      setNewBlurbText("")
+    }
+  }
+
+  const removeBlurb = (id: string) => {
+    setBlurbs(blurbs.filter((blurb) => blurb.id !== id))
+  }
+
+  const toggleBlurb = (id: string) => {
+    setBlurbs(blurbs.map((blurb) => (blurb.id === id ? { ...blurb, enabled: !blurb.enabled } : blurb)))
+  }
+
+  const startEditing = (blurb: Blurb) => {
+    setEditingBlurbId(blurb.id)
+    setEditingText(blurb.text)
+  }
+
+  const saveEdit = () => {
+    if (editingBlurbId && editingText.trim()) {
+      setBlurbs(blurbs.map((blurb) => (blurb.id === editingBlurbId ? { ...blurb, text: editingText.trim() } : blurb)))
+      setEditingBlurbId(null)
+      setEditingText("")
+    }
+  }
+
+  const cancelEdit = () => {
+    setEditingBlurbId(null)
+    setEditingText("")
+  }
+
+  const triggerTestBlurb = () => {
+    window.dispatchEvent(new Event("triggerManualBlurb"))
+  }
 
   return (
     <div className="border-b-4 border-black bg-gray-50">
@@ -125,6 +259,15 @@ export function OverlaySettings({
           >
             <Clock className="w-4 h-4" />
             Time Display
+          </button>
+          <button
+            onClick={() => setActiveTab("blurbs")}
+            className={`flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded ${
+              activeTab === "blurbs" ? "bg-coral text-black" : "bg-white text-black hover:bg-gray-100"
+            }`}
+          >
+            <MessageCircle className="w-4 h-4" />
+            Blurbs & Reminders
           </button>
           <button
             onClick={() => setActiveTab("dark")}
@@ -346,6 +489,240 @@ export function OverlaySettings({
                   <option value="UTC">🌍 UTC</option>
                 </optgroup>
               </select>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "blurbs" && (
+          <div className="space-y-6">
+            {/* Basic Settings */}
+            <div className="grid md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Enable Blurbs</label>
+                <input
+                  type="checkbox"
+                  checked={showBlurbs}
+                  onChange={(e) => setShowBlurbs(e.target.checked)}
+                  className="w-5 h-5"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Interval (minutes)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={blurbIntervalMinutes}
+                  onChange={(e) => setBlurbIntervalMinutes(Number(e.target.value))}
+                  className="w-full p-2 border-2 border-black rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Display Duration (seconds)</label>
+                <input
+                  type="number"
+                  min="3"
+                  max="30"
+                  value={blurbDisplaySeconds}
+                  onChange={(e) => setBlurbDisplaySeconds(Number(e.target.value))}
+                  className="w-full p-2 border-2 border-black rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Position</label>
+                <select
+                  value={blurbPosition}
+                  onChange={(e) => setBlurbPosition(e.target.value as any)}
+                  className="w-full p-2 border-2 border-black rounded"
+                >
+                  <option value="top-left">Top Left</option>
+                  <option value="top-right">Top Right</option>
+                  <option value="bottom-left">Bottom Left</option>
+                  <option value="bottom-right">Bottom Right</option>
+                  <option value="center">Center</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Test Button */}
+            <div>
+              <button
+                onClick={triggerTestBlurb}
+                className="px-4 py-2 bg-blue-500 text-white font-bold border-2 border-black rounded hover:bg-blue-600"
+              >
+                Test Blurb Display
+              </button>
+              <p className="text-xs mt-1 text-gray-600">
+                ✨ Blurbs slide in from the top and exit to the top with smooth animations
+              </p>
+            </div>
+
+            {/* Typography Settings */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-bold text-black mb-2 flex items-center gap-2">
+                  <Type className="w-4 h-4" />
+                  Font Family
+                </label>
+                <select
+                  value={blurbFontFamily}
+                  onChange={(e) => setBlurbFontFamily(e.target.value)}
+                  className="w-full p-2 border-2 border-black rounded"
+                >
+                  {fontFamilies.map((font) => (
+                    <option key={font.name} value={font.value}>
+                      {font.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Font Weight</label>
+                <select
+                  value={blurbFontWeight}
+                  onChange={(e) => setBlurbFontWeight(e.target.value as any)}
+                  className="w-full p-2 border-2 border-black rounded"
+                >
+                  <option value="normal">Normal</option>
+                  <option value="bold">Bold</option>
+                  <option value="black">Black</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Shadow Size</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="8"
+                  value={blurbShadowSize}
+                  onChange={(e) => setBlurbShadowSize(Number(e.target.value))}
+                  className="w-full"
+                />
+                <div className="text-center text-sm text-gray-600 mt-1">{blurbShadowSize}px</div>
+              </div>
+            </div>
+
+            {/* Font Size */}
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">Font Size</label>
+              <input
+                type="range"
+                min="16"
+                max="64"
+                value={blurbFontSize}
+                onChange={(e) => setBlurbFontSize(Number(e.target.value))}
+                className="w-full"
+              />
+              <div className="text-center text-sm text-gray-600 mt-1">{blurbFontSize}px</div>
+            </div>
+
+            {/* Color Settings */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Text Color</label>
+                <input
+                  type="color"
+                  value={blurbTextColor}
+                  onChange={(e) => setBlurbTextColor(e.target.value)}
+                  className="w-full h-10 border-2 border-black rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Background Color</label>
+                <input
+                  type="color"
+                  value={blurbBackgroundColor}
+                  onChange={(e) => setBlurbBackgroundColor(e.target.value)}
+                  className="w-full h-10 border-2 border-black rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">Shadow Color</label>
+                <input
+                  type="color"
+                  value={blurbShadowColor}
+                  onChange={(e) => setBlurbShadowColor(e.target.value)}
+                  className="w-full h-10 border-2 border-black rounded"
+                />
+              </div>
+            </div>
+
+            {/* Add New Blurb */}
+            <div className="p-4 border-2 border-black rounded bg-lime-100">
+              <h3 className="font-bold text-black mb-2">Add New Blurb</h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter blurb text (e.g., 'Follow for more house music!')"
+                  value={newBlurbText}
+                  onChange={(e) => setNewBlurbText(e.target.value)}
+                  className="flex-1 p-2 border-2 border-black rounded"
+                />
+                <button
+                  onClick={addBlurb}
+                  className="px-4 py-2 bg-lime-500 text-black font-bold border-2 border-black rounded hover:bg-lime-600 flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Blurbs List */}
+            <div className="space-y-2">
+              <h3 className="font-bold text-black mb-2">Blurbs ({blurbs.filter((b) => b.enabled).length} enabled)</h3>
+              {blurbs.length === 0 ? (
+                <p className="text-gray-600 italic">No blurbs added yet. Add some reminders above!</p>
+              ) : (
+                blurbs.map((blurb) => (
+                  <div key={blurb.id} className="p-3 border-2 border-black rounded bg-white flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={blurb.enabled}
+                      onChange={() => toggleBlurb(blurb.id)}
+                      className="w-5 h-5"
+                    />
+                    {editingBlurbId === blurb.id ? (
+                      <div className="flex-1 flex gap-2">
+                        <input
+                          type="text"
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className="flex-1 p-2 border-2 border-black rounded"
+                        />
+                        <button
+                          onClick={saveEdit}
+                          className="px-3 py-2 bg-green-500 text-white font-bold border-2 border-black rounded"
+                        >
+                          <Save className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="px-3 py-2 bg-gray-500 text-white font-bold border-2 border-black rounded"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <span className={`flex-1 ${blurb.enabled ? "text-black" : "text-gray-500"}`}>{blurb.text}</span>
+                        <button
+                          onClick={() => startEditing(blurb)}
+                          className="px-3 py-2 bg-blue-500 text-white font-bold border-2 border-black rounded"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => removeBlurb(blurb.id)}
+                          className="px-3 py-2 bg-red-500 text-white font-bold border-2 border-black rounded"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

@@ -10,6 +10,13 @@ import { OverlaySettings } from "@/components/overlay-settings"
 import { WorkTimer } from "@/components/work-timer"
 import { SocialTimer } from "@/components/social-timer"
 import { DarkTimer } from "@/components/dark-timer"
+import { BlurbOverlay } from "@/components/blurb-overlay"
+
+interface Blurb {
+  id: string
+  text: string
+  enabled: boolean
+}
 
 // DJ Tricks data with definitions
 const initialTricks = [
@@ -66,6 +73,15 @@ const initialTricks = [
   },
 ]
 
+// Default blurbs
+const initialBlurbs: Blurb[] = [
+  { id: "1", text: "🎵 Follow for more house & techno vibes!", enabled: true },
+  { id: "2", text: "💫 Drop a follow if you're enjoying the set!", enabled: true },
+  { id: "3", text: "🔥 What's your favorite track so far?", enabled: true },
+  { id: "4", text: "🎧 CDJ-3000 + V10 mixer setup!", enabled: false },
+  { id: "5", text: "✨ Thanks for being part of the community!", enabled: true },
+]
+
 export default function DJRandomizer() {
   const [tricks, setTricks] = useState(initialTricks)
   const [isVisible, setIsVisible] = useState(false)
@@ -88,6 +104,22 @@ export default function DJRandomizer() {
   const [shadowSize, setShadowSize] = useState(0) // Changed default from 2 to 0 (no shadow)
   const [fontWeight, setFontWeight] = useState<"normal" | "bold" | "black">("bold")
   const [overlayBackground, setOverlayBackground] = useState<"transparent" | "black">("transparent")
+
+  // Blurb settings - Updated default position to top-left
+  const [blurbs, setBlurbs] = useState<Blurb[]>(initialBlurbs)
+  const [showBlurbs, setShowBlurbs] = useState(false)
+  const [blurbIntervalMinutes, setBlurbIntervalMinutes] = useState(2)
+  const [blurbDisplaySeconds, setBlurbDisplaySeconds] = useState(8)
+  const [blurbPosition, setBlurbPosition] = useState<
+    "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center"
+  >("top-left") // Changed default to top-left
+  const [blurbFontSize, setBlurbFontSize] = useState(24)
+  const [blurbFontFamily, setBlurbFontFamily] = useState("Roboto, sans-serif") // Added font family
+  const [blurbTextColor, setBlurbTextColor] = useState("#ffffff")
+  const [blurbBackgroundColor, setBlurbBackgroundColor] = useState("#ff6b9d")
+  const [blurbShadowColor, setBlurbShadowColor] = useState("#000000")
+  const [blurbShadowSize, setBlurbShadowSize] = useState(2)
+  const [blurbFontWeight, setBlurbFontWeight] = useState<"normal" | "bold" | "black">("bold")
 
   // Dark timer settings
   const [showDarkTimer, setShowDarkTimer] = useState(false)
@@ -384,6 +416,22 @@ export default function DJRandomizer() {
           />
         )}
 
+        {/* Blurb Overlay */}
+        <BlurbOverlay
+          blurbs={blurbs}
+          isEnabled={showBlurbs}
+          intervalMinutes={blurbIntervalMinutes}
+          displayDurationSeconds={blurbDisplaySeconds}
+          position={blurbPosition}
+          fontSize={blurbFontSize}
+          fontFamily={blurbFontFamily}
+          textColor={blurbTextColor}
+          backgroundColor={blurbBackgroundColor}
+          shadowColor={blurbShadowColor}
+          shadowSize={blurbShadowSize}
+          fontWeight={blurbFontWeight}
+        />
+
         {/* Upper Left Elements (DJ Spinner with flip transition) */}
         {getUpperLeftElement()}
 
@@ -397,11 +445,19 @@ export default function DJRandomizer() {
       {/* Status Text - Below the line, above admin */}
       <div className="py-8 text-center" style={{ backgroundColor: "#ffb8ad" }}>
         <h2 className="text-3xl font-bold text-black mb-4">🎮 Unified Stream Overlay 🎮</h2>
-        <div className="grid md:grid-cols-4 gap-6 max-w-8xl mx-auto">
+        <div className="grid md:grid-cols-5 gap-6 max-w-8xl mx-auto">
           <div className="text-center">
             <h3 className="text-xl font-bold text-black mb-2">⏰ Time Display</h3>
             <p className="text-black/70">
               {showTimeOverlay ? `Showing in ${timePosition.replace("-", " ")}` : "Hidden"}
+            </p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">💬 Blurbs</h3>
+            <p className="text-black/70">
+              {showBlurbs
+                ? `${blurbs.filter((b) => b.enabled).length} active, every ${blurbIntervalMinutes}min`
+                : "Hidden"}
             </p>
           </div>
           <div className="text-center">
@@ -453,6 +509,30 @@ export default function DJRandomizer() {
         setShadowSize={setShadowSize}
         fontWeight={fontWeight}
         setFontWeight={setFontWeight}
+        blurbs={blurbs}
+        setBlurbs={setBlurbs}
+        showBlurbs={showBlurbs}
+        setShowBlurbs={setShowBlurbs}
+        blurbIntervalMinutes={blurbIntervalMinutes}
+        setBlurbIntervalMinutes={setBlurbIntervalMinutes}
+        blurbDisplaySeconds={blurbDisplaySeconds}
+        setBlurbDisplaySeconds={setBlurbDisplaySeconds}
+        blurbPosition={blurbPosition}
+        setBlurbPosition={setBlurbPosition}
+        blurbFontSize={blurbFontSize}
+        setBlurbFontSize={setBlurbFontSize}
+        blurbFontFamily={blurbFontFamily}
+        setBlurbFontFamily={setBlurbFontFamily}
+        blurbTextColor={blurbTextColor}
+        setBlurbTextColor={setBlurbTextColor}
+        blurbBackgroundColor={blurbBackgroundColor}
+        setBlurbBackgroundColor={setBlurbBackgroundColor}
+        blurbShadowColor={blurbShadowColor}
+        setBlurbShadowColor={setBlurbShadowColor}
+        blurbShadowSize={blurbShadowSize}
+        setBlurbShadowSize={setBlurbShadowSize}
+        blurbFontWeight={blurbFontWeight}
+        setBlurbFontWeight={setBlurbFontWeight}
         showDarkTimer={showDarkTimer}
         setShowDarkTimer={setShowDarkTimer}
         darkTimerConnected={darkTimerConnected}

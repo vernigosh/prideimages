@@ -106,33 +106,49 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         console.log("Chat message received:", message, "from", username)
         console.log("User permissions:", { isMod, isBroadcaster, isVip })
 
-        // Check permissions - Updated to include VIPs by default
-        let canUseCommand = false
-        if (allowedUsers === "everyone") canUseCommand = true
-        else if (allowedUsers === "mods" && (isMod || isBroadcaster || isVip))
-          canUseCommand = true // Added VIP here
-        else if (allowedUsers === "broadcaster" && isBroadcaster) canUseCommand = true
-
-        console.log("Can use command:", canUseCommand, "allowedUsers setting:", allowedUsers)
-
-        if (!canUseCommand) {
-          console.log("User not authorized for commands")
-          return
-        }
-
-        // Check cooldown
-        const now = Date.now()
-        if (now - lastSpinTime < cooldownSeconds * 1000) {
-          console.log("Command on cooldown")
-          return
-        }
-
         const command = message.toLowerCase().trim()
         console.log("Processing command:", command)
 
+        // Check permissions for restricted commands only
+        const isRestrictedCommand =
+          !command.startsWith("!plant") &&
+          command !== "!water" &&
+          command !== "!watering" &&
+          command !== "!harvest" &&
+          command !== "!attack" &&
+          command !== "!charge" &&
+          command !== "!battle" &&
+          command !== "!team pink" &&
+          command !== "!pink" &&
+          command !== "!team green" &&
+          command !== "!green"
+
+        if (isRestrictedCommand) {
+          let canUseCommand = false
+          if (allowedUsers === "everyone") canUseCommand = true
+          else if (allowedUsers === "mods" && (isMod || isBroadcaster || isVip)) canUseCommand = true
+          else if (allowedUsers === "broadcaster" && isBroadcaster) canUseCommand = true
+
+          console.log("Can use restricted command:", canUseCommand, "allowedUsers setting:", allowedUsers)
+
+          if (!canUseCommand) {
+            console.log("User not authorized for restricted commands")
+            return
+          }
+        }
+
+        // Check cooldown only for DJ spinner commands
+        if (command === "!spin" || command === "!djspin" || command === "!trick") {
+          const now = Date.now()
+          if (now - lastSpinTime < cooldownSeconds * 1000) {
+            console.log("Command on cooldown")
+            return
+          }
+          setLastSpinTime(now)
+        }
+
         if (command === "!spin" || command === "!djspin" || command === "!trick") {
           console.log("DJ Spinner command detected")
-          setLastSpinTime(now)
           onSpin(username)
           addRecentCommand(`${command} by ${username}`)
         } else if ((command === "!hidespin" || command === "!hidedj") && (isMod || isBroadcaster || isVip)) {
@@ -215,7 +231,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         // COMMUNITY GARDEN COMMANDS - Changed !garden to !startgarden
         else if (command.startsWith("!plant")) {
           console.log("Checking garden commands for message:", command)
-          console.log("User can use command:", canUseCommand)
+          console.log("User can use command:", true)
           console.log("Plant flower command detected - processing...")
           const parts = command.split(" ")
           const flowerType = parts[1] || "wildflower" // Default to wildflower

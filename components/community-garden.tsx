@@ -344,8 +344,40 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       )
     }
 
+    // Get flower-specific sizes (25% larger than original, but with natural variation)
+    const getFlowerSize = (flowerType: string, stage: "small" | "medium" | "fully-mature") => {
+      const baseSizes = {
+        // Large flowers
+        sunflower: { small: 160, medium: 200, mature: 240 }, // Sunflowers are huge
+        peony: { small: 150, medium: 190, mature: 230 }, // Peonies are very large
+
+        // Medium-large flowers
+        rose: { small: 140, medium: 170, mature: 200 }, // Roses are substantial
+        lilac: { small: 135, medium: 165, mature: 195 }, // Lilacs are bushy
+
+        // Medium flowers
+        tulip: { small: 120, medium: 150, mature: 180 }, // Tulips are medium
+        daisy: { small: 125, medium: 155, mature: 185 }, // Daisies vary
+        allium: { small: 130, medium: 160, mature: 190 }, // Alliums are round and full
+
+        // Smaller flowers
+        lily: { small: 110, medium: 140, mature: 170 }, // Lily of valley is delicate
+        cornflower: { small: 105, medium: 135, mature: 165 }, // Cornflowers are smaller
+        poppy: { small: 115, medium: 145, mature: 175 }, // Poppies are medium-small
+
+        // Tiny flowers
+        "azure-bluet": { small: 90, medium: 120, mature: 150 }, // Very small wildflowers
+        "blue-orchid": { small: 100, medium: 130, mature: 160 }, // Orchids are elegant but small
+        "cyan-flower": { small: 95, medium: 125, mature: 155 }, // Small wildflowers
+      }
+
+      // Default for wildflowers or unknown types
+      const defaultSizes = { small: 120, medium: 150, mature: 180 }
+
+      return baseSizes[flowerType as keyof typeof baseSizes] || defaultSizes
+    }
+
     if (flower.stage === "small") {
-      // Small flower - 140px (25% larger than original 112px)
       const flowerImages = {
         rose: "/garden/flowers/rose-bush.webp",
         tulip: flower.specificType
@@ -369,14 +401,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
 
       let imageSrc = ""
+      let flowerKey = flower.type
       if (flower.type === "wildflower") {
         const wildflowers = flowerImages.wildflower as string[]
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
         const randomIndex = seedValue % wildflowers.length
         imageSrc = wildflowers[randomIndex]
+        // Extract flower name from path for sizing
+        flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
         imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
       }
+
+      const sizes = getFlowerSize(flowerKey, "small")
 
       return (
         <img
@@ -385,15 +422,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated hover:scale-105 transition-transform duration-300"
           style={{
             imageRendering: "pixelated",
-            width: "140px",
-            height: "140px",
+            width: `${sizes.small}px`,
+            height: `${sizes.small}px`,
           }}
         />
       )
     }
 
     if (flower.stage === "medium") {
-      // Medium flower - 160px (25% larger than original 128px)
       const flowerImages = {
         rose: "/garden/flowers/rose-bush.webp",
         tulip: flower.specificType
@@ -417,14 +453,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
 
       let imageSrc = ""
+      let flowerKey = flower.type
       if (flower.type === "wildflower") {
         const wildflowers = flowerImages.wildflower as string[]
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
         const randomIndex = seedValue % wildflowers.length
         imageSrc = wildflowers[randomIndex]
+        // Extract flower name from path for sizing
+        flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
         imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
       }
+
+      const sizes = getFlowerSize(flowerKey, "medium")
 
       return (
         <img
@@ -433,14 +474,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated hover:scale-105 transition-transform duration-300"
           style={{
             imageRendering: "pixelated",
-            width: "160px",
-            height: "160px",
+            width: `${sizes.medium}px`,
+            height: `${sizes.medium}px`,
           }}
         />
       )
     }
 
-    // Fully mature flowers - 180px (25% larger than original 144px), harvestable
+    // Fully mature flowers - largest size, harvestable
     if (flower.stage === "fully-mature") {
       const flowerImages = {
         rose: "/garden/flowers/rose-bush.webp",
@@ -465,14 +506,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
 
       let imageSrc = ""
+      let flowerKey = flower.type
       if (flower.type === "wildflower") {
         const wildflowers = flowerImages.wildflower as string[]
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
         const randomIndex = seedValue % wildflowers.length
         imageSrc = wildflowers[randomIndex]
+        // Extract flower name from path for sizing
+        flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
         imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
       }
+
+      const sizes = getFlowerSize(flowerKey, "fully-mature")
 
       return (
         <img
@@ -481,8 +527,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated hover:scale-105 transition-transform duration-300"
           style={{
             imageRendering: "pixelated",
-            width: "180px",
-            height: "180px",
+            width: `${sizes.mature}px`,
+            height: `${sizes.mature}px`,
           }}
         />
       )

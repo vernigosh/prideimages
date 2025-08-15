@@ -368,7 +368,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <img
           src={imageSrc || "/placeholder.svg"}
           alt="Mature"
-          className="w-24 h-24 pixelated hover:scale-105 transition-transform duration-300"
+          className="w-32 h-32 pixelated hover:scale-105 transition-transform duration-300"
           style={{ imageRendering: "pixelated" }}
         />
       )
@@ -441,10 +441,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         }
       `}</style>
 
-      <div className="fixed bottom-14 left-0 right-0 z-10">
+      <div className="fixed bottom-20 left-0 right-0 z-10">
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
-          <div className="fixed bottom-52 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
+          <div className="fixed bottom-48 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {recentActivity[0]}

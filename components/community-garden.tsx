@@ -206,7 +206,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     const handleWaterGarden = (event: CustomEvent) => {
       const { username } = event.detail
-      console.log(`Community Garden: ${username} watering the garden`)
+      console.log(`Community Garden: ${username} watering the garden - showRainEffect currently:`, showRainEffect)
 
       const now = Date.now()
       // Water all flowers
@@ -218,14 +218,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }))
       addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`)
 
-      // Show rain effect for 5 seconds
+      // Show rain effect for 5 seconds - force reset first
       console.log("Starting rain animation...")
-      setShowRainEffect(true)
+      setShowRainEffect(false) // Force reset first
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
-      rainTimeoutRef.current = setTimeout(() => {
-        console.log("Stopping rain animation...")
-        setShowRainEffect(false)
-      }, 5000)
+
+      // Small delay to ensure state reset, then start animation
+      setTimeout(() => {
+        setShowRainEffect(true)
+        rainTimeoutRef.current = setTimeout(() => {
+          console.log("Stopping rain animation...")
+          setShowRainEffect(false)
+        }, 5000)
+      }, 100)
     }
 
     const handleHarvestGarden = (event: CustomEvent) => {
@@ -598,6 +603,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div
+              key={Date.now()} // Force re-render each time
               className="absolute inset-0 pointer-events-none"
               style={{
                 zIndex: 50,

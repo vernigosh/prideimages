@@ -301,10 +301,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const addActivity = (activity: string) => {
     setRecentActivity((prev) => [activity, ...prev.slice(0, 4)])
 
-    // Clear banner after 10 seconds (increased from 5 seconds)
+    // Clear banner after 15 seconds (increased from 10 seconds)
     setTimeout(() => {
       setRecentActivity((current) => current.filter((item) => item !== activity))
-    }, 10000)
+    }, 15000)
   }
 
   const getFlowerDisplay = (flower: Flower) => {
@@ -441,10 +441,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         }
       `}</style>
 
-      <div className="fixed bottom-8 left-0 right-0 z-10">
-        {/* Floating Activity Text - simple text over dark background */}
+      <div className="fixed bottom-14 left-0 right-0 z-10">
+        {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
+          <div className="fixed bottom-52 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {recentActivity[0]}

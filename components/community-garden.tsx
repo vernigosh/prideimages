@@ -557,12 +557,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         }
       `}</style>
 
-      <div className="fixed left-0 right-0 z-10" style={{ bottom: "100px" }}>
+      <div className="fixed left-0 right-0 z-10" style={{ bottom: "90px" }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
             className="fixed left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "280px" }}
+            style={{ bottom: "370px" }} // Updated position
           >
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
@@ -573,7 +573,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         )}
 
         {/* Main Garden Area - transparent background, no soil strip */}
-        <div className="relative overflow-hidden" style={{ height: "180px" }}>
+        <div className="relative overflow-hidden" style={{ height: "280px" }}>
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div className="absolute inset-0 z-20 pointer-events-none">
@@ -588,13 +588,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
               />
             </div>
           )}
-
           {/* Flower Reveals - centered horizontally above garden */}
           {Object.entries(flowerReveals).map(([flowerId, reveal]) => (
             <div
               key={flowerId}
               className="fixed left-1/2 transform -translate-x-1/2 transition-all duration-1000 pointer-events-none z-30"
-              style={{ bottom: "300px" }}
+              style={{ bottom: "390px" }} // Updated position
             >
               <div className="text-center animate-bounce">
                 <span className="text-xl font-black text-white font-sans uppercase bg-black bg-opacity-50 px-2 py-1 rounded">
@@ -603,7 +602,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
               </div>
             </div>
           ))}
-
           {/* Flowers */}
           {flowers.map((flower) => (
             <div

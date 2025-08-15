@@ -38,7 +38,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     waterLevel: 100, // Garden health
   })
   const [recentActivity, setRecentActivity] = useState<string[]>([])
+  const [showRainEffect, setShowRainEffect] = useState(false)
   const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const rainTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -184,6 +186,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         lastActivity: `${username} watered the garden!`,
       }))
       addActivity(`💧 ${username} watered the entire garden!`)
+
+      // Show rain effect for 4 seconds with proper scrolling
+      setShowRainEffect(true)
+      if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
+      rainTimeoutRef.current = setTimeout(() => {
+        setShowRainEffect(false)
+      }, 4000) // 4 seconds to complete the scroll animation
     }
 
     const handleHarvestGarden = (event: CustomEvent) => {
@@ -259,6 +268,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("resetGarden", handleResetGarden as EventListener)
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
       window.removeEventListener("spawnTestFlowers", handleSpawnTestFlowers)
+      if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
 
@@ -363,51 +373,93 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   if (!isVisible) return null
 
   return (
-    <div className="fixed bottom-14 left-0 right-0 z-10">
-      {/* Temporary Garden Stats Banner - only shows for 5 seconds after actions */}
-      {recentActivity.length > 0 && (
-        <div
-          className="h-12 flex items-center justify-between px-4 text-sm font-bold border-2 border-black rounded-t-lg mx-4 animate-slide-up"
-          style={{ backgroundColor: "rgba(255, 184, 173, 0.95)" }}
-        >
-          <div className="flex items-center gap-4">
-            <span>🌸 Community Garden</span>
-            <span>🌱 {flowers.length}/20 flowers</span>
-            <span className="text-xs">!plant rose | !water | !harvest</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="animate-pulse">{recentActivity[0]}</span>
-          </div>
-        </div>
-      )}
+    <>
+      {/* CSS for rain animation */}
+      <style jsx>{`
+        @keyframes rainScroll {
+          0% {
+            transform: translateX(-100%);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(100vw);
+            opacity: 0.8;
+          }
+        }
+        .rain-animation {
+          animation: rainScroll 4s linear forwards;
+        }
+      `}</style>
 
-      {/* Main Garden Area - transparent background, no soil strip */}
-      <div className="h-36 relative overflow-hidden">
-        {/* Flowers */}
-        {flowers.map((flower) => (
+      <div className="fixed bottom-14 left-0 right-0 z-10">
+        {/* Temporary Garden Stats Banner - only shows for 5 seconds after actions */}
+        {recentActivity.length > 0 && (
           <div
-            key={flower.id}
-            className="absolute bottom-0 transform -translate-x-1/2 transition-all duration-1000"
-            style={{ left: `${flower.x}%` }}
-            title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${flower.stage}) - ${Math.floor((Date.now() - flower.plantedAt) / 1000)}s old`}
+            className="h-16 flex items-center justify-between px-6 border-2 border-black rounded-t-lg mx-4 animate-slide-up"
+            style={{ backgroundColor: "rgba(255, 184, 173, 0.95)" }}
           >
-            {getFlowerDisplay(flower)}
-            {flower.stage === "fully-mature" && (
-              <div className="absolute -top-2 -right-2 text-lg animate-pulse">✨</div>
-            )}
+            <div className="flex items-center gap-6">
+              <span
+                className="text-2xl font-bold text-white font-sans"
+                style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.8)" }}
+              >
+                🌸 Community Garden
+              </span>
+              <span
+                className="text-xl font-bold text-white font-sans"
+                style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.8)" }}
+              >
+                🌱 {flowers.length}/20 flowers
+              </span>
+              <span className="text-lg text-white font-sans" style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.8)" }}>
+                !plant rose | !water | !harvest
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span
+                className="animate-pulse text-xl font-bold text-white font-sans"
+                style={{ textShadow: "2px 2px 4px rgba(0,0,0,0.8)" }}
+              >
+                {recentActivity[0]}
+              </span>
+            </div>
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* Test Button - positioned at bottom center */}
-      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 z-20">
-        <button
-          className="px-4 py-2 bg-blue-500 text-white font-bold border-2 border-black rounded hover:bg-blue-600"
-          onClick={handleTestSpawn}
-        >
-          🧪 Spawn 20 Test Flowers
-        </button>
+        {/* Main Garden Area - transparent background, no soil strip */}
+        <div className="h-36 relative overflow-hidden">
+          {/* Rain Effect - scrolls across when watered */}
+          {showRainEffect && (
+            <div className="absolute inset-0 z-20 pointer-events-none">
+              <img
+                src="/garden/effects/rain.gif"
+                alt="Rain"
+                className="absolute top-0 left-0 h-full w-auto rain-animation pixelated"
+                style={{
+                  imageRendering: "pixelated",
+                  minWidth: "200px", // Ensure rain has some width
+                }}
+              />
+            </div>
+          )}
+
+          {/* Flowers */}
+          {flowers.map((flower) => (
+            <div
+              key={flower.id}
+              className="absolute bottom-0 transform -translate-x-1/2 transition-all duration-1000"
+              style={{ left: `${flower.x}%` }}
+              title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${flower.stage}) - ${Math.floor((Date.now() - flower.plantedAt) / 1000)}s old`}
+            >
+              {getFlowerDisplay(flower)}
+              {/* Show sparkles only on non-fully-mature flowers */}
+              {flower.stage !== "fully-mature" && (
+                <div className="absolute -top-2 -right-2 text-lg animate-pulse">✨</div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

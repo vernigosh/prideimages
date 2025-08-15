@@ -60,7 +60,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
   const testGarden = () => {
     console.log("Manual test: Starting community garden")
     window.dispatchEvent(new CustomEvent("startGarden", { detail: { username: "Manual Test" } }))
-    addRecentCommand("!garden by Manual Test (manual)")
+    addRecentCommand("!startgarden by Manual Test (manual)")
   }
 
   const connectToTwitch = async () => {
@@ -207,7 +207,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           window.dispatchEvent(new CustomEvent("hideColorWar", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         }
-        // COMMUNITY GARDEN COMMANDS
+        // COMMUNITY GARDEN COMMANDS - Changed !garden to !startgarden
         else if (command.startsWith("!plant")) {
           console.log("Plant flower command detected")
           const parts = command.split(" ")
@@ -234,7 +234,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Harvest garden command detected")
           window.dispatchEvent(new CustomEvent("harvestGarden", { detail: { username } }))
           addRecentCommand(`!harvest by ${username}`)
-        } else if (command === "!garden" && (isMod || isBroadcaster || isVip)) {
+        } else if (command === "!startgarden" && (isMod || isBroadcaster || isVip)) {
           console.log("Start garden command detected")
           window.dispatchEvent(new CustomEvent("startGarden", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
@@ -542,9 +542,9 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <span className="ml-2">Hide Color War (mods only)</span>
             </div>
 
-            {/* COMMUNITY GARDEN COMMANDS */}
+            {/* COMMUNITY GARDEN COMMANDS - Updated !garden to !startgarden */}
             <div>
-              <code className="bg-black text-green-400 px-2 py-1 rounded font-bold">!garden</code>
+              <code className="bg-black text-green-400 px-2 py-1 rounded font-bold">!startgarden</code>
               <span className="ml-2 font-bold">Start Community Garden (mods only)</span>
             </div>
             <div>
@@ -553,7 +553,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </div>
             <div>
               <code className="bg-black text-blue-400 px-2 py-1 rounded">!water</code>
-              <span className="ml-2">Water the garden 💧</span>
+              <span className="ml-2">Water the garden 💧 (5min cooldown)</span>
             </div>
             <div>
               <code className="bg-black text-yellow-400 px-2 py-1 rounded">!harvest</code>
@@ -589,25 +589,28 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             <h4 className="font-bold text-green-800 mb-2">🌸 COMMUNITY GARDEN GAMEPLAY:</h4>
             <ol className="text-sm space-y-1 text-green-700">
               <li>
-                1. Mod starts with <code className="bg-gray-800 text-white px-1 rounded">!garden</code>
+                1. Mod starts with <code className="bg-gray-800 text-white px-1 rounded">!startgarden</code>
               </li>
               <li>
                 2. Plant flowers: <code className="bg-gray-800 text-white px-1 rounded">!plant rose</code> (5min
                 cooldown per person)
               </li>
               <li>
-                3. Help garden grow: <code className="bg-gray-800 text-white px-1 rounded">!water</code> speeds up
-                growth
+                3. Help garden grow: <code className="bg-gray-800 text-white px-1 rounded">!water</code> creates rain
+                effect! (5min cooldown)
               </li>
               <li>
                 4. Harvest mature flowers: <code className="bg-gray-800 text-white px-1 rounded">!harvest</code> clears
                 space for new plants
               </li>
-              <li>5. Watch your flowers grow from seeds to beautiful blooms! 🌱→🌸</li>
+              <li>5. Watch your flowers grow from seeds to beautiful blooms! 🌱→✨→🌸</li>
             </ol>
           </div>
           <p className="text-xs mt-2 text-black/70">
             🎯 <strong>Color War</strong>: Epic team battles using your brand colors! Pink vs Green supremacy!
+          </p>
+          <p className="text-xs mt-1 text-black/70">
+            🌸 <strong>Community Garden</strong>: Collaborative flower growing with beautiful pixel rain effects!
           </p>
         </div>
       </div>

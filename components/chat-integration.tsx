@@ -121,7 +121,8 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           command !== "!team pink" &&
           command !== "!pink" &&
           command !== "!team green" &&
-          command !== "!green"
+          command !== "!green" &&
+          command !== "!clearold"
 
         if (isRestrictedCommand) {
           let canUseCommand = false
@@ -268,6 +269,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         } else if (command === "!hidegarden" && (isMod || isBroadcaster || isVip)) {
           console.log("Hide garden command detected")
           window.dispatchEvent(new CustomEvent("hideGarden", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!clearold" && (isMod || isBroadcaster || isVip)) {
+          console.log("Clear old flowers command detected")
+          window.dispatchEvent(new CustomEvent("clearOldFlowers", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
@@ -589,6 +594,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             <div>
               <code className="bg-black text-red-400 px-2 py-1 rounded">!hidegarden</code>
               <span className="ml-2">Hide garden (mods only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-red-400 px-2 py-1 rounded">!clearold</code>
+              <span className="ml-2">Clear flowers older than 30min (mods only)</span>
             </div>
           </div>
           <div className="mt-4 p-3 bg-black text-white rounded">

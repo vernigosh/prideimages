@@ -223,7 +223,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
       rainTimeoutRef.current = setTimeout(() => {
         setShowRainEffect(false)
-      }, 8000) // 8 seconds to complete the scroll animation
+      }, 6000) // Changed from 8000 to 6000 to match animation
     }
 
     const handleHarvestGarden = (event: CustomEvent) => {
@@ -273,6 +273,28 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }))
     }
 
+    const handleClearOldFlowers = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log(`Community Garden: ${username} clearing old flowers`)
+
+      const now = Date.now()
+      const thirtyMinutesAgo = now - 30 * 60 * 1000 // 30 minutes in milliseconds
+      const oldFlowers = flowers.filter((f) => f.plantedAt < thirtyMinutesAgo)
+
+      if (oldFlowers.length === 0) {
+        addActivity(`🧹 ${username.toUpperCase()}, NO FLOWERS OLDER THAN 30 MINUTES FOUND!`)
+        return
+      }
+
+      // Remove flowers older than 30 minutes
+      setFlowers((prev) => prev.filter((f) => f.plantedAt >= thirtyMinutesAgo))
+      setGardenStats((prev) => ({
+        ...prev,
+        lastActivity: `${username} cleared ${oldFlowers.length} old flowers!`,
+      }))
+      addActivity(`🧹 ${username.toUpperCase()} CLEARED ${oldFlowers.length} FLOWERS OLDER THAN 30 MINUTES!`)
+    }
+
     const handleResetGarden = (event: CustomEvent) => {
       console.log("Community Garden: Resetting garden", event.detail)
       setFlowers([])
@@ -297,6 +319,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("plantFlower", handlePlantFlower as EventListener)
     window.addEventListener("waterGarden", handleWaterGarden as EventListener)
     window.addEventListener("harvestGarden", handleHarvestGarden as EventListener)
+    window.addEventListener("clearOldFlowers", handleClearOldFlowers as EventListener)
     window.addEventListener("resetGarden", handleResetGarden as EventListener)
     window.addEventListener("hideGarden", handleHideGarden as EventListener)
     window.addEventListener("spawnTestFlowers", handleSpawnTestFlowers)
@@ -308,6 +331,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("plantFlower", handlePlantFlower as EventListener)
       window.removeEventListener("waterGarden", handleWaterGarden as EventListener)
       window.removeEventListener("harvestGarden", handleHarvestGarden as EventListener)
+      window.removeEventListener("clearOldFlowers", handleClearOldFlowers as EventListener)
       window.removeEventListener("resetGarden", handleResetGarden as EventListener)
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
       window.removeEventListener("spawnTestFlowers", handleSpawnTestFlowers)
@@ -561,11 +585,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           }
           100% {
             transform: translateX(100vw);
-            opacity: 0.8;
+            opacity: 1;
           }
         }
         .rain-animation {
-          animation: rainScroll 8s linear forwards;
+          animation: rainScroll 6s linear forwards;
+          z-index: 25;
         }
       `}</style>
 
@@ -588,14 +613,16 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <div className="relative overflow-hidden" style={{ height: "280px" }}>
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
-            <div className="absolute inset-0 z-20 pointer-events-none">
+            <div className="absolute inset-0 z-25 pointer-events-none overflow-hidden">
               <img
                 src="/garden/effects/rain.gif"
                 alt="Rain"
                 className="absolute top-0 left-0 h-full w-auto rain-animation pixelated"
                 style={{
                   imageRendering: "pixelated",
-                  minWidth: "200px", // Ensure rain has some width
+                  minWidth: "400px", // Increased width
+                  height: "100%",
+                  objectFit: "cover",
                 }}
               />
             </div>

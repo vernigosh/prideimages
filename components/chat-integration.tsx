@@ -84,8 +84,13 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         console.log("=== CHAT MESSAGE RECEIVED ===")
         console.log("Channel:", channel)
         console.log("Message:", message)
+        console.log("Username:", tags["display-name"] || tags.username)
         console.log("Self:", self)
-        console.log("Tags:", tags)
+        console.log("Raw tags:", tags)
+
+        // Add this new logging
+        console.log("allowedUsers setting:", allowedUsers)
+        console.log("Message matches !plant:", message.toLowerCase().trim() === "!plant")
 
         if (self) {
           console.log("Ignoring own message")
@@ -209,7 +214,9 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         }
         // COMMUNITY GARDEN COMMANDS - Changed !garden to !startgarden
         else if (command.startsWith("!plant")) {
-          console.log("Plant flower command detected")
+          console.log("Checking garden commands for message:", command)
+          console.log("User can use command:", canUseCommand)
+          console.log("Plant flower command detected - processing...")
           const parts = command.split(" ")
           const flowerType = parts[1] || "wildflower" // Default to wildflower
           const validTypes = ["rose", "tulip", "sunflower", "daisy", "lily", "wildflower"]
@@ -607,10 +614,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </ol>
           </div>
           <p className="text-xs mt-2 text-black/70">
-            🎯 <strong>Color War</strong>: Epic team battles using your brand colors! Pink vs Green supremacy!
+            🎯 <strong>Community Garden</strong>: Collaborative flower growing with beautiful pixel rain effects!
           </p>
           <p className="text-xs mt-1 text-black/70">
-            🌸 <strong>Community Garden</strong>: Collaborative flower growing with beautiful pixel rain effects!
+            🌸 <strong>Color War</strong>: Epic team battles using your brand colors! Pink vs Green supremacy!
           </p>
         </div>
       </div>

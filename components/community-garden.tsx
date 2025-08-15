@@ -9,7 +9,7 @@ interface Flower {
   x: number // Position along the bottom (0-100%)
   plantedBy: string
   plantedAt: number
-  stage: "sprout" | "blooming" | "mature" | "fully-mature"
+  stage: "sprout" | "blooming" | "small" | "medium" | "fully-mature"
   lastWatered: number
   specificType?: string // For tulip colors, etc.
 }
@@ -57,7 +57,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         flowerType === "tulip" ? ["red", "orange", "pink", "white"][Math.floor(Math.random() * 4)] : ""
 
       // Create flowers at different stages for testing
-      const stages: Flower["stage"][] = ["sprout", "blooming", "mature", "fully-mature"]
+      const stages: Flower["stage"][] = ["sprout", "blooming", "small", "medium", "fully-mature"]
       const randomStage = stages[Math.floor(Math.random() * stages.length)]
 
       const newFlower: Flower = {
@@ -83,7 +83,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     addActivity(`🧪 TEST SPAWNED 20 FLOWERS AT DIFFERENT STAGES!`)
   }
 
-  // New 4-stage growth system: 0-45s sprout, 45s-60s blooming, 60s-3min mature, 3-5min fully-mature
+  // New 5-stage growth system: 0-45s sprout, 45s-60s blooming, 60s-90s small, 90s-150s medium, 150s+ fully-mature
   useEffect(() => {
     if (!isVisible) return
 
@@ -96,13 +96,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           const oldStage = flower.stage
 
           let newStage: Flower["stage"] = "sprout"
-          if (timeSincePlanted > 180000) newStage = "fully-mature"
-          else if (timeSincePlanted > 60000) newStage = "mature"
-          else if (timeSincePlanted > 45000) newStage = "blooming"
-          else newStage = "sprout"
+          if (timeSincePlanted > 150000)
+            newStage = "fully-mature" // 2.5+ minutes
+          else if (timeSincePlanted > 90000)
+            newStage = "medium" // 1.5-2.5 minutes
+          else if (timeSincePlanted > 60000)
+            newStage = "small" // 1-1.5 minutes
+          else if (timeSincePlanted > 45000)
+            newStage = "blooming" // 45s-1 minute
+          else newStage = "sprout" // 0-45s
 
-          // Trigger reveal when flower reaches mature stage
-          if (oldStage === "blooming" && newStage === "mature") {
+          // Trigger reveal when flower reaches medium stage
+          if (oldStage === "small" && newStage === "medium") {
             const flowerName = flowerTypes[flower.type].name.toUpperCase()
             setFlowerReveals((prev) => ({
               ...prev,
@@ -213,12 +218,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }))
       addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`)
 
-      // Show rain effect for 4 seconds with proper scrolling
+      // Show rain effect for 8 seconds with proper scrolling
       setShowRainEffect(true)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
       rainTimeoutRef.current = setTimeout(() => {
         setShowRainEffect(false)
-      }, 4000) // 4 seconds to complete the scroll animation
+      }, 8000) // 8 seconds to complete the scroll animation
     }
 
     const handleHarvestGarden = (event: CustomEvent) => {
@@ -330,8 +335,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       )
     }
 
-    if (flower.stage === "mature") {
-      // Use the same flower as fully-mature but smaller (24x24 -> 32x32)
+    if (flower.stage === "small") {
+      // Small flower - 28x28px (between blooming and medium)
       const flowerImages = {
         rose: "/garden/flowers/rose-bush.webp",
         tulip: flower.specificType
@@ -367,14 +372,58 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       return (
         <img
           src={imageSrc || "/placeholder.svg"}
-          alt="Mature"
+          alt="Small"
+          className="w-28 h-28 pixelated hover:scale-105 transition-transform duration-300"
+          style={{ imageRendering: "pixelated" }}
+        />
+      )
+    }
+
+    if (flower.stage === "medium") {
+      // Medium flower - 32x32px (between small and fully-mature)
+      const flowerImages = {
+        rose: "/garden/flowers/rose-bush.webp",
+        tulip: flower.specificType
+          ? `/garden/flowers/${flower.specificType}-tulip.webp`
+          : "/garden/flowers/red-tulip.webp",
+        sunflower: "/garden/flowers/sunflower.webp",
+        daisy: "/garden/flowers/oxeye-daisy.webp",
+        lily: "/garden/flowers/lily-of-the-valley.webp",
+        wildflower: [
+          "/garden/flowers/azure-bluet-1.webp",
+          "/garden/flowers/azure-bluet-2.webp",
+          "/garden/flowers/azure-bluet-3.webp",
+          "/garden/flowers/cornflower.webp",
+          "/garden/flowers/allium.webp",
+          "/garden/flowers/blue-orchid.webp",
+          "/garden/flowers/cyan-flower.webp",
+          "/garden/flowers/peony.webp",
+          "/garden/flowers/poppy.webp",
+          "/garden/flowers/lilac.webp",
+        ],
+      }
+
+      let imageSrc = ""
+      if (flower.type === "wildflower") {
+        const wildflowers = flowerImages.wildflower as string[]
+        const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
+        const randomIndex = seedValue % wildflowers.length
+        imageSrc = wildflowers[randomIndex]
+      } else {
+        imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
+      }
+
+      return (
+        <img
+          src={imageSrc || "/placeholder.svg"}
+          alt="Medium"
           className="w-32 h-32 pixelated hover:scale-105 transition-transform duration-300"
           style={{ imageRendering: "pixelated" }}
         />
       )
     }
 
-    // Fully mature flowers - 36x36px (150% larger than mature), harvestable
+    // Fully mature flowers - 36x36px (150% larger than medium), harvestable
     if (flower.stage === "fully-mature") {
       const flowerImages = {
         rose: "/garden/flowers/rose-bush.webp",
@@ -437,14 +486,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           }
         }
         .rain-animation {
-          animation: rainScroll 4s linear forwards;
+          animation: rainScroll 8s linear forwards;
         }
       `}</style>
 
       <div className="fixed bottom-20 left-0 right-0 z-10">
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
-          <div className="fixed bottom-48 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
+          <div className="fixed bottom-56 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {recentActivity[0]}
@@ -474,7 +523,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           {Object.entries(flowerReveals).map(([flowerId, reveal]) => (
             <div
               key={flowerId}
-              className="fixed bottom-52 left-1/2 transform -translate-x-1/2 transition-all duration-1000 pointer-events-none z-30"
+              className="fixed bottom-60 left-1/2 transform -translate-x-1/2 transition-all duration-1000 pointer-events-none z-30"
             >
               <div className="text-center animate-bounce">
                 <span className="text-xl font-black text-white font-sans uppercase bg-black bg-opacity-50 px-2 py-1 rounded">

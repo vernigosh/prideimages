@@ -228,36 +228,48 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     const handleHarvestGarden = (event: CustomEvent) => {
       const { username } = event.detail
-      console.log(`Community Garden: ${username} harvesting mature flowers`)
+      console.log(`Community Garden: ${username} harvesting their own flowers`)
 
       const now = Date.now()
-      const fullyMatureFlowers = flowers.filter((f) => f.stage === "fully-mature")
-      const harvestableFlowers = fullyMatureFlowers.filter((f) => now - f.plantedAt >= 300000) // 5+ minutes old
+      const userFlowers = flowers.filter((f) => f.plantedBy === username)
+      const userMatureFlowers = userFlowers.filter((f) => f.stage === "fully-mature")
+      const userHarvestableFlowers = userMatureFlowers.filter((f) => now - f.plantedAt >= 300000) // 5+ minutes old
 
-      if (fullyMatureFlowers.length === 0) {
-        addActivity(`🌱 ${username.toUpperCase()}, NO FLOWERS ARE READY TO HARVEST YET!`)
+      if (userFlowers.length === 0) {
+        addActivity(`🌱 ${username.toUpperCase()}, YOU HAVEN'T PLANTED ANY FLOWERS YET!`)
         return
       }
 
-      if (harvestableFlowers.length === 0) {
-        addActivity(`⏰ FOUND ${fullyMatureFlowers.length} MATURE FLOWERS, BUT THEY'RE STILL TOO YOUNG TO PICK!`)
+      if (userMatureFlowers.length === 0) {
+        addActivity(`🌱 ${username.toUpperCase()}, YOUR FLOWERS AREN'T READY TO HARVEST YET!`)
         return
       }
 
-      // Show the nice message format you wanted
-      if (harvestableFlowers.length < fullyMatureFlowers.length) {
+      if (userHarvestableFlowers.length === 0) {
         addActivity(
-          `🌸 FOUND ${fullyMatureFlowers.length} MATURE FLOWERS, BUT ONLY ${harvestableFlowers.length} WERE READY TO PICK!`,
+          `⏰ ${username.toUpperCase()}, YOUR ${userMatureFlowers.length} MATURE FLOWERS ARE STILL TOO YOUNG TO PICK!`,
+        )
+        return
+      }
+
+      // Show the nice message format for user's own flowers
+      if (userHarvestableFlowers.length < userMatureFlowers.length) {
+        addActivity(
+          `🌸 ${username.toUpperCase()}, YOU HAVE ${userMatureFlowers.length} MATURE FLOWERS, BUT ONLY ${userHarvestableFlowers.length} WERE READY TO PICK!`,
         )
       } else {
-        addActivity(`🌸 ${username.toUpperCase()} HARVESTED ${harvestableFlowers.length} BEAUTIFUL FLOWERS!`)
+        addActivity(
+          `🌸 ${username.toUpperCase()} HARVESTED ${userHarvestableFlowers.length} OF THEIR OWN BEAUTIFUL FLOWERS!`,
+        )
       }
 
-      // Remove harvestable flowers
-      setFlowers((prev) => prev.filter((f) => !(f.stage === "fully-mature" && now - f.plantedAt >= 300000)))
+      // Remove only the user's harvestable flowers
+      setFlowers((prev) =>
+        prev.filter((f) => !(f.plantedBy === username && f.stage === "fully-mature" && now - f.plantedAt >= 300000)),
+      )
       setGardenStats((prev) => ({
         ...prev,
-        lastActivity: `${username} harvested ${harvestableFlowers.length} flowers!`,
+        lastActivity: `${username} harvested ${userHarvestableFlowers.length} of their own flowers!`,
       }))
     }
 

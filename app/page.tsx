@@ -11,6 +11,8 @@ import { WorkTimer } from "@/components/work-timer"
 import { SocialTimer } from "@/components/social-timer"
 import { DarkTimer } from "@/components/dark-timer"
 import { BlurbOverlay } from "@/components/blurb-overlay"
+import { ColorWar } from "@/components/color-war"
+import { CommunityGarden } from "@/components/community-garden"
 
 interface Blurb {
   id: string
@@ -121,6 +123,10 @@ export default function DJRandomizer() {
   const [blurbShadowSize, setBlurbShadowSize] = useState(2)
   const [blurbFontWeight, setBlurbFontWeight] = useState<"normal" | "bold" | "black">("bold")
 
+  // Color War settings
+  const [showColorWar, setShowColorWar] = useState(false)
+  const [colorWarConnected, setColorWarConnected] = useState(false)
+
   // Dark timer settings
   const [showDarkTimer, setShowDarkTimer] = useState(false)
   const [darkTimerConnected, setDarkTimerConnected] = useState(false)
@@ -133,8 +139,20 @@ export default function DJRandomizer() {
   const [showSocialTimer, setShowSocialTimer] = useState(false)
   const [socialTimerConnected, setSocialTimerConnected] = useState(false)
 
+  // Garden settings
+  const [showGarden, setShowGarden] = useState(false)
+  const [gardenConnected, setGardenConnected] = useState(false)
+
   // Add event listeners for timer commands
   useEffect(() => {
+    const handleStartColorWar = (event: CustomEvent) => {
+      console.log("Page: Received startColorWar event", event.detail)
+      if (!showColorWar) {
+        console.log("Page: Enabling color war")
+        setShowColorWar(true)
+      }
+    }
+
     const handleStartDarkTimer = (event: CustomEvent) => {
       console.log("Page: Received startDarkTimer event", event.detail)
       if (!showDarkTimer) {
@@ -159,6 +177,11 @@ export default function DJRandomizer() {
       }
     }
 
+    const handleHideColorWar = (event: CustomEvent) => {
+      console.log("Page: Received hideColorWar event", event.detail)
+      setShowColorWar(false)
+    }
+
     const handleHideDarkTimer = (event: CustomEvent) => {
       console.log("Page: Received hideDarkTimer event", event.detail)
       setShowDarkTimer(false)
@@ -176,8 +199,11 @@ export default function DJRandomizer() {
 
     const handleHideAnyTimer = (event: CustomEvent) => {
       console.log("Page: Received hideAnyTimer event", event.detail)
-      // Hide whichever timer is currently visible (priority order: Dark > Social > Work)
-      if (showDarkTimer) {
+      // Hide whichever timer is currently visible (priority order: Color War > Dark > Social > Work)
+      if (showColorWar) {
+        console.log("Page: Hiding color war via !hidetimer")
+        setShowColorWar(false)
+      } else if (showDarkTimer) {
         console.log("Page: Hiding dark timer via !hidetimer")
         setShowDarkTimer(false)
       } else if (showSocialTimer) {
@@ -193,8 +219,11 @@ export default function DJRandomizer() {
 
     const handleResetAnyTimer = (event: CustomEvent) => {
       console.log("Page: Received resetAnyTimer event", event.detail)
-      // Reset whichever timer is currently visible (priority order: Dark > Social > Work)
-      if (showDarkTimer) {
+      // Reset whichever timer is currently visible (priority order: Color War > Dark > Social > Work)
+      if (showColorWar) {
+        console.log("Page: Resetting color war via !resettimer")
+        window.dispatchEvent(new CustomEvent("resetColorWar", { detail: event.detail }))
+      } else if (showDarkTimer) {
         console.log("Page: Resetting dark timer via !resettimer")
         window.dispatchEvent(new CustomEvent("resetDarkTimer", { detail: event.detail }))
       } else if (showSocialTimer) {
@@ -208,26 +237,47 @@ export default function DJRandomizer() {
       }
     }
 
+    const handleStartGarden = (event: CustomEvent) => {
+      console.log("Page: Received startGarden event", event.detail)
+      if (!showGarden) {
+        console.log("Page: Enabling community garden")
+        setShowGarden(true)
+      }
+    }
+
+    const handleHideGarden = (event: CustomEvent) => {
+      console.log("Page: Received hideGarden event", event.detail)
+      setShowGarden(false)
+    }
+
+    window.addEventListener("startColorWar", handleStartColorWar as EventListener)
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
+    window.addEventListener("hideColorWar", handleHideColorWar as EventListener)
     window.addEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
     window.addEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
     window.addEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
     window.addEventListener("hideAnyTimer", handleHideAnyTimer as EventListener)
     window.addEventListener("resetAnyTimer", handleResetAnyTimer as EventListener)
+    window.addEventListener("startGarden", handleStartGarden as EventListener)
+    window.addEventListener("hideGarden", handleHideGarden as EventListener)
 
     return () => {
+      window.removeEventListener("startColorWar", handleStartColorWar as EventListener)
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
       window.removeEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
       window.removeEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
+      window.removeEventListener("hideColorWar", handleHideColorWar as EventListener)
       window.removeEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
       window.removeEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
       window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
       window.removeEventListener("hideAnyTimer", handleHideAnyTimer as EventListener)
       window.removeEventListener("resetAnyTimer", handleResetAnyTimer as EventListener)
+      window.removeEventListener("startGarden", handleStartGarden as EventListener)
+      window.removeEventListener("hideGarden", handleHideGarden as EventListener)
     }
-  }, [showDarkTimer, showWorkTimer, showSocialTimer])
+  }, [showColorWar, showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
   // Simulate chat command integration
   useEffect(() => {
@@ -249,10 +299,12 @@ export default function DJRandomizer() {
   const handleSpin = (username: string) => {
     if (isSpinning) return
 
-    // Hide all timers when spinning
+    // Hide all timers and games when spinning
+    if (showColorWar) setShowColorWar(false)
     if (showDarkTimer) setShowDarkTimer(false)
     if (showWorkTimer) setShowWorkTimer(false)
     if (showSocialTimer) setShowSocialTimer(false)
+    if (showGarden) setShowGarden(false)
 
     setIsVisible(true)
     setIsSpinning(true)
@@ -268,13 +320,17 @@ export default function DJRandomizer() {
     setSelectedTrick(null)
     setLastCommand(`!hidespin by ${username}`)
 
-    // Restore timers based on connection status (highest priority first)
-    if (darkTimerConnected) {
+    // Restore timers/games based on connection status (highest priority first)
+    if (colorWarConnected) {
+      setShowColorWar(true)
+    } else if (darkTimerConnected) {
       setShowDarkTimer(true)
     } else if (socialTimerConnected) {
       setShowSocialTimer(true)
     } else if (workTimerConnected) {
       setShowWorkTimer(true)
+    } else if (gardenConnected) {
+      setShowGarden(true)
     }
   }
 
@@ -359,8 +415,25 @@ export default function DJRandomizer() {
     return null
   }
 
+  // Determine which full-screen element to show (Color War takes priority)
+  const getFullScreenElement = () => {
+    if (showColorWar) {
+      return (
+        <ColorWar
+          isVisible={showColorWar}
+          onConnectionChange={setColorWarConnected}
+          onHide={() => setShowColorWar(false)}
+        />
+      )
+    }
+    return null
+  }
+
   // Determine which right-side element to show (Dark Timer > Social Timer > Work Timer)
   const getRightSideElement = () => {
+    // Don't show right-side elements if Color War is active
+    if (showColorWar) return null
+
     if (showDarkTimer) {
       return (
         <DarkTimer
@@ -432,11 +505,23 @@ export default function DJRandomizer() {
           fontWeight={blurbFontWeight}
         />
 
-        {/* Upper Left Elements (DJ Spinner with flip transition) */}
-        {getUpperLeftElement()}
+        {/* Full Screen Elements (Color War) */}
+        {getFullScreenElement()}
 
-        {/* Right Side Elements (Dark Timer > Social Timer > Work Timer) */}
+        {/* Upper Left Elements (DJ Spinner with flip transition) - Hidden during Color War */}
+        {!showColorWar && getUpperLeftElement()}
+
+        {/* Right Side Elements (Timers) - Hidden during Color War */}
         {getRightSideElement()}
+
+        {/* Community Garden - Always at bottom when visible */}
+        {showGarden && (
+          <CommunityGarden
+            isVisible={showGarden}
+            onConnectionChange={setGardenConnected}
+            onHide={() => setShowGarden(false)}
+          />
+        )}
       </div>
 
       {/* Separator Line */}
@@ -445,7 +530,7 @@ export default function DJRandomizer() {
       {/* Status Text - Below the line, above admin */}
       <div className="py-8 text-center" style={{ backgroundColor: "#ffb8ad" }}>
         <h2 className="text-3xl font-bold text-black mb-4">🎮 Unified Stream Overlay 🎮</h2>
-        <div className="grid md:grid-cols-5 gap-6 max-w-8xl mx-auto">
+        <div className="grid md:grid-cols-6 gap-6 max-w-8xl mx-auto">
           <div className="text-center">
             <h3 className="text-xl font-bold text-black mb-2">⏰ Time Display</h3>
             <p className="text-black/70">
@@ -458,6 +543,12 @@ export default function DJRandomizer() {
               {showBlurbs
                 ? `${blurbs.filter((b) => b.enabled).length} active, every ${blurbIntervalMinutes}min`
                 : "Hidden"}
+            </p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">⚔️ Color War</h3>
+            <p className="text-black/70">
+              {showColorWar ? (colorWarConnected ? "BATTLE ACTIVE!" : "Connecting...") : "Hidden"}
             </p>
           </div>
           <div className="text-center">
@@ -476,6 +567,12 @@ export default function DJRandomizer() {
             <h3 className="text-xl font-bold text-black mb-2">📱 Social Timer</h3>
             <p className="text-black/70">
               {showSocialTimer ? (socialTimerConnected ? "Ready for commands" : "Connecting...") : "Hidden"}
+            </p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">🌸 Community Garden</h3>
+            <p className="text-black/70">
+              {showGarden ? (gardenConnected ? "Growing beautifully!" : "Connecting...") : "Hidden"}
             </p>
           </div>
         </div>
@@ -533,6 +630,9 @@ export default function DJRandomizer() {
         setBlurbShadowSize={setBlurbShadowSize}
         blurbFontWeight={blurbFontWeight}
         setBlurbFontWeight={setBlurbFontWeight}
+        showColorWar={showColorWar}
+        setShowColorWar={setShowColorWar}
+        colorWarConnected={colorWarConnected}
         showDarkTimer={showDarkTimer}
         setShowDarkTimer={setShowDarkTimer}
         darkTimerConnected={darkTimerConnected}
@@ -542,6 +642,9 @@ export default function DJRandomizer() {
         showSocialTimer={showSocialTimer}
         setShowSocialTimer={setShowSocialTimer}
         socialTimerConnected={socialTimerConnected}
+        showGarden={showGarden}
+        setShowGarden={setShowGarden}
+        gardenConnected={gardenConnected}
         overlayBackground={overlayBackground}
         setOverlayBackground={setOverlayBackground}
         chatConnected={chatConnected}

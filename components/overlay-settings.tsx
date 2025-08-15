@@ -96,6 +96,11 @@ interface OverlaySettingsProps {
   // DJ settings
   chatConnected: boolean
   lastCommand: string
+
+  // Color War settings
+  showColorWar: boolean
+  setShowColorWar: (show: boolean) => void
+  colorWarConnected: boolean
 }
 
 export function OverlaySettings({
@@ -154,8 +159,13 @@ export function OverlaySettings({
   showSocialTimer,
   setShowSocialTimer,
   socialTimerConnected,
+  showColorWar,
+  setShowColorWar,
+  colorWarConnected,
 }: OverlaySettingsProps) {
-  const [activeTab, setActiveTab] = useState<"time" | "blurbs" | "dark" | "timer" | "social" | "dj" | "chat">("time")
+  const [activeTab, setActiveTab] = useState<
+    "time" | "blurbs" | "colorwar" | "dark" | "timer" | "social" | "dj" | "chat"
+  >("time")
   const [editingBlurbId, setEditingBlurbId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState("")
   const [newBlurbText, setNewBlurbText] = useState("")
@@ -313,6 +323,15 @@ export function OverlaySettings({
           >
             <MessageSquare className="w-4 h-4" />
             Chat Status
+          </button>
+          <button
+            onClick={() => setActiveTab("colorwar")}
+            className={`flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded ${
+              activeTab === "colorwar" ? "bg-coral text-black" : "bg-white text-black hover:bg-gray-100"
+            }`}
+          >
+            <Gamepad2 className="w-4 h-4" />
+            Color War
           </button>
         </div>
 
@@ -926,13 +945,88 @@ export function OverlaySettings({
               {lastCommand && <p className="text-sm text-gray-600">Last command: {lastCommand}</p>}
             </div>
             <div className="p-4 border-2 border-black rounded bg-white">
-              <h3 className="font-bold text-black mb-2">Right Side Priority</h3>
+              <h3 className="font-bold text-black mb-2">Display Priority</h3>
               <div className="text-sm text-gray-600 space-y-1">
-                <p>1. 🌑 Dark Timer (highest priority)</p>
-                <p>2. 📱 Social Timer</p>
-                <p>3. ⏱️ Work Timer (lowest priority)</p>
-                <p className="text-xs mt-2 italic">Only one element shows at a time on the right side</p>
+                <p>1. ⚔️ Color War (highest priority - full screen)</p>
+                <p>2. 🌑 Dark Timer</p>
+                <p>3. 📱 Social Timer</p>
+                <p>4. ⏱️ Work Timer (lowest priority)</p>
+                <p className="text-xs mt-2 italic">Color War takes over the entire screen when active</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "colorwar" && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">Show Color War</label>
+              <input
+                type="checkbox"
+                checked={showColorWar}
+                onChange={(e) => setShowColorWar(e.target.checked)}
+                className="w-5 h-5"
+              />
+            </div>
+            <div className="p-4 border-2 border-black rounded bg-gradient-to-r from-pink-100 to-green-100">
+              <h3 className="font-bold text-black mb-2">⚔️ Color War Commands</h3>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <code className="bg-black text-pink-400 px-2 py-1 rounded">!colorwar</code>
+                  <span className="ml-2">Start Color War (mods only)</span>
+                </div>
+                <div>
+                  <code className="bg-black text-pink-400 px-2 py-1 rounded">!team pink</code>
+                  <span className="ml-2">Join Pink Army 🌸</span>
+                </div>
+                <div>
+                  <code className="bg-black text-green-400 px-2 py-1 rounded">!team green</code>
+                  <span className="ml-2">Join Green Force 💚</span>
+                </div>
+                <div>
+                  <code className="bg-black text-yellow-400 px-2 py-1 rounded">!attack</code>
+                  <span className="ml-2">Attack for your team! ⚔️</span>
+                </div>
+                <div>
+                  <code className="bg-black text-red-400 px-2 py-1 rounded">!resetwar</code>
+                  <span className="ml-2">Reset game (mods only)</span>
+                </div>
+                <div>
+                  <code className="bg-black text-red-400 px-2 py-1 rounded">!hidewar</code>
+                  <span className="ml-2">Hide game (mods only)</span>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-black text-white rounded">
+                <h4 className="font-semibold text-pink-400 mb-2">🎮 How to Play:</h4>
+                <ol className="text-sm space-y-1">
+                  <li>
+                    1. Mod starts with <code className="bg-gray-800 px-1 rounded">!colorwar</code>
+                  </li>
+                  <li>
+                    2. Players join: <code className="bg-gray-800 px-1 rounded">!team pink</code> or{" "}
+                    <code className="bg-gray-800 px-1 rounded">!team green</code>
+                  </li>
+                  <li>
+                    3. Battle with <code className="bg-gray-800 px-1 rounded">!attack</code> - more active players =
+                    stronger attacks!
+                  </li>
+                  <li>4. First team to capture 100% territory wins! 🏆</li>
+                </ol>
+              </div>
+              <div className="mt-4 p-3 bg-gray-100 rounded">
+                <h4 className="font-semibold text-black mb-2">Connection Status</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${colorWarConnected ? "bg-green-500" : "bg-red-500"}`}></div>
+                    <span className="text-sm">{colorWarConnected ? "Connected to Twitch Chat" : "Disconnected"}</span>
+                  </div>
+                  <div className="text-xs text-gray-600">Game must be visible to connect to chat</div>
+                  <div className="text-xs text-gray-600">Check browser console (F12) for connection logs</div>
+                </div>
+              </div>
+              <p className="text-xs mt-2 text-black/70">
+                🎯 Epic team battles using your brand colors! Pink vs Green supremacy!
+              </p>
             </div>
           </div>
         )}

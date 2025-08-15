@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 interface Blurb {
   id: string
@@ -38,15 +38,40 @@ export function BlurbOverlay({
   fontWeight,
 }: BlurbOverlayProps) {
   const [currentBlurb, setCurrentBlurb] = useState<Blurb | null>(null)
-  const [isVisible, setIsVisible] = useState(false)
-  const [animationPhase, setAnimationPhase] = useState<"entering" | "visible" | "exiting">("visible")
+  const [isAnimating, setIsAnimating] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Filter enabled blurbs
   const enabledBlurbs = blurbs.filter((blurb) => blurb.enabled)
 
+  const showBlurb = (blurb: Blurb) => {
+    setCurrentBlurb(blurb)
+
+    // Small delay to ensure DOM is ready, then start animation
+    setTimeout(() => {
+      setIsAnimating(true)
+    }, 50)
+
+    // Hide after display duration
+    timeoutRef.current = setTimeout(() => {
+      setIsAnimating(false)
+
+      // Wait for exit animation to complete before clearing
+      setTimeout(() => {
+        setCurrentBlurb(null)
+      }, 500)
+    }, displayDurationSeconds * 1000)
+  }
+
   useEffect(() => {
+    // Clear any existing timers
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+
     if (!isEnabled || enabledBlurbs.length === 0) {
-      setIsVisible(false)
+      setIsAnimating(false)
+      setCurrentBlurb(null)
       return
     }
 
@@ -54,32 +79,8 @@ export function BlurbOverlay({
 
     const showNextBlurb = () => {
       if (enabledBlurbs.length === 0) return
-
       const nextBlurb = enabledBlurbs[currentIdx % enabledBlurbs.length]
-      setCurrentBlurb(nextBlurb)
-      setIsVisible(true)
-      setAnimationPhase("entering")
-
-      // After entering animation, set to visible
-      setTimeout(() => {
-        setAnimationPhase("visible")
-      }, 500) // 500ms for enter animation
-
-      // Start exit animation before hiding
-      setTimeout(
-        () => {
-          setAnimationPhase("exiting")
-        },
-        (displayDurationSeconds - 0.5) * 1000,
-      ) // Start exit 500ms before end
-
-      // Hide after display duration
-      setTimeout(() => {
-        setIsVisible(false)
-        setAnimationPhase("visible")
-      }, displayDurationSeconds * 1000)
-
-      // Move to next blurb for next time
+      showBlurb(nextBlurb)
       currentIdx = (currentIdx + 1) % enabledBlurbs.length
     }
 
@@ -87,9 +88,12 @@ export function BlurbOverlay({
     showNextBlurb()
 
     // Set up interval for subsequent blurbs
-    const interval = setInterval(showNextBlurb, intervalMinutes * 60 * 1000)
+    intervalRef.current = setInterval(showNextBlurb, intervalMinutes * 60 * 1000)
 
-    return () => clearInterval(interval)
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
   }, [isEnabled, enabledBlurbs, intervalMinutes, displayDurationSeconds])
 
   useEffect(() => {
@@ -98,26 +102,7 @@ export function BlurbOverlay({
     const handleManualBlurb = () => {
       if (enabledBlurbs.length === 0) return
       const nextBlurb = enabledBlurbs[manualIndex % enabledBlurbs.length]
-      setCurrentBlurb(nextBlurb)
-      setIsVisible(true)
-      setAnimationPhase("entering")
-
-      setTimeout(() => {
-        setAnimationPhase("visible")
-      }, 500)
-
-      setTimeout(
-        () => {
-          setAnimationPhase("exiting")
-        },
-        (displayDurationSeconds - 0.5) * 1000,
-      )
-
-      setTimeout(() => {
-        setIsVisible(false)
-        setAnimationPhase("visible")
-      }, displayDurationSeconds * 1000)
-
+      showBlurb(nextBlurb)
       manualIndex = (manualIndex + 1) % enabledBlurbs.length
     }
 
@@ -136,7 +121,7 @@ export function BlurbOverlay({
       case "bottom-right":
         return "bottom-8 right-8"
       case "center":
-        return "top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+        return "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
       default:
         return "top-8 left-8"
     }
@@ -155,25 +140,15 @@ export function BlurbOverlay({
     }
   }
 
-  const getAnimationClasses = () => {
-    switch (animationPhase) {
-      case "entering":
-        return "transform -translate-y-full opacity-0 transition-all duration-500 ease-out"
-      case "visible":
-        return "transform translate-y-0 opacity-100 transition-all duration-500 ease-out"
-      case "exiting":
-        return "transform -translate-y-full opacity-0 transition-all duration-500 ease-in"
-      default:
-        return "transform translate-y-0 opacity-100"
-    }
-  }
-
-  if (!isVisible || !currentBlurb) return null
+  // Don't render anything if no current blurb
+  if (!currentBlurb) return null
 
   return (
-    <div className={`absolute ${getPositionClasses()} z-20 max-w-md`}>
+    <div className={`fixed ${getPositionClasses()} z-20 max-w-md pointer-events-none`}>
       <div
-        className={`px-6 py-4 rounded-lg border-2 border-black ${getFontWeight()} text-center ${getAnimationClasses()}`}
+        className={`px-6 py-4 rounded-lg border-2 border-black ${getFontWeight()} text-center transition-all duration-500 ease-out transform ${
+          isAnimating ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+        }`}
         style={{
           fontSize: `${fontSize}px`,
           fontFamily: fontFamily,

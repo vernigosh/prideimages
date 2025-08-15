@@ -51,6 +51,18 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
     addRecentCommand("!dark by Manual Test (manual)")
   }
 
+  const testColorWar = () => {
+    console.log("Manual test: Starting color war")
+    window.dispatchEvent(new CustomEvent("startColorWar", { detail: { username: "Manual Test" } }))
+    addRecentCommand("!colorwar by Manual Test (manual)")
+  }
+
+  const testGarden = () => {
+    console.log("Manual test: Starting community garden")
+    window.dispatchEvent(new CustomEvent("startGarden", { detail: { username: "Manual Test" } }))
+    addRecentCommand("!garden by Manual Test (manual)")
+  }
+
   const connectToTwitch = async () => {
     if (!channel.trim()) return
 
@@ -161,6 +173,79 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           // Dispatch event to hide any visible timer
           window.dispatchEvent(new CustomEvent("hideAnyTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        }
+        // COLOR WAR COMMANDS
+        else if (command === "!colorwar" && (isMod || isBroadcaster || isVip)) {
+          console.log("Color war start command detected")
+          window.dispatchEvent(new CustomEvent("startColorWar", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!team pink" || command === "!pink") {
+          console.log("Join pink team command detected")
+          window.dispatchEvent(new CustomEvent("joinColorTeam", { detail: { username, team: "pink" } }))
+          addRecentCommand(`!team pink by ${username}`)
+        } else if (command === "!team green" || command === "!green") {
+          console.log("Join green team command detected")
+          window.dispatchEvent(new CustomEvent("joinColorTeam", { detail: { username, team: "green" } }))
+          addRecentCommand(`!team green by ${username}`)
+        } else if (command === "!attack" || command === "!charge" || command === "!battle") {
+          console.log("Color war attack command detected")
+          // Find user's team from recent commands or default to their choice
+          const userTeam = recentCommands.find(
+            (cmd) => cmd.includes(`by ${username}`) && (cmd.includes("pink") || cmd.includes("green")),
+          )
+          const team = userTeam?.includes("pink") ? "pink" : userTeam?.includes("green") ? "green" : null
+          if (team) {
+            window.dispatchEvent(new CustomEvent("colorWarAttack", { detail: { username, team } }))
+            addRecentCommand(`!attack by ${username} (${team})`)
+          }
+        } else if (command === "!resetwar" && (isMod || isBroadcaster || isVip)) {
+          console.log("Reset color war command detected")
+          window.dispatchEvent(new CustomEvent("resetColorWar", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidewar" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide color war command detected")
+          window.dispatchEvent(new CustomEvent("hideColorWar", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        }
+        // COMMUNITY GARDEN COMMANDS
+        else if (command.startsWith("!plant")) {
+          console.log("Plant flower command detected")
+          const parts = command.split(" ")
+          const flowerType = parts[1] || "wildflower" // Default to wildflower
+          const validTypes = ["rose", "tulip", "sunflower", "daisy", "lily", "wildflower"]
+          const finalType = validTypes.includes(flowerType) ? flowerType : "wildflower"
+
+          // Determine color based on flower type or random
+          let color = "mixed"
+          if (finalType === "rose" || finalType === "tulip") color = "pink"
+          else if (finalType === "sunflower" || finalType === "daisy") color = "green"
+
+          window.dispatchEvent(
+            new CustomEvent("plantFlower", {
+              detail: { username, flowerType: finalType, color },
+            }),
+          )
+          addRecentCommand(`!plant ${finalType} by ${username}`)
+        } else if (command === "!water" || command === "!watering") {
+          console.log("Water garden command detected")
+          window.dispatchEvent(new CustomEvent("waterGarden", { detail: { username } }))
+          addRecentCommand(`!water by ${username}`)
+        } else if (command === "!harvest") {
+          console.log("Harvest garden command detected")
+          window.dispatchEvent(new CustomEvent("harvestGarden", { detail: { username } }))
+          addRecentCommand(`!harvest by ${username}`)
+        } else if (command === "!garden" && (isMod || isBroadcaster || isVip)) {
+          console.log("Start garden command detected")
+          window.dispatchEvent(new CustomEvent("startGarden", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!resetgarden" && (isMod || isBroadcaster || isVip)) {
+          console.log("Reset garden command detected")
+          window.dispatchEvent(new CustomEvent("resetGarden", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidegarden" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide garden command detected")
+          window.dispatchEvent(new CustomEvent("hideGarden", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
         }
@@ -249,8 +334,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
         {/* Manual Test Buttons */}
         <div className="mb-6 p-4 border-2 border-black rounded bg-yellow-100">
-          <h3 className="font-bold text-black mb-2">Manual Timer Tests</h3>
+          <h3 className="font-bold text-black mb-2">Manual Tests</h3>
           <div className="flex gap-4 flex-wrap">
+            <button
+              onClick={testColorWar}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded hover:bg-pink-200 text-black"
+              style={{ backgroundColor: "#ffb8ad" }}
+            >
+              <Play className="w-4 h-4" />
+              Test Color War
+            </button>
             <button
               onClick={testDarkTimer}
               className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-black hover:bg-gray-800 text-white"
@@ -272,10 +365,15 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <Play className="w-4 h-4" />
               Test Social Timer
             </button>
+            <button
+              onClick={testGarden}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-green-400 hover:bg-green-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Test Garden
+            </button>
           </div>
-          <p className="text-xs mt-2 text-black/70">
-            Use these buttons to test timer functionality without chat commands
-          </p>
+          <p className="text-xs mt-2 text-black/70">Use these buttons to test functionality without chat commands</p>
         </div>
 
         {showSettings && (
@@ -293,7 +391,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2">Who can use !spin</label>
+              <label className="block text-sm font-bold text-black mb-2">Who can use commands</label>
               <select
                 value={allowedUsers}
                 onChange={(e) => setAllowedUsers(e.target.value)}
@@ -388,51 +486,116 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         <div className="mt-4 p-4 border-2 border-black rounded" style={{ backgroundColor: "#ffb8ad" }}>
           <h3 className="font-bold text-black mb-2">Available Chat Commands:</h3>
           <div className="grid md:grid-cols-2 gap-4 text-sm">
+            {/* Existing Commands */}
             <div>
               <code className="bg-black text-white px-2 py-1 rounded">!dark</code>
               <span className="ml-2">Start 20min Dark Vernigosh mode</span>
-            </div>
-            <div>
-              <code className="bg-black text-white px-2 py-1 rounded">!hidedark</code>
-              <span className="ml-2">Hide dark timer (mods/VIPs only)</span>
             </div>
             <div>
               <code className="bg-black text-white px-2 py-1 rounded">!spin</code>
               <span className="ml-2">Spin the DJ technique wheel</span>
             </div>
             <div>
-              <code className="bg-black text-white px-2 py-1 rounded">!djspin</code>
-              <span className="ml-2">Alternative spin command</span>
-            </div>
-            <div>
-              <code className="bg-black text-white px-2 py-1 rounded">!trick</code>
-              <span className="ml-2">Another spin command</span>
-            </div>
-            <div>
-              <code className="bg-black text-white px-2 py-1 rounded">!hidespin</code>
-              <span className="ml-2">Hide spinner (mods/VIPs only)</span>
-            </div>
-            <div>
               <code className="bg-black text-white px-2 py-1 rounded">!worktimer</code>
-              <span className="ml-2">Start work timer (mods/VIPs only)</span>
+              <span className="ml-2">Start 25-minute work session</span>
             </div>
             <div>
               <code className="bg-black text-white px-2 py-1 rounded">!social</code>
-              <span className="ml-2">Start social timer (mods/VIPs only)</span>
+              <span className="ml-2">Start 2-minute social timer</span>
+            </div>
+
+            {/* NEW COLOR WAR COMMANDS */}
+            <div>
+              <code className="bg-black text-pink-400 px-2 py-1 rounded font-bold">!colorwar</code>
+              <span className="ml-2 font-bold">Start Color War (mods only)</span>
             </div>
             <div>
-              <code className="bg-black text-red-400 px-2 py-1 rounded font-bold">!hidetimer</code>
-              <span className="ml-2 font-bold">Hide any visible timer (mods/VIPs only)</span>
+              <code className="bg-black text-pink-400 px-2 py-1 rounded">!team pink</code>
+              <span className="ml-2">Join the Pink Army 🌸</span>
             </div>
             <div>
-              <code className="bg-black text-green-400 px-2 py-1 rounded font-bold">!resettimer</code>
-              <span className="ml-2 font-bold">Reset & restart any active timer (mods/VIPs only)</span>
+              <code className="bg-black text-green-400 px-2 py-1 rounded">!team green</code>
+              <span className="ml-2">Join the Green Force 💚</span>
+            </div>
+            <div>
+              <code className="bg-black text-yellow-400 px-2 py-1 rounded">!attack</code>
+              <span className="ml-2">Attack for your team! ⚔️</span>
+            </div>
+            <div>
+              <code className="bg-black text-red-400 px-2 py-1 rounded">!resetwar</code>
+              <span className="ml-2">Reset Color War (mods only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-red-400 px-2 py-1 rounded">!hidewar</code>
+              <span className="ml-2">Hide Color War (mods only)</span>
+            </div>
+
+            {/* COMMUNITY GARDEN COMMANDS */}
+            <div>
+              <code className="bg-black text-green-400 px-2 py-1 rounded font-bold">!garden</code>
+              <span className="ml-2 font-bold">Start Community Garden (mods only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-green-400 px-2 py-1 rounded">!plant rose</code>
+              <span className="ml-2">Plant a flower (rose, tulip, sunflower, daisy, lily)</span>
+            </div>
+            <div>
+              <code className="bg-black text-blue-400 px-2 py-1 rounded">!water</code>
+              <span className="ml-2">Water the garden 💧</span>
+            </div>
+            <div>
+              <code className="bg-black text-yellow-400 px-2 py-1 rounded">!harvest</code>
+              <span className="ml-2">Harvest mature flowers 🌸</span>
+            </div>
+            <div>
+              <code className="bg-black text-red-400 px-2 py-1 rounded">!resetgarden</code>
+              <span className="ml-2">Reset garden (mods only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-red-400 px-2 py-1 rounded">!hidegarden</code>
+              <span className="ml-2">Hide garden (mods only)</span>
             </div>
           </div>
+          <div className="mt-4 p-3 bg-black text-white rounded">
+            <h4 className="font-bold text-pink-400 mb-2">🎮 COLOR WAR GAMEPLAY:</h4>
+            <ol className="text-sm space-y-1">
+              <li>
+                1. Mod starts with <code className="bg-gray-800 px-1 rounded">!colorwar</code>
+              </li>
+              <li>
+                2. Players join teams: <code className="bg-gray-800 px-1 rounded">!team pink</code> or{" "}
+                <code className="bg-gray-800 px-1 rounded">!team green</code>
+              </li>
+              <li>
+                3. Battle with <code className="bg-gray-800 px-1 rounded">!attack</code> - team with more active players
+                wins territory!
+              </li>
+              <li>4. First team to 100% territory wins! 🏆</li>
+            </ol>
+          </div>
+          <div className="mt-4 p-3 bg-green-100 rounded">
+            <h4 className="font-bold text-green-800 mb-2">🌸 COMMUNITY GARDEN GAMEPLAY:</h4>
+            <ol className="text-sm space-y-1 text-green-700">
+              <li>
+                1. Mod starts with <code className="bg-gray-800 text-white px-1 rounded">!garden</code>
+              </li>
+              <li>
+                2. Plant flowers: <code className="bg-gray-800 text-white px-1 rounded">!plant rose</code> (5min
+                cooldown per person)
+              </li>
+              <li>
+                3. Help garden grow: <code className="bg-gray-800 text-white px-1 rounded">!water</code> speeds up
+                growth
+              </li>
+              <li>
+                4. Harvest mature flowers: <code className="bg-gray-800 text-white px-1 rounded">!harvest</code> clears
+                space for new plants
+              </li>
+              <li>5. Watch your flowers grow from seeds to beautiful blooms! 🌱→🌸</li>
+            </ol>
+          </div>
           <p className="text-xs mt-2 text-black/70">
-            💡 Universal commands: <code className="bg-black text-red-400 px-1 rounded">!hidetimer</code> hides any
-            visible timer, <code className="bg-black text-green-400 px-1 rounded">!resettimer</code> resets & restarts
-            any active timer!
+            🎯 <strong>Color War</strong>: Epic team battles using your brand colors! Pink vs Green supremacy!
           </p>
         </div>
       </div>

@@ -218,19 +218,23 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }))
       addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`)
 
-      // Show rain effect for 5 seconds - force reset first
+      // Show rain effect for 5 seconds - improved approach
       console.log("Starting rain animation...")
-      setShowRainEffect(false) // Force reset first
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
 
-      // Small delay to ensure state reset, then start animation
+      // Force a clean reset
+      setShowRainEffect(false)
+
+      // Start the animation after a brief reset
       setTimeout(() => {
         setShowRainEffect(true)
+
+        // Stop after 5 seconds
         rainTimeoutRef.current = setTimeout(() => {
           console.log("Stopping rain animation...")
           setShowRainEffect(false)
         }, 5000)
-      }, 100)
+      }, 50)
     }
 
     const handleHarvestGarden = (event: CustomEvent) => {
@@ -603,7 +607,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div
-              key={Date.now()} // Force re-render each time
               className="absolute inset-0 pointer-events-none"
               style={{
                 zIndex: 50,

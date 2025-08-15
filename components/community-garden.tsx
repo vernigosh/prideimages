@@ -470,11 +470,11 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             </div>
           )}
 
-          {/* Flower Reveals - show on middle right of screen */}
+          {/* Flower Reveals - centered horizontally above garden */}
           {Object.entries(flowerReveals).map(([flowerId, reveal]) => (
             <div
               key={flowerId}
-              className="fixed top-1/2 right-8 transform -translate-y-1/2 transition-all duration-1000 pointer-events-none z-30"
+              className="fixed bottom-52 left-1/2 transform -translate-x-1/2 transition-all duration-1000 pointer-events-none z-30"
             >
               <div className="text-center animate-bounce">
                 <span className="text-xl font-black text-white font-sans uppercase bg-black bg-opacity-50 px-2 py-1 rounded">

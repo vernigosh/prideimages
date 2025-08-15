@@ -318,7 +318,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <img
           src="/garden/stages/sprout.webp"
           alt="Sprout"
-          className="w-16 h-16 pixelated animate-bounce"
+          className="w-20 h-20 pixelated animate-bounce"
           style={{ imageRendering: "pixelated", animationDuration: "3s" }}
         />
       )
@@ -329,14 +329,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <img
           src="/garden/stages/sparkle.gif"
           alt="Blooming"
-          className="w-24 h-24 pixelated animate-pulse"
+          className="w-30 h-30 pixelated animate-pulse"
           style={{ imageRendering: "pixelated" }}
         />
       )
     }
 
     if (flower.stage === "small") {
-      // Small flower - 28x28px (between blooming and medium)
+      // Small flower - 35x35px (between blooming and medium)
       const flowerImages = {
         rose: "/garden/flowers/rose-bush.webp",
         tulip: flower.specificType
@@ -373,14 +373,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <img
           src={imageSrc || "/placeholder.svg"}
           alt="Small"
-          className="w-28 h-28 pixelated hover:scale-105 transition-transform duration-300"
+          className="w-35 h-35 pixelated hover:scale-105 transition-transform duration-300"
           style={{ imageRendering: "pixelated" }}
         />
       )
     }
 
     if (flower.stage === "medium") {
-      // Medium flower - 32x32px (between small and fully-mature)
+      // Medium flower - 40x40px (between small and fully-mature)
       const flowerImages = {
         rose: "/garden/flowers/rose-bush.webp",
         tulip: flower.specificType
@@ -417,13 +417,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <img
           src={imageSrc || "/placeholder.svg"}
           alt="Medium"
-          className="w-32 h-32 pixelated hover:scale-105 transition-transform duration-300"
+          className="w-40 h-40 pixelated hover:scale-105 transition-transform duration-300"
           style={{ imageRendering: "pixelated" }}
         />
       )
     }
 
-    // Fully mature flowers - 36x36px (150% larger than medium), harvestable
+    // Fully mature flowers - 45x45px (150% larger than medium), harvestable
     if (flower.stage === "fully-mature") {
       const flowerImages = {
         rose: "/garden/flowers/rose-bush.webp",
@@ -461,7 +461,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <img
           src={imageSrc || "/placeholder.svg"}
           alt={flowerTypes[flower.type].name}
-          className="w-36 h-36 pixelated hover:scale-105 transition-transform duration-300"
+          className="w-45 h-45 pixelated hover:scale-105 transition-transform duration-300"
           style={{ imageRendering: "pixelated" }}
         />
       )
@@ -490,10 +490,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         }
       `}</style>
 
-      <div className="fixed bottom-20 left-0 right-0 z-10">
+      <div className="fixed bottom-25 left-0 right-0 z-10">
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
-          <div className="fixed bottom-56 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
+          <div className="fixed bottom-70 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {recentActivity[0]}
@@ -503,7 +503,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         )}
 
         {/* Main Garden Area - transparent background, no soil strip */}
-        <div className="h-36 relative overflow-hidden">
+        <div className="h-45 relative overflow-hidden">
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div className="absolute inset-0 z-20 pointer-events-none">
@@ -523,7 +523,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           {Object.entries(flowerReveals).map(([flowerId, reveal]) => (
             <div
               key={flowerId}
-              className="fixed bottom-60 left-1/2 transform -translate-x-1/2 transition-all duration-1000 pointer-events-none z-30"
+              className="fixed bottom-75 left-1/2 transform -translate-x-1/2 transition-all duration-1000 pointer-events-none z-30"
             >
               <div className="text-center animate-bounce">
                 <span className="text-xl font-black text-white font-sans uppercase bg-black bg-opacity-50 px-2 py-1 rounded">

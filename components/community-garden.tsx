@@ -218,12 +218,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }))
       addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`)
 
-      // Show rain effect for 8 seconds with proper scrolling
+      // Show rain effect for 5 seconds
+      console.log("Starting rain animation...")
       setShowRainEffect(true)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
       rainTimeoutRef.current = setTimeout(() => {
+        console.log("Stopping rain animation...")
         setShowRainEffect(false)
-      }, 6000) // Changed from 8000 to 6000 to match animation
+      }, 5000)
     }
 
     const handleHarvestGarden = (event: CustomEvent) => {
@@ -576,24 +578,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
   return (
     <>
-      {/* CSS for rain animation */}
-      <style jsx>{`
-        @keyframes rainScroll {
-          0% {
-            transform: translateX(-100%);
-            opacity: 1;
-          }
-          100% {
-            transform: translateX(100vw);
-            opacity: 1;
-          }
-        }
-        .rain-animation {
-          animation: rainScroll 6s linear forwards;
-          z-index: 25;
-        }
-      `}</style>
-
       <div className="fixed left-0 right-0 z-10" style={{ bottom: "90px" }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
@@ -613,20 +597,29 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <div className="relative overflow-hidden" style={{ height: "280px" }}>
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
-            <div className="absolute inset-0 z-25 pointer-events-none overflow-hidden">
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                zIndex: 50,
+                background: "transparent",
+              }}
+            >
               <img
                 src="/garden/effects/rain.gif"
                 alt="Rain"
-                className="absolute top-0 left-0 h-full w-auto rain-animation pixelated"
+                className="absolute top-0 pixelated"
                 style={{
                   imageRendering: "pixelated",
-                  minWidth: "400px", // Increased width
+                  width: "600px",
                   height: "100%",
                   objectFit: "cover",
+                  left: "-600px",
+                  animation: "rainSlide 5s linear forwards",
                 }}
               />
             </div>
           )}
+
           {/* Flower Reveals - centered horizontally above garden */}
           {Object.entries(flowerReveals).map(([flowerId, reveal]) => (
             <div
@@ -641,6 +634,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
               </div>
             </div>
           ))}
+
           {/* Flowers */}
           {flowers.map((flower) => (
             <div
@@ -658,6 +652,20 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           ))}
         </div>
       </div>
+
+      {/* Global CSS for rain animation */}
+      <style jsx global>{`
+        @keyframes rainSlide {
+          0% {
+            left: -600px;
+            opacity: 1;
+          }
+          100% {
+            left: 100vw;
+            opacity: 0.8;
+          }
+        }
+      `}</style>
     </>
   )
 }

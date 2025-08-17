@@ -119,7 +119,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       setBunnyPhase("eating")
 
       // Add message about eating
-      addActivity(`🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} DELICIOUS FLOWERS!`)
+      const munchingMessage = `🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} DELICIOUS FLOWERS!`
+      addActivity(munchingMessage)
 
       // Remove random mature flowers
       setFlowers((prev) => {
@@ -134,6 +135,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     // Phase 3: Play around after eating (after 19.5 seconds total)
     setTimeout(() => {
       setBunnyPhase("playing")
+
+      // Remove the munching message when bunny stops eating
+      setRecentActivity((current) => current.filter((item) => !item.includes("THE BUNNY IS MUNCHING")))
     }, 19500)
 
     // Phase 4: Start leaving (after 27.5 seconds total)

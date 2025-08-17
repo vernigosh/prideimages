@@ -50,6 +50,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [flowerReveals, setFlowerReveals] = useState<{ [key: string]: { type: string; x: number; timestamp: number } }>(
     {},
   )
+  const [lastWaterTime, setLastWaterTime] = useState(0) // New state variable for tracking the last water time
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -333,6 +334,25 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       console.log(`Community Garden: ${username} watering the garden - showRainEffect currently:`, showRainEffect)
 
       const now = Date.now()
+      const waterCooldown = 2 * 60 * 1000 // 2 minutes in milliseconds
+
+      // Check global water cooldown
+      if (now - lastWaterTime < waterCooldown) {
+        const remainingTime = Math.ceil((waterCooldown - (now - lastWaterTime)) / 1000)
+        const minutes = Math.floor(remainingTime / 60)
+        const seconds = remainingTime % 60
+        const timeString = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+
+        addActivity(
+          `💧 ${username.toUpperCase()}, GARDEN WAS RECENTLY WATERED! WAIT ${timeString} TO WATER AGAIN.`,
+          7000,
+        )
+        return
+      }
+
+      // Set the last water time
+      setLastWaterTime(now)
+
       // Water all flowers
       setFlowers((prev) => prev.map((flower) => ({ ...flower, lastWatered: now })))
       setGardenStats((prev) => ({
@@ -440,6 +460,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       console.log("Community Garden: Resetting garden", event.detail)
       setFlowers([])
       setLastBunnyVisit(Date.now()) // Reset bunny timer
+      setLastWaterTime(0) // Reset water cooldown
       setBunnyActive(false)
       setGardenStats({
         totalFlowers: 0,

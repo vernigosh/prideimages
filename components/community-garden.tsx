@@ -70,7 +70,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         id: `test-${now}-${i}`,
         type: flowerType,
         color: "mixed",
-        x: 18 + (77 / 19) * i, // Evenly distribute across available space
+        x: 18 + (67 / 19) * i, // Evenly distribute across available space (18% to 85%)
         plantedBy: `TestUser${i}`,
         plantedAt: now - Math.random() * 300000, // Random age up to 5 minutes
         stage: randomStage,
@@ -100,12 +100,17 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     const flowersToEat = Math.floor(Math.random() * maxToEat) + 1
     setBunnyEatenCount(flowersToEat)
 
-    // Pick a random position along the flower bed (same range as flowers)
-    const bunnyX = Math.random() * 77 + 18 // 18% to 95% to match flower positions
+    // Pick a random position along the flower bed - avoid edges for bunny
+    const bunnyX = Math.random() * 67 + 18 // 18% to 85% to avoid edges and allow for bunny size
     setBunnyPosition(bunnyX)
 
-    // Just one initial message
+    // Just one initial message with shorter duration
     addActivity(`🐰 A WILD BUNNY APPEARS IN THE GARDEN!`)
+
+    // Remove the "appears" message after 4 seconds (instead of default 15)
+    setTimeout(() => {
+      setRecentActivity((current) => current.filter((item) => !item.includes("A WILD BUNNY APPEARS")))
+    }, 4000)
 
     // New extended chill animation sequence
     // Phase 1: Fade in and explore for much longer (12 seconds)
@@ -122,6 +127,11 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       const munchingMessage = `🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} DELICIOUS FLOWERS!`
       addActivity(munchingMessage)
 
+      // Remove the munching message after 4 seconds (instead of when bunny stops eating)
+      setTimeout(() => {
+        setRecentActivity((current) => current.filter((item) => !item.includes("THE BUNNY IS MUNCHING")))
+      }, 4000)
+
       // Remove random mature flowers
       setFlowers((prev) => {
         const mature = prev.filter((f) => f.stage === "fully-mature")
@@ -135,9 +145,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     // Phase 3: Play around after eating (after 19.5 seconds total)
     setTimeout(() => {
       setBunnyPhase("playing")
-
-      // Remove the munching message when bunny stops eating
-      setRecentActivity((current) => current.filter((item) => !item.includes("THE BUNNY IS MUNCHING")))
     }, 19500)
 
     // Phase 4: Start leaving (after 27.5 seconds total)
@@ -244,14 +251,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         return
       }
 
-      // Find available position - avoid logo area
+      // Find available position - avoid logo area and right edge
       const usedPositions = flowers.map((f) => f.x)
-      let newX = Math.random() * 77 + 18 // 18% to 95% to avoid logo area
+      let newX = Math.random() * 67 + 18 // 18% to 85% to avoid logo area and right edge overflow
 
       // Try to avoid overlapping
       let attempts = 0
       while (attempts < 10 && usedPositions.some((pos) => Math.abs(pos - newX) < 8)) {
-        newX = Math.random() * 77 + 18
+        newX = Math.random() * 67 + 18
         attempts++
       }
 
@@ -428,7 +435,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             id: `test-mature-${now}-${i}-${testFlowerData[i].type}`, // More unique ID
             type: testFlowerData[i].type,
             color: "mixed",
-            x: 25 + i * 20, // Spread them out: 25%, 45%, 65%, 85%
+            x: 25 + i * 15, // Spread them out: 25%, 40%, 55%, 70% (safer spacing)
             plantedBy: testFlowerData[i].user,
             plantedAt: now - 400000, // Old enough to be mature
             stage: "fully-mature",

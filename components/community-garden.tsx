@@ -91,10 +91,20 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   }
 
   const triggerBunnyVisit = (matureFlowers: Flower[]) => {
+    // Safety check to prevent rapid re-triggering
+    const now = Date.now()
+    if (now - lastBunnyVisit < 19 * 60 * 1000) {
+      // Must be at least 19 minutes
+      console.log("🐰 BUNNY VISIT BLOCKED - Too soon since last visit")
+      return
+    }
+
+    console.log("🐰 BUNNY VISIT STARTING")
     setBunnyActive(true)
     setBunnyPhase("arriving")
     setBunnyOpacity(0)
-    setLastBunnyVisit(Date.now())
+    setLastBunnyVisit(now)
+    // ... rest of function stays the same
 
     // Calculate how many flowers to eat (1-5 or up to half the mature flowers)
     const maxToEat = Math.min(5, Math.ceil(matureFlowers.length / 2))
@@ -168,10 +178,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       setFlowers((prevFlowers) => {
         const now = Date.now()
         const timeSinceLastBunny = now - lastBunnyVisit
-        if (timeSinceLastBunny > 20 * 60 * 1000 && !bunnyActive) {
-          // 20 minutes
+        const twentyMinutes = 20 * 60 * 1000
+
+        console.log(
+          `Bunny check: ${Math.floor(timeSinceLastBunny / 1000)}s since last visit, need ${20 * 60}s, bunnyActive: ${bunnyActive}`,
+        )
+
+        if (timeSinceLastBunny > twentyMinutes && !bunnyActive) {
           const matureFlowers = prevFlowers.filter((f) => f.stage === "fully-mature")
+          console.log(`Bunny trigger conditions met: ${matureFlowers.length} mature flowers available`)
+
           if (matureFlowers.length > 0) {
+            console.log("🐰 TRIGGERING BUNNY VISIT - 20 minutes elapsed")
             triggerBunnyVisit(matureFlowers)
           }
         }

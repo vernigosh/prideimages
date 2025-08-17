@@ -483,7 +483,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             animationDuration: "3s",
-            maxHeight: "120px",
+            maxHeight: "160px",
             width: "auto",
           }}
         />
@@ -718,12 +718,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
   return (
     <>
-      <div className="fixed left-0 right-0 z-10" style={{ bottom: "48px" }}>
+      <div className="fixed left-0 right-0 z-10" style={{ bottom: "72px" }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
             className="fixed left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "452px" }} // Updated position
+            style={{ bottom: "476px" }} // Updated position
           >
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
@@ -792,7 +792,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             <div
               key={flowerId}
               className="fixed left-1/2 transform -translate-x-1/2 z-30 pointer-events-none"
-              style={{ bottom: "482px", left: `${flowerReveals[flowerId].x}%` }} // Updated position
+              style={{ bottom: "506px", left: `${flowerReveals[flowerId].x}%` }} // Updated position
             >
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {flowerReveals[flowerId].type}

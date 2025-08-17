@@ -54,6 +54,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [lastWaterTime, setLastWaterTime] = useState(0) // New state variable for tracking the last water time
   const [userFlowerCounts, setUserFlowerCounts] = useState<{ [username: string]: number }>({}) // New state for user flower totals
   const [userPickedTotals, setUserPickedTotals] = useState<{ [username: string]: number }>({}) // New state for lifetime picked totals
+  const [gardenSaturation, setGardenSaturation] = useState(100) // Start at 100% saturation
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -344,6 +345,30 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     }
   }, [isVisible, bunnyActive, lastBunnyVisit]) // Dependencies ensure proper updates
 
+  // Gradually reduce saturation over time
+  useEffect(() => {
+    if (!isVisible) return
+
+    const saturationInterval = setInterval(() => {
+      const now = Date.now()
+      const timeSinceWater = now - lastWaterTime
+      const graceTime = 5 * 60 * 1000 // 5 minutes of full saturation
+      const fadeTime = 5 * 60 * 1000 // 5 minutes to fade from 100% to 20%
+
+      if (timeSinceWater <= graceTime) {
+        // Keep at 100% for first 5 minutes
+        setGardenSaturation(100)
+      } else {
+        // After 5 minutes, fade from 100% to 20% over next 5 minutes
+        const fadeProgress = (timeSinceWater - graceTime) / fadeTime
+        const saturationPercent = Math.max(20, 100 - fadeProgress * 80)
+        setGardenSaturation(saturationPercent)
+      }
+    }, 30000) // Check every 30 seconds
+
+    return () => clearInterval(saturationInterval)
+  }, [isVisible, lastWaterTime])
+
   // Chat command handlers
   useEffect(() => {
     const handlePlantFlower = (event: CustomEvent) => {
@@ -451,6 +476,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
       // Set the last water time
       setLastWaterTime(now)
+      setGardenSaturation(100) // Reset saturation to 100%
 
       // Water all flowers
       setFlowers((prev) => prev.map((flower) => ({ ...flower, lastWatered: now })))
@@ -568,6 +594,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       setUserPickedTotals({}) // Reset user picked totals
       setLastBunnyVisit(Date.now()) // Reset bunny timer
       setLastWaterTime(0) // Reset water cooldown
+      setGardenSaturation(100) // Reset saturation to 100%
       setBunnyActive(false)
       // Clear any active bunny timeouts
       bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
@@ -913,7 +940,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         )}
 
         {/* Main Garden Area - transparent background, no soil strip */}
-        <div className="relative" style={{ height: "320px", overflow: "visible" }}>
+        <div
+          className="relative"
+          style={{
+            height: "320px",
+            overflow: "visible",
+            filter: `saturate(${gardenSaturation}%)`,
+            transition: "filter 2s ease-in-out",
+          }}
+        >
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div

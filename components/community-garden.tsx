@@ -118,6 +118,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     setTimeout(() => {
       setBunnyPhase("eating")
 
+      // Add message about eating
+      addActivity(`🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} DELICIOUS FLOWERS!`)
+
       // Remove random mature flowers
       setFlowers((prev) => {
         const mature = prev.filter((f) => f.stage === "fully-mature")
@@ -723,7 +726,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         {recentActivity.length > 0 && (
           <div
             className="fixed left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "476px" }} // Updated position
+            style={{ bottom: "362px" }} // Updated position
           >
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
@@ -781,7 +784,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
                 style={{
                   imageRendering: "pixelated",
                   width: "auto", // Let width scale naturally
-                  height: "110px", // Set height to 110px (half of rose mature size 220px)
+                  height: "200px", // Increased from 110px to 200px
                 }}
               />
             </div>
@@ -792,7 +795,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             <div
               key={flowerId}
               className="fixed left-1/2 transform -translate-x-1/2 z-30 pointer-events-none"
-              style={{ bottom: "506px", left: `${flowerReveals[flowerId].x}%` }} // Updated position
+              style={{ bottom: "392px", left: `${flowerReveals[flowerId].x}%` }} // Updated position
             >
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {flowerReveals[flowerId].type}

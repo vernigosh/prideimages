@@ -114,7 +114,8 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           !command.startsWith("!plant") &&
           command !== "!water" &&
           command !== "!watering" &&
-          command !== "!harvest" &&
+          command !== "!pick" &&
+          command !== "!pick old" &&
           command !== "!attack" &&
           command !== "!charge" &&
           command !== "!battle" &&
@@ -254,10 +255,14 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Water garden command detected")
           window.dispatchEvent(new CustomEvent("waterGarden", { detail: { username } }))
           addRecentCommand(`!water by ${username}`)
-        } else if (command === "!harvest") {
-          console.log("Harvest garden command detected")
-          window.dispatchEvent(new CustomEvent("harvestGarden", { detail: { username } }))
-          addRecentCommand(`!harvest by ${username}`)
+        } else if (command === "!pick") {
+          console.log("Pick garden command detected")
+          window.dispatchEvent(new CustomEvent("pickFlowers", { detail: { username } }))
+          addRecentCommand(`!pick by ${username}`)
+        } else if (command === "!pick old" && (isMod || isBroadcaster || isVip)) {
+          console.log("Pick old flowers command detected")
+          window.dispatchEvent(new CustomEvent("pickOldFlowers", { detail: { username } }))
+          addRecentCommand(`!pick old by ${username}`)
         } else if (command === "!startgarden" && (isMod || isBroadcaster || isVip)) {
           console.log("Start garden command detected")
           window.dispatchEvent(new CustomEvent("startGarden", { detail: { username } }))
@@ -269,10 +274,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         } else if (command === "!hidegarden" && (isMod || isBroadcaster || isVip)) {
           console.log("Hide garden command detected")
           window.dispatchEvent(new CustomEvent("hideGarden", { detail: { username } }))
-          addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!clearold" && (isMod || isBroadcaster || isVip)) {
-          console.log("Clear old flowers command detected")
-          window.dispatchEvent(new CustomEvent("clearOldFlowers", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
@@ -584,8 +585,12 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <span className="ml-2">Water the garden 💧 (5min cooldown)</span>
             </div>
             <div>
-              <code className="bg-black text-yellow-400 px-2 py-1 rounded">!harvest</code>
-              <span className="ml-2">Harvest mature flowers 🌸</span>
+              <code className="bg-black text-yellow-400 px-2 py-1 rounded">!pick</code>
+              <span className="ml-2">Pick your own mature flowers 🌸</span>
+            </div>
+            <div>
+              <code className="bg-black text-red-400 px-2 py-1 rounded">!pickold</code>
+              <span className="ml-2">Pick old flowers (mods only)</span>
             </div>
             <div>
               <code className="bg-black text-red-400 px-2 py-1 rounded">!resetgarden</code>
@@ -594,10 +599,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             <div>
               <code className="bg-black text-red-400 px-2 py-1 rounded">!hidegarden</code>
               <span className="ml-2">Hide garden (mods only)</span>
-            </div>
-            <div>
-              <code className="bg-black text-red-400 px-2 py-1 rounded">!clearold</code>
-              <span className="ml-2">Clear flowers older than 30min (mods only)</span>
             </div>
           </div>
           <div className="mt-4 p-3 bg-black text-white rounded">
@@ -632,8 +633,8 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 effect! (5min cooldown)
               </li>
               <li>
-                4. Harvest mature flowers: <code className="bg-gray-800 text-white px-1 rounded">!harvest</code> clears
-                space for new plants
+                4. Pick mature flowers: <code className="bg-gray-800 text-white px-1 rounded">!pick</code> clears space
+                for new plants
               </li>
               <li>5. Watch your flowers grow from seeds to beautiful blooms! 🌱→✨→🌸</li>
             </ol>

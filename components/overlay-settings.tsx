@@ -771,7 +771,7 @@ export function OverlaySettings({
               </div>
               <div className="mt-4 p-3 bg-gray-900 rounded">
                 <h4 className="font-semibold text-red-400 mb-2">Dark Timer Features</h4>
-                <ul className="text-sm text-white space-y-1">
+                <ul className="text-sm space-y-1">
                   <li>• 20-minute countdown timer</li>
                   <li>• Futuristic Orbitron font with red glow</li>
                   <li>• No circle - pure countdown display</li>
@@ -976,16 +976,20 @@ export function OverlaySettings({
                   <span className="ml-2">Start Color War (mods only)</span>
                 </div>
                 <div>
-                  <code className="bg-black text-pink-400 px-2 py-1 rounded">!team pink</code>
-                  <span className="ml-2">Join Pink Army 🌸</span>
-                </div>
-                <div>
                   <code className="bg-black text-green-400 px-2 py-1 rounded">!team green</code>
                   <span className="ml-2">Join Green Force 💚</span>
                 </div>
                 <div>
-                  <code className="bg-black text-yellow-400 px-2 py-1 rounded">!attack</code>
-                  <span className="ml-2">Attack for your team! ⚔️</span>
+                  <code className="bg-black text-pink-400 px-2 py-1 rounded">!team pink</code>
+                  <span className="ml-2">Join Pink Army 🌸</span>
+                </div>
+                <div>
+                  <code className="bg-black text-yellow-400 px-2 py-1 rounded">!pick</code>
+                  <span className="ml-2">Pick your own mature flowers 🌸</span>
+                </div>
+                <div>
+                  <code className="bg-black text-red-400 px-2 py-1 rounded">!pick old</code>
+                  <span className="ml-2">Pick old flowers (mods only)</span>
                 </div>
                 <div>
                   <code className="bg-black text-red-400 px-2 py-1 rounded">!resetwar</code>

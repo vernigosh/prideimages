@@ -39,11 +39,16 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   })
   const [recentActivity, setRecentActivity] = useState<string[]>([])
   const [showRainEffect, setShowRainEffect] = useState(false)
+  const [bunnyActive, setBunnyActive] = useState(false)
+  const [bunnyPhase, setBunnyPhase] = useState<"approaching" | "eating" | "leaving">("approaching")
+  const [bunnyPosition, setBunnyPosition] = useState(0)
+  const [lastBunnyVisit, setLastBunnyVisit] = useState(Date.now())
+  const [bunnyEatenCount, setBunnyEatenCount] = useState(0)
+  const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const rainTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [flowerReveals, setFlowerReveals] = useState<{ [key: string]: { type: string; x: number; timestamp: number } }>(
     {},
   )
-  const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const rainTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -83,13 +88,63 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     addActivity(`🧪 TEST SPAWNED 20 FLOWERS AT DIFFERENT STAGES!`)
   }
 
+  const triggerBunnyVisit = (matureFlowers: Flower[]) => {
+    setBunnyActive(true)
+    setBunnyPhase("approaching")
+    setBunnyPosition(-100) // Start off-screen right
+    setLastBunnyVisit(Date.now())
+
+    // Calculate how many flowers to eat (1-5 or up to half the mature flowers)
+    const maxToEat = Math.min(5, Math.ceil(matureFlowers.length / 2))
+    const flowersToEat = Math.floor(Math.random() * maxToEat) + 1
+    setBunnyEatenCount(flowersToEat)
+
+    addActivity(`🐰 A WILD BUNNY IS APPROACHING THE GARDEN!`)
+
+    // Animation sequence
+    setTimeout(() => {
+      setBunnyPhase("eating")
+      setBunnyPosition(50) // Center of screen
+      addActivity(`🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} BEAUTIFUL FLOWERS!`)
+
+      // Remove random mature flowers
+      setFlowers((prev) => {
+        const mature = prev.filter((f) => f.stage === "fully-mature")
+        const toKeep = prev.filter((f) => f.stage !== "fully-mature")
+        const shuffled = [...mature].sort(() => Math.random() - 0.5)
+        const remaining = shuffled.slice(flowersToEat)
+        return [...toKeep, ...remaining]
+      })
+
+      setTimeout(() => {
+        setBunnyPhase("leaving")
+        setBunnyPosition(150) // Off-screen left
+        addActivity(`🐰 THE BUNNY HOPS AWAY, SATISFIED WITH ITS MEAL!`)
+
+        setTimeout(() => {
+          setBunnyActive(false)
+        }, 2000)
+      }, 3000) // Eating phase duration
+    }, 2000) // Approach duration
+  }
+
   // New 5-stage growth system: 0-45s sprout, 45s-60s blooming, 60s-90s small, 90s-150s medium, 150s+ fully-mature
   useEffect(() => {
     if (!isVisible) return
 
     growthIntervalRef.current = setInterval(() => {
-      setFlowers((prevFlowers) =>
-        prevFlowers.map((flower) => {
+      setFlowers((prevFlowers) => {
+        const now = Date.now()
+        const timeSinceLastBunny = now - lastBunnyVisit
+        if (timeSinceLastBunny > 20 * 60 * 1000 && !bunnyActive) {
+          // 20 minutes
+          const matureFlowers = prevFlowers.filter((f) => f.stage === "fully-mature")
+          if (matureFlowers.length > 0) {
+            triggerBunnyVisit(matureFlowers)
+          }
+        }
+
+        return prevFlowers.map((flower) => {
           if (flower.stage === "fully-mature") return flower
 
           const timeSincePlanted = Date.now() - flower.plantedAt
@@ -129,8 +184,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           }
 
           return { ...flower, stage: newStage }
-        }),
-      )
+        })
+      })
     }, 5000)
 
     return () => {
@@ -237,14 +292,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }, 50)
     }
 
-    const handleHarvestGarden = (event: CustomEvent) => {
+    const handlePickFlowers = (event: CustomEvent) => {
       const { username } = event.detail
-      console.log(`Community Garden: ${username} harvesting their own flowers`)
+      console.log(`Community Garden: ${username} picking their own flowers`)
 
       const now = Date.now()
       const userFlowers = flowers.filter((f) => f.plantedBy === username)
       const userMatureFlowers = userFlowers.filter((f) => f.stage === "fully-mature")
-      const userHarvestableFlowers = userMatureFlowers.filter((f) => now - f.plantedAt >= 300000) // 5+ minutes old
+      const userPickableFlowers = userMatureFlowers.filter((f) => now - f.plantedAt >= 300000) // 5+ minutes old
 
       if (userFlowers.length === 0) {
         addActivity(`🌱 ${username.toUpperCase()}, YOU HAVEN'T PLANTED ANY FLOWERS YET!`)
@@ -252,11 +307,11 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
 
       if (userMatureFlowers.length === 0) {
-        addActivity(`🌱 ${username.toUpperCase()}, YOUR FLOWERS AREN'T READY TO HARVEST YET!`)
+        addActivity(`🌱 ${username.toUpperCase()}, YOUR FLOWERS AREN'T READY TO PICK YET!`)
         return
       }
 
-      if (userHarvestableFlowers.length === 0) {
+      if (userPickableFlowers.length === 0) {
         addActivity(
           `⏰ ${username.toUpperCase()}, YOUR ${userMatureFlowers.length} MATURE FLOWERS ARE STILL TOO YOUNG TO PICK!`,
         )
@@ -264,29 +319,27 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
 
       // Show the nice message format for user's own flowers
-      if (userHarvestableFlowers.length < userMatureFlowers.length) {
+      if (userPickableFlowers.length < userMatureFlowers.length) {
         addActivity(
-          `🌸 ${username.toUpperCase()}, YOU HAVE ${userMatureFlowers.length} MATURE FLOWERS, BUT ONLY ${userHarvestableFlowers.length} WERE READY TO PICK!`,
+          `🌸 ${username.toUpperCase()}, YOU HAVE ${userMatureFlowers.length} MATURE FLOWERS, BUT ONLY ${userPickableFlowers.length} WERE READY TO PICK!`,
         )
       } else {
-        addActivity(
-          `🌸 ${username.toUpperCase()} HARVESTED ${userHarvestableFlowers.length} OF THEIR OWN BEAUTIFUL FLOWERS!`,
-        )
+        addActivity(`🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} OF THEIR OWN BEAUTIFUL FLOWERS!`)
       }
 
-      // Remove only the user's harvestable flowers
+      // Remove only the user's pickable flowers
       setFlowers((prev) =>
         prev.filter((f) => !(f.plantedBy === username && f.stage === "fully-mature" && now - f.plantedAt >= 300000)),
       )
       setGardenStats((prev) => ({
         ...prev,
-        lastActivity: `${username} harvested ${userHarvestableFlowers.length} of their own flowers!`,
+        lastActivity: `${username} picked ${userPickableFlowers.length} of their own flowers!`,
       }))
     }
 
-    const handleClearOldFlowers = (event: CustomEvent) => {
+    const handlePickOldFlowers = (event: CustomEvent) => {
       const { username } = event.detail
-      console.log(`Community Garden: ${username} clearing old flowers`)
+      console.log(`Community Garden: ${username} picking old flowers`)
 
       const now = Date.now()
       const thirtyMinutesAgo = now - 30 * 60 * 1000 // 30 minutes in milliseconds
@@ -301,14 +354,16 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       setFlowers((prev) => prev.filter((f) => f.plantedAt >= thirtyMinutesAgo))
       setGardenStats((prev) => ({
         ...prev,
-        lastActivity: `${username} cleared ${oldFlowers.length} old flowers!`,
+        lastActivity: `${username} picked ${oldFlowers.length} old flowers!`,
       }))
-      addActivity(`🧹 ${username.toUpperCase()} CLEARED ${oldFlowers.length} FLOWERS OLDER THAN 30 MINUTES!`)
+      addActivity(`🧹 ${username.toUpperCase()} PICKED ${oldFlowers.length} OLD FLOWERS TO MAKE ROOM FOR NEW GROWTH!`)
     }
 
     const handleResetGarden = (event: CustomEvent) => {
       console.log("Community Garden: Resetting garden", event.detail)
       setFlowers([])
+      setLastBunnyVisit(Date.now()) // Reset bunny timer
+      setBunnyActive(false)
       setGardenStats({
         totalFlowers: 0,
         activeGardeners: 0,
@@ -329,8 +384,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     window.addEventListener("plantFlower", handlePlantFlower as EventListener)
     window.addEventListener("waterGarden", handleWaterGarden as EventListener)
-    window.addEventListener("harvestGarden", handleHarvestGarden as EventListener)
-    window.addEventListener("clearOldFlowers", handleClearOldFlowers as EventListener)
+    window.addEventListener("pickFlowers", handlePickFlowers as EventListener)
+    window.addEventListener("pickOldFlowers", handlePickOldFlowers as EventListener)
     window.addEventListener("resetGarden", handleResetGarden as EventListener)
     window.addEventListener("hideGarden", handleHideGarden as EventListener)
     window.addEventListener("spawnTestFlowers", handleSpawnTestFlowers)
@@ -341,8 +396,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     return () => {
       window.removeEventListener("plantFlower", handlePlantFlower as EventListener)
       window.removeEventListener("waterGarden", handleWaterGarden as EventListener)
-      window.removeEventListener("harvestGarden", handleHarvestGarden as EventListener)
-      window.removeEventListener("clearOldFlowers", handleClearOldFlowers as EventListener)
+      window.removeEventListener("pickFlowers", handlePickFlowers as EventListener)
+      window.removeEventListener("pickOldFlowers", handlePickOldFlowers as EventListener)
       window.removeEventListener("resetGarden", handleResetGarden as EventListener)
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
       window.removeEventListener("spawnTestFlowers", handleSpawnTestFlowers)
@@ -370,7 +425,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             imageRendering: "pixelated",
             animationDuration: "3s",
             width: "80px",
-            height: "80px",
+            height: "auto", // Let height scale naturally
           }}
         />
       )
@@ -385,7 +440,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             width: "120px",
-            height: "120px",
+            height: "auto",
           }}
         />
       )
@@ -393,33 +448,36 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     // Get flower-specific sizes (25% larger than original, but with natural variation)
     const getFlowerSize = (flowerType: string, stage: "small" | "medium" | "fully-mature") => {
+      // Based on the original image dimensions and natural flower heights
       const baseSizes = {
-        // Large flowers
-        sunflower: { small: 160, medium: 200, mature: 240 }, // Sunflowers are huge
-        peony: { small: 150, medium: 190, mature: 230 }, // Peonies are very large
+        // Very tall flowers (naturally towering)
+        sunflower: { small: 180, medium: 220, mature: 280 }, // Sunflowers are the tallest
 
-        // Medium-large flowers
-        rose: { small: 140, medium: 170, mature: 200 }, // Roses are substantial
-        lilac: { small: 135, medium: 165, mature: 195 }, // Lilacs are bushy
+        // Tall flowers
+        lilac: { small: 160, medium: 200, mature: 250 }, // Lilacs grow tall and bushy
+        allium: { small: 150, medium: 190, mature: 240 }, // Alliums on tall stems
 
-        // Medium flowers
-        tulip: { small: 120, medium: 150, mature: 180 }, // Tulips are medium
-        daisy: { small: 125, medium: 155, mature: 185 }, // Daisies vary
-        allium: { small: 130, medium: 160, mature: 190 }, // Alliums are round and full
+        // Medium-tall flowers
+        rose: { small: 140, medium: 180, mature: 220 }, // Rose bushes are substantial
+        peony: { small: 145, medium: 185, mature: 230 }, // Peonies are full and tall
 
-        // Smaller flowers
-        lily: { small: 110, medium: 140, mature: 170 }, // Lily of valley is delicate
-        cornflower: { small: 105, medium: 135, mature: 165 }, // Cornflowers are smaller
-        poppy: { small: 115, medium: 145, mature: 175 }, // Poppies are medium-small
+        // Medium height flowers
+        tulip: { small: 120, medium: 150, mature: 190 }, // Tulips are medium height
+        daisy: { small: 115, medium: 145, mature: 180 }, // Oxeye daisies are medium
+        poppy: { small: 110, medium: 140, mature: 175 }, // Poppies are delicate but medium
 
-        // Tiny flowers
-        "azure-bluet": { small: 90, medium: 120, mature: 150 }, // Very small wildflowers
-        "blue-orchid": { small: 100, medium: 130, mature: 160 }, // Orchids are elegant but small
-        "cyan-flower": { small: 95, medium: 125, mature: 155 }, // Small wildflowers
+        // Shorter flowers
+        lily: { small: 100, medium: 130, mature: 160 }, // Lily of valley is low-growing
+        cornflower: { small: 95, medium: 125, mature: 155 }, // Cornflowers are compact
+        "blue-orchid": { small: 90, medium: 120, mature: 150 }, // Orchids are elegant but shorter
+
+        // Small/ground flowers
+        "azure-bluet": { small: 70, medium: 90, mature: 120 }, // Very small wildflowers
+        "cyan-flower": { small: 75, medium: 95, mature: 125 }, // Small wildflowers
       }
 
-      // Default for wildflowers or unknown types
-      const defaultSizes = { small: 120, medium: 150, mature: 180 }
+      // Default for wildflowers or unknown types (medium size)
+      const defaultSizes = { small: 110, medium: 140, mature: 170 }
 
       return baseSizes[flowerType as keyof typeof baseSizes] || defaultSizes
     }
@@ -470,7 +528,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             width: `${sizes.small}px`,
-            height: `${sizes.small}px`,
+            height: "auto", // Let height scale naturally
           }}
         />
       )
@@ -522,7 +580,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             width: `${sizes.medium}px`,
-            height: `${sizes.medium}px`,
+            height: "auto", // Let height scale naturally
           }}
         />
       )
@@ -575,7 +633,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             width: `${sizes.mature}px`,
-            height: `${sizes.mature}px`,
+            height: "auto", // Let height scale naturally
           }}
         />
       )
@@ -592,7 +650,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         {recentActivity.length > 0 && (
           <div
             className="fixed left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "370px" }} // Updated position
+            style={{ bottom: "410px" }} // Updated position
           >
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
@@ -603,7 +661,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         )}
 
         {/* Main Garden Area - transparent background, no soil strip */}
-        <div className="relative overflow-hidden" style={{ height: "280px" }}>
+        <div className="relative overflow-hidden" style={{ height: "320px" }}>
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div
@@ -629,18 +687,43 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             </div>
           )}
 
+          {/* Bunny Animation */}
+          {bunnyActive && (
+            <div
+              className="absolute bottom-0 pointer-events-none transition-all duration-2000 ease-in-out"
+              style={{
+                left: `${bunnyPosition}%`,
+                transform: "translateX(-50%)",
+                zIndex: 60,
+              }}
+            >
+              <img
+                src={
+                  bunnyPhase === "eating"
+                    ? "/garden/effects/pixelbunnyeating.gif"
+                    : "/garden/effects/bunnyhoppingbackandforth.gif"
+                }
+                alt="Garden Bunny"
+                className="pixelated"
+                style={{
+                  imageRendering: "pixelated",
+                  width: "120px",
+                  height: "auto",
+                }}
+              />
+            </div>
+          )}
+
           {/* Flower Reveals - centered horizontally above garden */}
-          {Object.entries(flowerReveals).map(([flowerId, reveal]) => (
+          {Object.keys(flowerReveals).map((flowerId) => (
             <div
               key={flowerId}
-              className="fixed left-1/2 transform -translate-x-1/2 transition-all duration-1000 pointer-events-none z-30"
-              style={{ bottom: "390px" }} // Updated position
+              className="fixed left-1/2 transform -translate-x-1/2 z-30 pointer-events-none"
+              style={{ bottom: "440px", left: `${flowerReveals[flowerId].x}%` }} // Updated position
             >
-              <div className="text-center animate-bounce">
-                <span className="text-xl font-black text-white font-sans uppercase bg-black bg-opacity-50 px-2 py-1 rounded">
-                  {reveal.type}
-                </span>
-              </div>
+              <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
+                {flowerReveals[flowerId].type}
+              </span>
             </div>
           ))}
 
@@ -648,7 +731,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           {flowers.map((flower) => (
             <div
               key={flower.id}
-              className="absolute bottom-0 transform -translate-x-1/2 transition-all duration-1000"
+              className="absolute bottom-10 transform -translate-x-1/2 transition-all duration-1000" // Changed from bottom-0 to bottom-10
               style={{ left: `${flower.x}%` }}
               title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${flower.stage}) - ${Math.floor((Date.now() - flower.plantedAt) / 1000)}s old`}
             >

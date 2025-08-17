@@ -501,7 +501,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
       if (userPickableFlowers.length === 0) {
         addActivity(
-          `⏰ ${username.toUpperCase()}, YOUR ${userMatureFlowers.length} MATURE FLOWERS ARE STILL TOO YOUNG TO PICK!`,
+          `⏰ ${username.toUpperCase()}, YOUR ${userMatureFlowers.length} FLOWERS NEED TO AGE 5+ MINUTES BEFORE PICKING!`,
           7000,
         )
         return

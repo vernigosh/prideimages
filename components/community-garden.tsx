@@ -103,7 +103,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     setBunnyActive(true)
     setBunnyPhase("arriving")
     setBunnyOpacity(0)
-    setLastBunnyVisit(now)
+    // Don't set lastBunnyVisit here since it's already set in the interval
+
     // ... rest of function stays the same
 
     // Calculate how many flowers to eat (1-5 or up to half the mature flowers)
@@ -184,13 +185,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           `Bunny check: ${Math.floor(timeSinceLastBunny / 1000)}s since last visit, need ${20 * 60}s, bunnyActive: ${bunnyActive}`,
         )
 
+        // Only trigger bunny if enough time has passed AND bunny is not active AND we haven't triggered recently
         if (timeSinceLastBunny > twentyMinutes && !bunnyActive) {
           const matureFlowers = prevFlowers.filter((f) => f.stage === "fully-mature")
           console.log(`Bunny trigger conditions met: ${matureFlowers.length} mature flowers available`)
 
           if (matureFlowers.length > 0) {
             console.log("🐰 TRIGGERING BUNNY VISIT - 20 minutes elapsed")
-            triggerBunnyVisit(matureFlowers)
+
+            // Immediately update lastBunnyVisit to prevent multiple triggers
+            setLastBunnyVisit(now)
+
+            // Trigger the bunny visit
+            setTimeout(() => triggerBunnyVisit(matureFlowers), 100)
           }
         }
 
@@ -279,7 +286,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     return () => {
       if (growthIntervalRef.current) clearInterval(growthIntervalRef.current)
     }
-  }, [isVisible])
+  }, [isVisible, bunnyActive, lastBunnyVisit]) // Added bunnyActive and lastBunnyVisit to dependencies
 
   // Chat command handlers
   useEffect(() => {

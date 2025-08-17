@@ -483,7 +483,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             animationDuration: "3s",
-            maxHeight: "200px",
+            height: "80px", // Changed from 160px to 80px (50% smaller)
             width: "auto",
           }}
         />
@@ -763,7 +763,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           {/* Chill Bunny Animation - fades in/out at random position */}
           {bunnyActive && (
             <div
-              className="absolute bottom-0 transform -translate-x-1/2 pointer-events-none transition-opacity duration-2000 ease-in-out"
+              className="absolute bottom-2 transform -translate-x-1/2 pointer-events-none transition-opacity duration-2000 ease-in-out"
               style={{
                 left: `${bunnyPosition}%`,
                 opacity: bunnyOpacity,

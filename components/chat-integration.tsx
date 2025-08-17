@@ -275,6 +275,14 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide garden command detected")
           window.dispatchEvent(new CustomEvent("hideGarden", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!testspawn" && (isMod || isBroadcaster || isVip)) {
+          console.log("Test spawn flowers command detected")
+          window.dispatchEvent(new Event("spawnTestFlowers"))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!testbunny" && (isMod || isBroadcaster || isVip)) {
+          console.log("Test bunny visit command detected")
+          window.dispatchEvent(new CustomEvent("testBunnyVisit", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
         }
@@ -611,6 +619,14 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             <div>
               <code className="bg-black text-red-400 px-2 py-1 rounded">!hidegarden</code>
               <span className="ml-2">Hide garden (mods only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-red-400 px-2 py-1 rounded">!testspawn</code>
+              <span className="ml-2">Spawn 20 test flowers (mods only)</span>
+            </div>
+            <div>
+              <code className="bg-black text-red-400 px-2 py-1 rounded">!testbunny</code>
+              <span className="ml-2">Test bunny visit (mods only)</span>
             </div>
           </div>
           <div className="mt-4 p-3 bg-black text-white rounded">

@@ -47,10 +47,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [bunnyPosition, setBunnyPosition] = useState(50)
   const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const rainTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const bunnyTimeoutsRef = useRef<NodeJS.Timeout[]>([]) // Track all bunny timeouts
   const [flowerReveals, setFlowerReveals] = useState<{ [key: string]: { type: string; x: number; timestamp: number } }>(
     {},
   )
   const [lastWaterTime, setLastWaterTime] = useState(0) // New state variable for tracking the last water time
+  const [userFlowerCounts, setUserFlowerCounts] = useState<{ [username: string]: number }>({}) // New state for user flower totals
+  const [userPickedTotals, setUserPickedTotals] = useState<{ [username: string]: number }>({}) // New state for lifetime picked totals
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -91,58 +94,73 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   }
 
   const triggerBunnyVisit = (matureFlowers: Flower[]) => {
-    // Safety check to prevent rapid re-triggering
     const now = Date.now()
+
+    // Enhanced safety check with detailed logging
     if (now - lastBunnyVisit < 19 * 60 * 1000) {
-      // Must be at least 19 minutes
-      console.log("🐰 BUNNY VISIT BLOCKED - Too soon since last visit")
+      const timeSince = Math.floor((now - lastBunnyVisit) / 1000)
+      console.log(`🐰 BUNNY VISIT BLOCKED - Only ${timeSince}s since last visit (need 1140s)`)
       return
     }
 
-    console.log("🐰 BUNNY VISIT STARTING")
+    if (bunnyActive) {
+      console.log("🐰 BUNNY VISIT BLOCKED - Bunny already active")
+      return
+    }
+
+    // Clear any existing bunny timeouts to prevent overlapping animations
+    bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
+    bunnyTimeoutsRef.current = []
+
+    console.log("🐰 BUNNY VISIT STARTING - All checks passed")
+    console.log(`🐰 Mature flowers available: ${matureFlowers.length}`)
+
     setBunnyActive(true)
     setBunnyPhase("arriving")
     setBunnyOpacity(0)
-    // Don't set lastBunnyVisit here since it's already set in the interval
-
-    // ... rest of function stays the same
 
     // Calculate how many flowers to eat (1-5 or up to half the mature flowers)
     const maxToEat = Math.min(5, Math.ceil(matureFlowers.length / 2))
     const flowersToEat = Math.floor(Math.random() * maxToEat) + 1
     setBunnyEatenCount(flowersToEat)
+    console.log(`🐰 Bunny will eat ${flowersToEat} flowers`)
 
     // Pick a random position along the flower bed - avoid edges for bunny
     const bunnyX = Math.random() * 67 + 18 // 18% to 85% to avoid edges and allow for bunny size
     setBunnyPosition(bunnyX)
+    console.log(`🐰 Bunny position: ${bunnyX.toFixed(1)}%`)
 
     // Just one initial message with shorter duration
     addActivity(`🐰 A WILD BUNNY APPEARS IN THE GARDEN!`, 4000)
 
     // Remove the "appears" message after 4 seconds (instead of default 15)
-    setTimeout(() => {
+    const timeout1 = setTimeout(() => {
       setRecentActivity((current) => current.filter((item) => !item.includes("A WILD BUNNY APPEARS")))
     }, 4000)
+    bunnyTimeoutsRef.current.push(timeout1)
 
-    // New extended chill animation sequence
     // Phase 1: Fade in and explore for much longer (12 seconds)
-    setTimeout(() => {
+    const timeout2 = setTimeout(() => {
+      console.log("🐰 Phase: EXPLORING")
       setBunnyPhase("exploring")
       setBunnyOpacity(1)
     }, 500)
+    bunnyTimeoutsRef.current.push(timeout2)
 
     // Phase 2: Start eating (after 12.5 seconds total)
-    setTimeout(() => {
+    const timeout3 = setTimeout(() => {
+      console.log("🐰 Phase: EATING")
       setBunnyPhase("eating")
 
       // Add message about eating
       const munchingMessage = `🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} DELICIOUS FLOWERS!`
       addActivity(munchingMessage, 4000)
 
-      // Remove the munching message after 4 seconds (instead of when bunny stops eating)
-      setTimeout(() => {
+      // Remove the munching message after 4 seconds
+      const timeout3a = setTimeout(() => {
         setRecentActivity((current) => current.filter((item) => !item.includes("THE BUNNY IS MUNCHING")))
       }, 4000)
+      bunnyTimeoutsRef.current.push(timeout3a)
 
       // Remove random mature flowers
       setFlowers((prev) => {
@@ -150,54 +168,77 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         const toKeep = prev.filter((f) => f.stage !== "fully-mature")
         const shuffled = [...mature].sort(() => Math.random() - 0.5)
         const remaining = shuffled.slice(flowersToEat)
+        console.log(`🐰 Removed ${flowersToEat} flowers, ${remaining.length} mature flowers remain`)
         return [...toKeep, ...remaining]
       })
     }, 12500)
+    bunnyTimeoutsRef.current.push(timeout3)
 
     // Phase 3: Play around after eating (after 19.5 seconds total)
-    setTimeout(() => {
+    const timeout4 = setTimeout(() => {
+      console.log("🐰 Phase: PLAYING")
       setBunnyPhase("playing")
     }, 19500)
+    bunnyTimeoutsRef.current.push(timeout4)
 
     // Phase 4: Start leaving (after 27.5 seconds total)
-    setTimeout(() => {
+    const timeout5 = setTimeout(() => {
+      console.log("🐰 Phase: LEAVING")
       setBunnyPhase("leaving")
       setBunnyOpacity(0)
 
       // Clean up after fade out completes
-      setTimeout(() => {
+      const timeout5a = setTimeout(() => {
+        console.log("🐰 BUNNY VISIT COMPLETE - Bunny has left the garden")
         setBunnyActive(false)
+        // Clear the timeouts array since this visit is complete
+        bunnyTimeoutsRef.current = []
       }, 2000)
+      bunnyTimeoutsRef.current.push(timeout5a)
     }, 27500)
+    bunnyTimeoutsRef.current.push(timeout5)
+
+    console.log(`🐰 Bunny visit scheduled with ${bunnyTimeoutsRef.current.length} timeouts`)
   }
 
   // New 5-stage growth system: 0-45s sprout, 45s-60s blooming, 60s-90s small, 90s-150s medium, 150s+ fully-mature
   useEffect(() => {
     if (!isVisible) return
 
+    console.log("🌱 Growth interval starting")
+
     growthIntervalRef.current = setInterval(() => {
       setFlowers((prevFlowers) => {
         const now = Date.now()
         const timeSinceLastBunny = now - lastBunnyVisit
-        const twentyMinutes = 20 * 60 * 1000
+        const twentyMinutes = 20 * 60 * 1000 // 1,200,000 milliseconds
 
-        console.log(
-          `Bunny check: ${Math.floor(timeSinceLastBunny / 1000)}s since last visit, need ${20 * 60}s, bunnyActive: ${bunnyActive}`,
-        )
+        // Enhanced bunny timing logs
+        const minutesSince = Math.floor(timeSinceLastBunny / 60000)
+        const secondsSince = Math.floor((timeSinceLastBunny % 60000) / 1000)
 
-        // Only trigger bunny if enough time has passed AND bunny is not active AND we haven't triggered recently
+        if (minutesSince >= 19) {
+          // Only log when we're close to trigger time
+          console.log(
+            `🐰 Bunny check: ${minutesSince}m ${secondsSince}s since last visit (need 20m), bunnyActive: ${bunnyActive}`,
+          )
+        }
+
+        // Only trigger bunny if enough time has passed AND bunny is not active
         if (timeSinceLastBunny > twentyMinutes && !bunnyActive) {
           const matureFlowers = prevFlowers.filter((f) => f.stage === "fully-mature")
-          console.log(`Bunny trigger conditions met: ${matureFlowers.length} mature flowers available`)
+          console.log(`🐰 TRIGGER CONDITIONS MET: ${matureFlowers.length} mature flowers available`)
 
           if (matureFlowers.length > 0) {
-            console.log("🐰 TRIGGERING BUNNY VISIT - 20 minutes elapsed")
+            console.log("🐰 TRIGGERING BUNNY VISIT - 20+ minutes elapsed")
 
             // Immediately update lastBunnyVisit to prevent multiple triggers
             setLastBunnyVisit(now)
 
-            // Trigger the bunny visit
+            // Trigger the bunny visit with a small delay
             setTimeout(() => triggerBunnyVisit(matureFlowers), 100)
+          } else {
+            console.log("🐰 No mature flowers available for bunny visit")
           }
         }
 
@@ -281,17 +322,21 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           return { ...flower, stage: newStage }
         })
       })
-    }, 5000)
+    }, 5000) // Check every 5 seconds
 
     return () => {
+      console.log("🌱 Growth interval stopping")
       if (growthIntervalRef.current) clearInterval(growthIntervalRef.current)
+      // Clean up bunny timeouts when component unmounts
+      bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
+      bunnyTimeoutsRef.current = []
     }
-  }, [isVisible, bunnyActive, lastBunnyVisit]) // Added bunnyActive and lastBunnyVisit to dependencies
+  }, [isVisible, bunnyActive, lastBunnyVisit]) // Dependencies ensure proper updates
 
   // Chat command handlers
   useEffect(() => {
     const handlePlantFlower = (event: CustomEvent) => {
-      const { username } = event.detail // Remove flowerType and color from destructuring
+      const { username } = event.detail
 
       // Randomize flower type
       const flowerTypeKeys = Object.keys(flowerTypes) as Array<keyof typeof flowerTypes>
@@ -300,11 +345,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       console.log(`Community Garden: ${username} planting ${randomFlowerType}`)
 
       const now = Date.now()
-      // Check if user has planted 2 flowers recently (allow 2 flowers per user)
+      // Check if user has planted 2 flowers recently (allow 2 flowers per user per 5-minute window)
       const userFlowers = flowers.filter((f) => f.plantedBy === username && now - f.plantedAt < 300000)
       if (userFlowers.length >= 2) {
         console.log("Community Garden: User has reached flower limit")
-        addActivity(`🌸 ${username.toUpperCase()}, YOU'VE PLANTED YOUR 2 FLOWERS! WAIT 5 MINUTES TO PLANT MORE.`, 7000)
+        addActivity(
+          `🌸 ${username.toUpperCase()}, YOU'VE USED YOUR 2-FLOWER ALLOWANCE! WAIT 5 MINUTES FOR A FRESH START!`,
+          7000,
+        )
         return
       }
 
@@ -346,12 +394,27 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
 
       setFlowers((prev) => [...prev, newFlower])
+
+      // Update user's session flower count (this will reset to 0 when they pick)
+      setUserFlowerCounts((prev) => ({
+        ...prev,
+        [username]: (prev[username] || 0) + 1,
+      }))
+
+      const userFlowerCount = (userFlowerCounts[username] || 0) + 1 // +1 for the flower they just planted
+
       setGardenStats((prev) => ({
         ...prev,
         totalFlowers: prev.totalFlowers + 1,
         lastActivity: `${username} planted a ${flowerTypes[newFlower.type].name}!`,
       }))
-      addActivity(`🌱 ${username.toUpperCase()} PLANTED A FLOWER`, 5000)
+
+      // Clean session-based messaging
+      if (userFlowerCount === 1) {
+        addActivity(`🌱 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLANT 1 MORE!`, 5000)
+      } else {
+        addActivity(`🌸 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLOT COMPLETE!`, 5000)
+      }
     }
 
     const handleWaterGarden = (event: CustomEvent) => {
@@ -433,18 +496,24 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         return
       }
 
-      // Show the nice message format for user's own flowers
-      if (userPickableFlowers.length < userMatureFlowers.length) {
-        addActivity(
-          `🌸 ${username.toUpperCase()}, YOU HAVE ${userMatureFlowers.length} MATURE FLOWERS, BUT ONLY ${userPickableFlowers.length} WERE READY TO PICK!`,
-          5000,
-        )
-      } else {
-        addActivity(
-          `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} OF THEIR OWN BEAUTIFUL FLOWERS!`,
-          5000,
-        )
-      }
+      // Update lifetime picked total
+      const newPickedTotal = (userPickedTotals[username] || 0) + userPickableFlowers.length
+      setUserPickedTotals((prev) => ({
+        ...prev,
+        [username]: newPickedTotal,
+      }))
+
+      // Reset user's session flower count since they picked their flowers
+      setUserFlowerCounts((prev) => ({
+        ...prev,
+        [username]: 0,
+      }))
+
+      // Show picking message with lifetime total
+      addActivity(
+        `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}!`,
+        5000,
+      )
 
       // Remove only the user's pickable flowers
       setFlowers((prev) =>
@@ -484,9 +553,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     const handleResetGarden = (event: CustomEvent) => {
       console.log("Community Garden: Resetting garden", event.detail)
       setFlowers([])
+      setUserFlowerCounts({}) // Reset user flower counts
+      setUserPickedTotals({}) // Reset user picked totals
       setLastBunnyVisit(Date.now()) // Reset bunny timer
       setLastWaterTime(0) // Reset water cooldown
       setBunnyActive(false)
+      // Clear any active bunny timeouts
+      bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
+      bunnyTimeoutsRef.current = []
       setGardenStats({
         totalFlowers: 0,
         activeGardeners: 0,
@@ -494,6 +568,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         waterLevel: 100,
       })
       setRecentActivity([])
+      console.log("🐰 Garden reset - bunny timer reset to now")
     }
 
     const handleHideGarden = (event: CustomEvent) => {
@@ -506,7 +581,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     }
 
     const handleTestBunnyVisit = () => {
-      console.log("Manual test: Triggering bunny visit")
+      console.log("🐰 MANUAL TEST: Triggering bunny visit")
       // Create some test mature flowers if none exist
       const matureFlowers = flowers.filter((f) => f.stage === "fully-mature")
       if (matureFlowers.length === 0) {
@@ -535,12 +610,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           })
         }
         setFlowers((prev) => [...prev, ...testMatureFlowers])
+        console.log(`🐰 TEST: Created ${testMatureFlowers.length} test mature flowers`)
 
         // Trigger bunny after flowers are added
         setTimeout(() => {
+          console.log("🐰 TEST: Triggering bunny with test flowers")
           triggerBunnyVisit(testMatureFlowers)
         }, 100)
       } else {
+        console.log(`🐰 TEST: Using existing ${matureFlowers.length} mature flowers`)
         triggerBunnyVisit(matureFlowers)
       }
     }
@@ -804,22 +882,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     return null
   }
 
-  // Add this debugging function after the getFlowerSize function
-  const debugFlowerPositioning = (flower: Flower, element: HTMLElement | null) => {
-    if (element) {
-      const rect = element.getBoundingClientRect()
-      const flowerKey = flower.type === "wildflower" ? "wildflower" : flower.type
-      console.log(`🌸 DEBUG: ${flower.type} (${flower.stage})`, {
-        flowerHeight: rect.height,
-        flowerWidth: rect.width,
-        bottomPosition: window.innerHeight - rect.bottom,
-        topPosition: rect.top,
-        isClipped: rect.top < 0,
-        containerHeight: element.closest('[style*="height: 320px"]')?.getBoundingClientRect().height,
-      })
-    }
-  }
-
   if (!isVisible) return null
 
   return (
@@ -913,12 +975,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
               className="absolute bottom-2 transform -translate-x-1/2 transition-all duration-1000"
               style={{ left: `${flower.x}%` }}
               title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${flower.stage}) - ${Math.floor((Date.now() - flower.plantedAt) / 1000)}s old`}
-              ref={(el) => {
-                // Debug positioning for tall flowers
-                if (flower.stage === "fully-mature" && (flower.type === "sunflower" || flower.type === "rose")) {
-                  debugFlowerPositioning(flower, el)
-                }
-              }}
             >
               {getFlowerDisplay(flower)}
               {/* Show sparkles only on non-fully-mature flowers */}

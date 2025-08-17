@@ -86,7 +86,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       totalFlowers: 20,
       lastActivity: "Test spawned 20 flowers!",
     }))
-    addActivity(`🧪 TEST SPAWNED 20 FLOWERS AT DIFFERENT STAGES!`)
+    addActivity(`🧪 TEST SPAWNED 20 FLOWERS AT DIFFERENT STAGES!`, 5000)
   }
 
   const triggerBunnyVisit = (matureFlowers: Flower[]) => {
@@ -105,7 +105,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     setBunnyPosition(bunnyX)
 
     // Just one initial message with shorter duration
-    addActivity(`🐰 A WILD BUNNY APPEARS IN THE GARDEN!`)
+    addActivity(`🐰 A WILD BUNNY APPEARS IN THE GARDEN!`, 4000)
 
     // Remove the "appears" message after 4 seconds (instead of default 15)
     setTimeout(() => {
@@ -125,7 +125,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
       // Add message about eating
       const munchingMessage = `🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} DELICIOUS FLOWERS!`
-      addActivity(munchingMessage)
+      addActivity(munchingMessage, 4000)
 
       // Remove the munching message after 4 seconds (instead of when bunny stops eating)
       setTimeout(() => {
@@ -240,14 +240,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       const userFlowers = flowers.filter((f) => f.plantedBy === username && now - f.plantedAt < 300000)
       if (userFlowers.length >= 2) {
         console.log("Community Garden: User has reached flower limit")
-        addActivity(`🌸 ${username.toUpperCase()}, YOU'VE PLANTED YOUR 2 FLOWERS! WAIT 5 MINUTES TO PLANT MORE.`)
+        addActivity(`🌸 ${username.toUpperCase()}, YOU'VE PLANTED YOUR 2 FLOWERS! WAIT 5 MINUTES TO PLANT MORE.`, 7000)
         return
       }
 
       // Check if garden is full
       if (flowers.length >= 20) {
         console.log("Community Garden: Garden is full")
-        addActivity(`🌸 GARDEN IS FULL! TRY HARVESTING SOME FLOWERS FIRST.`)
+        addActivity(`🌸 GARDEN IS FULL! TRY HARVESTING SOME FLOWERS FIRST.`, 7000)
         return
       }
 
@@ -287,7 +287,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         totalFlowers: prev.totalFlowers + 1,
         lastActivity: `${username} planted a ${flowerTypes[newFlower.type].name}!`,
       }))
-      addActivity(`🌱 ${username.toUpperCase()} PLANTED A FLOWER`)
+      addActivity(`🌱 ${username.toUpperCase()} PLANTED A FLOWER`, 5000)
     }
 
     const handleWaterGarden = (event: CustomEvent) => {
@@ -302,7 +302,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         waterLevel: Math.min(100, prev.waterLevel + 10),
         lastActivity: `${username} watered the garden!`,
       }))
-      addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`)
+      addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`, 5000)
 
       // Show rain effect for 5 seconds - improved approach
       console.log("Starting rain animation...")
@@ -333,18 +333,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       const userPickableFlowers = userMatureFlowers.filter((f) => now - f.plantedAt >= 300000) // 5+ minutes old
 
       if (userFlowers.length === 0) {
-        addActivity(`🌱 ${username.toUpperCase()}, YOU HAVEN'T PLANTED ANY FLOWERS YET!`)
+        addActivity(`🌱 ${username.toUpperCase()}, YOU HAVEN'T PLANTED ANY FLOWERS YET!`, 7000)
         return
       }
 
       if (userMatureFlowers.length === 0) {
-        addActivity(`🌱 ${username.toUpperCase()}, YOUR FLOWERS AREN'T READY TO PICK YET!`)
+        addActivity(`🌱 ${username.toUpperCase()}, YOUR FLOWERS AREN'T READY TO PICK YET!`, 7000)
         return
       }
 
       if (userPickableFlowers.length === 0) {
         addActivity(
           `⏰ ${username.toUpperCase()}, YOUR ${userMatureFlowers.length} MATURE FLOWERS ARE STILL TOO YOUNG TO PICK!`,
+          7000,
         )
         return
       }
@@ -353,9 +354,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       if (userPickableFlowers.length < userMatureFlowers.length) {
         addActivity(
           `🌸 ${username.toUpperCase()}, YOU HAVE ${userMatureFlowers.length} MATURE FLOWERS, BUT ONLY ${userPickableFlowers.length} WERE READY TO PICK!`,
+          5000,
         )
       } else {
-        addActivity(`🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} OF THEIR OWN BEAUTIFUL FLOWERS!`)
+        addActivity(
+          `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} OF THEIR OWN BEAUTIFUL FLOWERS!`,
+          5000,
+        )
       }
 
       // Remove only the user's pickable flowers
@@ -377,7 +382,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       const oldFlowers = flowers.filter((f) => f.plantedAt < thirtyMinutesAgo)
 
       if (oldFlowers.length === 0) {
-        addActivity(`🧹 ${username.toUpperCase()}, NO FLOWERS OLDER THAN 30 MINUTES FOUND!`)
+        addActivity(`🧹 ${username.toUpperCase()}, NO FLOWERS OLDER THAN 30 MINUTES FOUND!`, 7000)
         return
       }
 
@@ -387,7 +392,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         ...prev,
         lastActivity: `${username} picked ${oldFlowers.length} old flowers!`,
       }))
-      addActivity(`🧹 ${username.toUpperCase()} PICKED ${oldFlowers.length} OLD FLOWERS TO MAKE ROOM FOR NEW GROWTH!`)
+      addActivity(
+        `🧹 ${username.toUpperCase()} PICKED ${oldFlowers.length} OLD FLOWERS TO MAKE ROOM FOR NEW GROWTH!`,
+        5000,
+      )
     }
 
     const handleResetGarden = (event: CustomEvent) => {
@@ -478,13 +486,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
 
-  const addActivity = (activity: string) => {
+  const addActivity = (activity: string, duration = 5000) => {
     setRecentActivity((prev) => [activity, ...prev.slice(0, 4)])
 
-    // Clear banner after 15 seconds (increased from 10 seconds)
+    // Clear banner after specified duration
     setTimeout(() => {
       setRecentActivity((current) => current.filter((item) => item !== activity))
-    }, 15000)
+    }, duration)
   }
 
   const getFlowerDisplay = (flower: Flower) => {

@@ -483,7 +483,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             animationDuration: "3s",
-            maxHeight: "160px",
+            maxHeight: "200px",
             width: "auto",
           }}
         />
@@ -734,7 +734,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         )}
 
         {/* Main Garden Area - transparent background, no soil strip */}
-        <div className="relative border-2 border-red-500" style={{ height: "320px", overflow: "visible" }}>
+        <div className="relative" style={{ height: "320px", overflow: "visible" }}>
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div

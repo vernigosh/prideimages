@@ -194,7 +194,45 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
           // Trigger reveal when flower reaches small stage (after sparkle)
           if (oldStage === "blooming" && newStage === "small") {
-            const flowerName = flowerTypes[flower.type].name.toUpperCase()
+            let flowerName = flowerTypes[flower.type].name.toUpperCase()
+
+            // For wildflowers, get the specific type name
+            if (flower.type === "wildflower") {
+              const wildflowerImages = [
+                "/garden/flowers/azure-bluet-1.webp",
+                "/garden/flowers/azure-bluet-2.webp",
+                "/garden/flowers/azure-bluet-3.webp",
+                "/garden/flowers/cornflower.webp",
+                "/garden/flowers/allium.webp",
+                "/garden/flowers/blue-orchid.webp",
+                "/garden/flowers/cyan-flower.webp",
+                "/garden/flowers/peony.webp",
+                "/garden/flowers/poppy.webp",
+                "/garden/flowers/lilac.webp",
+              ]
+
+              const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
+              const randomIndex = seedValue % wildflowerImages.length
+              const imagePath = wildflowerImages[randomIndex]
+              const specificType = imagePath.split("/").pop()?.split(".")[0] || "wildflower"
+
+              // Convert filename to display name
+              const displayNames: { [key: string]: string } = {
+                "azure-bluet-1": "AZURE BLUET",
+                "azure-bluet-2": "AZURE BLUET",
+                "azure-bluet-3": "AZURE BLUET",
+                cornflower: "CORNFLOWER",
+                allium: "ALLIUM",
+                "blue-orchid": "BLUE ORCHID",
+                "cyan-flower": "CYAN FLOWER",
+                peony: "PEONY",
+                poppy: "POPPY",
+                lilac: "LILAC",
+              }
+
+              flowerName = displayNames[specificType] || "WILDFLOWER"
+            }
+
             setFlowerReveals((prev) => ({
               ...prev,
               [flower.id]: {

@@ -167,8 +167,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         const mature = prev.filter((f) => f.stage === "fully-mature")
         const toKeep = prev.filter((f) => f.stage !== "fully-mature")
         const shuffled = [...mature].sort(() => Math.random() - 0.5)
+        const toRemove = shuffled.slice(0, flowersToEat)
         const remaining = shuffled.slice(flowersToEat)
-        console.log(`🐰 Removed ${flowersToEat} flowers, ${remaining.length} mature flowers remain`)
+
+        console.log(`🐰 BEFORE EATING:`)
+        console.log(`🐰 - Total flowers: ${prev.length}`)
+        console.log(`🐰 - Mature flowers: ${mature.length}`)
+        console.log(`🐰 - Non-mature flowers: ${toKeep.length}`)
+        console.log(
+          `🐰 EATING ${toRemove.length} MATURE FLOWERS:`,
+          toRemove.map((f) => `${f.type} by ${f.plantedBy} (${f.stage})`),
+        )
+        console.log(`🐰 AFTER EATING: ${toKeep.length + remaining.length} flowers remain (${remaining.length} mature)`)
+
         return [...toKeep, ...remaining]
       })
     }, 12500)
@@ -969,20 +980,32 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           ))}
 
           {/* Flowers */}
-          {flowers.map((flower) => (
-            <div
-              key={flower.id}
-              className="absolute bottom-2 transform -translate-x-1/2 transition-all duration-1000"
-              style={{ left: `${flower.x}%` }}
-              title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${flower.stage}) - ${Math.floor((Date.now() - flower.plantedAt) / 1000)}s old`}
-            >
-              {getFlowerDisplay(flower)}
-              {/* Show sparkles only on non-fully-mature flowers */}
-              {flower.stage !== "fully-mature" && (
-                <div className="absolute -top-2 -right-2 text-lg animate-pulse">✨</div>
-              )}
-            </div>
-          ))}
+          {flowers.map((flower) => {
+            // Calculate real-time stage for tooltip
+            const now = Date.now()
+            const timeSincePlanted = now - flower.plantedAt
+            let currentStage: Flower["stage"] = "sprout"
+            if (timeSincePlanted > 150000) currentStage = "fully-mature"
+            else if (timeSincePlanted > 90000) currentStage = "medium"
+            else if (timeSincePlanted > 60000) currentStage = "small"
+            else if (timeSincePlanted > 45000) currentStage = "blooming"
+            else currentStage = "sprout"
+
+            return (
+              <div
+                key={flower.id}
+                className="absolute bottom-2 transform -translate-x-1/2 transition-all duration-1000"
+                style={{ left: `${flower.x}%` }}
+                title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${currentStage}) - ${Math.floor(timeSincePlanted / 1000)}s old`}
+              >
+                {getFlowerDisplay(flower)}
+                {/* Show sparkles only on non-fully-mature flowers */}
+                {flower.stage !== "fully-mature" && (
+                  <div className="absolute -top-2 -right-2 text-lg animate-pulse">✨</div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 

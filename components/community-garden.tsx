@@ -483,8 +483,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             animationDuration: "3s",
-            width: "80px",
-            height: "auto", // Let height scale naturally
+            maxHeight: "120px",
+            width: "auto",
           }}
         />
       )
@@ -498,8 +498,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated animate-pulse"
           style={{
             imageRendering: "pixelated",
-            width: "120px",
-            height: "auto",
+            maxHeight: "180px",
+            width: "auto",
           }}
         />
       )
@@ -586,8 +586,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated"
           style={{
             imageRendering: "pixelated",
-            width: `${sizes.small}px`,
-            height: "auto", // Let height scale naturally
+            maxHeight: "120px", // Fits well in container
+            width: "auto", // Let width scale naturally
           }}
         />
       )
@@ -638,8 +638,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated"
           style={{
             imageRendering: "pixelated",
-            width: `${sizes.medium}px`,
-            height: "auto", // Let height scale naturally
+            maxHeight: "180px", // Fits well in container
+            width: "auto", // Let width scale naturally
           }}
         />
       )
@@ -682,60 +682,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
       }
 
-      // Get CSS class for this flower type
-      const getFlowerClass = (flowerType: string) => {
-        const classMap = {
-          // Very tall flowers
-          sunflower: "garden-flower-sunflower",
-
-          // Tall flowers
-          lilac: "garden-flower-tall",
-          allium: "garden-flower-tall",
-
-          // Medium-tall flowers
-          rose: "garden-flower-rose",
-          peony: "garden-flower-medium-tall",
-
-          // Medium flowers
-          tulip: "garden-flower-medium",
-          daisy: "garden-flower-medium",
-          poppy: "garden-flower-medium",
-
-          // Shorter flowers
-          lily: "garden-flower-short",
-          cornflower: "garden-flower-short",
-          "blue-orchid": "garden-flower-short",
-
-          // Small flowers
-          "azure-bluet": "garden-flower-small",
-          "cyan-flower": "garden-flower-small",
-        }
-
-        return classMap[flowerType as keyof typeof classMap] || "garden-flower-medium"
-      }
-
-      const flowerClass = getFlowerClass(flowerKey)
-
-      // DEBUG: Log sizing information for sunflowers
-      if (flower.type === "sunflower") {
-        console.log(`🌻 SUNFLOWER DEBUG:`, {
-          flowerId: flower.id,
-          flowerType: flower.type,
-          flowerKey: flowerKey,
-          stage: flower.stage,
-          flowerClass: flowerClass,
-          imageSrc: imageSrc,
-        })
-      }
-
       return (
         <img
           src={imageSrc || "/placeholder.svg"}
           alt={flowerTypes[flower.type].name}
-          className={`pixelated ${flowerClass}`}
+          className="pixelated"
           style={{
             imageRendering: "pixelated",
-            height: "auto",
+            maxHeight: "280px", // Fits within 320px container with room for bottom margin
+            width: "auto", // Let width scale naturally
           }}
         />
       )
@@ -871,49 +826,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
       {/* Global CSS for flower sizing and rain animation */}
       <style jsx global>{`
-        /* Flower size classes - explicit dimensions that override everything */
-        .garden-flower-sunflower {
-          width: 280px !important;
-          max-width: 280px !important;
-          min-width: 280px !important;
-        }
-        
-        .garden-flower-rose {
-          width: 220px !important;
-          max-width: 220px !important;
-          min-width: 220px !important;
-        }
-        
-        .garden-flower-tall {
-          width: 250px !important;
-          max-width: 250px !important;
-          min-width: 250px !important;
-        }
-        
-        .garden-flower-medium-tall {
-          width: 230px !important;
-          max-width: 230px !important;
-          min-width: 230px !important;
-        }
-        
-        .garden-flower-medium {
-          width: 190px !important;
-          max-width: 190px !important;
-          min-width: 190px !important;
-        }
-        
-        .garden-flower-short {
-          width: 160px !important;
-          max-width: 160px !important;
-          min-width: 160px !important;
-        }
-        
-        .garden-flower-small {
-          width: 120px !important;
-          max-width: 120px !important;
-          min-width: 120px !important;
-        }
-
         @keyframes rainSlide {
           0% {
             left: -600px;

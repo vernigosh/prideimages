@@ -404,16 +404,25 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       // Create some test mature flowers if none exist
       const matureFlowers = flowers.filter((f) => f.stage === "fully-mature")
       if (matureFlowers.length === 0) {
-        // Create a few test mature flowers first
+        // Create test mature flowers - specifically roses and sunflowers to test cropping
         const now = Date.now()
         const testMatureFlowers: Flower[] = []
-        for (let i = 0; i < 3; i++) {
+
+        // Add 2 roses and 2 sunflowers for cropping test - make sure they have unique IDs
+        const testFlowerData = [
+          { type: "rose", user: "TestUser0" },
+          { type: "sunflower", user: "TestUser1" },
+          { type: "rose", user: "TestUser2" },
+          { type: "sunflower", user: "TestUser3" },
+        ] as const
+
+        for (let i = 0; i < 4; i++) {
           testMatureFlowers.push({
-            id: `test-mature-${now}-${i}`,
-            type: "rose",
+            id: `test-mature-${now}-${i}-${testFlowerData[i].type}`, // More unique ID
+            type: testFlowerData[i].type,
             color: "mixed",
-            x: 30 + i * 20,
-            plantedBy: `TestUser${i}`,
+            x: 25 + i * 20, // Spread them out: 25%, 45%, 65%, 85%
+            plantedBy: testFlowerData[i].user,
             plantedAt: now - 400000, // Old enough to be mature
             stage: "fully-mature",
             lastWatered: now,
@@ -574,7 +583,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <img
           src={imageSrc || "/placeholder.svg"}
           alt="Small"
-          className="pixelated hover:scale-105 transition-transform duration-300"
+          className="pixelated"
           style={{
             imageRendering: "pixelated",
             width: `${sizes.small}px`,
@@ -626,7 +635,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <img
           src={imageSrc || "/placeholder.svg"}
           alt="Medium"
-          className="pixelated hover:scale-105 transition-transform duration-300"
+          className="pixelated"
           style={{
             imageRendering: "pixelated",
             width: `${sizes.medium}px`,
@@ -673,17 +682,60 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
       }
 
-      const sizes = getFlowerSize(flowerKey, "fully-mature")
+      // Get CSS class for this flower type
+      const getFlowerClass = (flowerType: string) => {
+        const classMap = {
+          // Very tall flowers
+          sunflower: "garden-flower-sunflower",
+
+          // Tall flowers
+          lilac: "garden-flower-tall",
+          allium: "garden-flower-tall",
+
+          // Medium-tall flowers
+          rose: "garden-flower-rose",
+          peony: "garden-flower-medium-tall",
+
+          // Medium flowers
+          tulip: "garden-flower-medium",
+          daisy: "garden-flower-medium",
+          poppy: "garden-flower-medium",
+
+          // Shorter flowers
+          lily: "garden-flower-short",
+          cornflower: "garden-flower-short",
+          "blue-orchid": "garden-flower-short",
+
+          // Small flowers
+          "azure-bluet": "garden-flower-small",
+          "cyan-flower": "garden-flower-small",
+        }
+
+        return classMap[flowerType as keyof typeof classMap] || "garden-flower-medium"
+      }
+
+      const flowerClass = getFlowerClass(flowerKey)
+
+      // DEBUG: Log sizing information for sunflowers
+      if (flower.type === "sunflower") {
+        console.log(`🌻 SUNFLOWER DEBUG:`, {
+          flowerId: flower.id,
+          flowerType: flower.type,
+          flowerKey: flowerKey,
+          stage: flower.stage,
+          flowerClass: flowerClass,
+          imageSrc: imageSrc,
+        })
+      }
 
       return (
         <img
           src={imageSrc || "/placeholder.svg"}
           alt={flowerTypes[flower.type].name}
-          className="pixelated hover:scale-105 transition-transform duration-300"
+          className={`pixelated ${flowerClass}`}
           style={{
             imageRendering: "pixelated",
-            width: `${sizes.mature}px`,
-            height: "auto", // Let height scale naturally
+            height: "auto",
           }}
         />
       )
@@ -691,11 +743,27 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     return null
   }
 
+  // Add this debugging function after the getFlowerSize function
+  const debugFlowerPositioning = (flower: Flower, element: HTMLElement | null) => {
+    if (element) {
+      const rect = element.getBoundingClientRect()
+      const flowerKey = flower.type === "wildflower" ? "wildflower" : flower.type
+      console.log(`🌸 DEBUG: ${flower.type} (${flower.stage})`, {
+        flowerHeight: rect.height,
+        flowerWidth: rect.width,
+        bottomPosition: window.innerHeight - rect.bottom,
+        topPosition: rect.top,
+        isClipped: rect.top < 0,
+        containerHeight: element.closest('[style*="height: 320px"]')?.getBoundingClientRect().height,
+      })
+    }
+  }
+
   if (!isVisible) return null
 
   return (
     <>
-      <div className="fixed left-0 right-0 z-10" style={{ bottom: "52px" }}>
+      <div className="fixed left-0 right-0 z-10" style={{ bottom: "48px" }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
@@ -711,7 +779,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         )}
 
         {/* Main Garden Area - transparent background, no soil strip */}
-        <div className="relative overflow-hidden" style={{ height: "400px" }}>
+        <div className="relative border-2 border-red-500" style={{ height: "320px", overflow: "visible" }}>
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div
@@ -781,9 +849,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           {flowers.map((flower) => (
             <div
               key={flower.id}
-              className="absolute bottom-10 transform -translate-x-1/2 transition-all duration-1000" // Changed from bottom-0 to bottom-10
+              className="absolute bottom-2 transform -translate-x-1/2 transition-all duration-1000"
               style={{ left: `${flower.x}%` }}
               title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${flower.stage}) - ${Math.floor((Date.now() - flower.plantedAt) / 1000)}s old`}
+              ref={(el) => {
+                // Debug positioning for tall flowers
+                if (flower.stage === "fully-mature" && (flower.type === "sunflower" || flower.type === "rose")) {
+                  debugFlowerPositioning(flower, el)
+                }
+              }}
             >
               {getFlowerDisplay(flower)}
               {/* Show sparkles only on non-fully-mature flowers */}
@@ -795,8 +869,51 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         </div>
       </div>
 
-      {/* Global CSS for rain animation */}
+      {/* Global CSS for flower sizing and rain animation */}
       <style jsx global>{`
+        /* Flower size classes - explicit dimensions that override everything */
+        .garden-flower-sunflower {
+          width: 280px !important;
+          max-width: 280px !important;
+          min-width: 280px !important;
+        }
+        
+        .garden-flower-rose {
+          width: 220px !important;
+          max-width: 220px !important;
+          min-width: 220px !important;
+        }
+        
+        .garden-flower-tall {
+          width: 250px !important;
+          max-width: 250px !important;
+          min-width: 250px !important;
+        }
+        
+        .garden-flower-medium-tall {
+          width: 230px !important;
+          max-width: 230px !important;
+          min-width: 230px !important;
+        }
+        
+        .garden-flower-medium {
+          width: 190px !important;
+          max-width: 190px !important;
+          min-width: 190px !important;
+        }
+        
+        .garden-flower-short {
+          width: 160px !important;
+          max-width: 160px !important;
+          min-width: 160px !important;
+        }
+        
+        .garden-flower-small {
+          width: 120px !important;
+          max-width: 120px !important;
+          min-width: 120px !important;
+        }
+
         @keyframes rainSlide {
           0% {
             left: -600px;

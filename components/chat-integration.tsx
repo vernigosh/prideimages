@@ -413,6 +413,18 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <Play className="w-4 h-4" />
               Spawn Test Flowers
             </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Triggering bunny visit")
+                // Create some test mature flowers first if none exist
+                window.dispatchEvent(new CustomEvent("testBunnyVisit", { detail: { username: "Manual Test" } }))
+                addRecentCommand("Test bunny visit by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-orange-400 hover:bg-orange-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Test Bunny Visit
+            </button>
           </div>
           <p className="text-xs mt-2 text-black/70">Use these buttons to test functionality without chat commands</p>
         </div>

@@ -40,10 +40,11 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [recentActivity, setRecentActivity] = useState<string[]>([])
   const [showRainEffect, setShowRainEffect] = useState(false)
   const [bunnyActive, setBunnyActive] = useState(false)
-  const [bunnyPhase, setBunnyPhase] = useState<"approaching" | "eating" | "leaving">("approaching")
-  const [bunnyPosition, setBunnyPosition] = useState(0)
+  const [bunnyPhase, setBunnyPhase] = useState<"arriving" | "exploring" | "eating" | "playing" | "leaving">("arriving")
+  const [bunnyOpacity, setBunnyOpacity] = useState(0)
   const [lastBunnyVisit, setLastBunnyVisit] = useState(Date.now())
   const [bunnyEatenCount, setBunnyEatenCount] = useState(0)
+  const [bunnyPosition, setBunnyPosition] = useState(50)
   const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const rainTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [flowerReveals, setFlowerReveals] = useState<{ [key: string]: { type: string; x: number; timestamp: number } }>(
@@ -90,8 +91,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
   const triggerBunnyVisit = (matureFlowers: Flower[]) => {
     setBunnyActive(true)
-    setBunnyPhase("approaching")
-    setBunnyPosition(-100) // Start off-screen right
+    setBunnyPhase("arriving")
+    setBunnyOpacity(0)
     setLastBunnyVisit(Date.now())
 
     // Calculate how many flowers to eat (1-5 or up to half the mature flowers)
@@ -99,13 +100,23 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     const flowersToEat = Math.floor(Math.random() * maxToEat) + 1
     setBunnyEatenCount(flowersToEat)
 
-    addActivity(`🐰 A WILD BUNNY IS APPROACHING THE GARDEN!`)
+    // Pick a random position along the flower bed (same range as flowers)
+    const bunnyX = Math.random() * 77 + 18 // 18% to 95% to match flower positions
+    setBunnyPosition(bunnyX)
 
-    // Animation sequence
+    // Just one initial message
+    addActivity(`🐰 A WILD BUNNY APPEARS IN THE GARDEN!`)
+
+    // New extended chill animation sequence
+    // Phase 1: Fade in and explore for much longer (12 seconds)
+    setTimeout(() => {
+      setBunnyPhase("exploring")
+      setBunnyOpacity(1)
+    }, 500)
+
+    // Phase 2: Start eating (after 12.5 seconds total)
     setTimeout(() => {
       setBunnyPhase("eating")
-      setBunnyPosition(50) // Center of screen
-      addActivity(`🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} BEAUTIFUL FLOWERS!`)
 
       // Remove random mature flowers
       setFlowers((prev) => {
@@ -115,17 +126,23 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         const remaining = shuffled.slice(flowersToEat)
         return [...toKeep, ...remaining]
       })
+    }, 12500)
 
+    // Phase 3: Play around after eating (after 19.5 seconds total)
+    setTimeout(() => {
+      setBunnyPhase("playing")
+    }, 19500)
+
+    // Phase 4: Start leaving (after 27.5 seconds total)
+    setTimeout(() => {
+      setBunnyPhase("leaving")
+      setBunnyOpacity(0)
+
+      // Clean up after fade out completes
       setTimeout(() => {
-        setBunnyPhase("leaving")
-        setBunnyPosition(150) // Off-screen left
-        addActivity(`🐰 THE BUNNY HOPS AWAY, SATISFIED WITH ITS MEAL!`)
-
-        setTimeout(() => {
-          setBunnyActive(false)
-        }, 2000)
-      }, 3000) // Eating phase duration
-    }, 2000) // Approach duration
+        setBunnyActive(false)
+      }, 2000)
+    }, 27500)
   }
 
   // New 5-stage growth system: 0-45s sprout, 45s-60s blooming, 60s-90s small, 90s-150s medium, 150s+ fully-mature
@@ -161,8 +178,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             newStage = "blooming" // 45s-1 minute
           else newStage = "sprout" // 0-45s
 
-          // Trigger reveal when flower reaches medium stage
-          if (oldStage === "small" && newStage === "medium") {
+          // Trigger reveal when flower reaches small stage (after sparkle)
+          if (oldStage === "blooming" && newStage === "small") {
             const flowerName = flowerTypes[flower.type].name.toUpperCase()
             setFlowerReveals((prev) => ({
               ...prev,
@@ -382,6 +399,37 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       handleTestSpawn()
     }
 
+    const handleTestBunnyVisit = () => {
+      console.log("Manual test: Triggering bunny visit")
+      // Create some test mature flowers if none exist
+      const matureFlowers = flowers.filter((f) => f.stage === "fully-mature")
+      if (matureFlowers.length === 0) {
+        // Create a few test mature flowers first
+        const now = Date.now()
+        const testMatureFlowers: Flower[] = []
+        for (let i = 0; i < 3; i++) {
+          testMatureFlowers.push({
+            id: `test-mature-${now}-${i}`,
+            type: "rose",
+            color: "mixed",
+            x: 30 + i * 20,
+            plantedBy: `TestUser${i}`,
+            plantedAt: now - 400000, // Old enough to be mature
+            stage: "fully-mature",
+            lastWatered: now,
+          })
+        }
+        setFlowers((prev) => [...prev, ...testMatureFlowers])
+
+        // Trigger bunny after flowers are added
+        setTimeout(() => {
+          triggerBunnyVisit(testMatureFlowers)
+        }, 100)
+      } else {
+        triggerBunnyVisit(matureFlowers)
+      }
+    }
+
     window.addEventListener("plantFlower", handlePlantFlower as EventListener)
     window.addEventListener("waterGarden", handleWaterGarden as EventListener)
     window.addEventListener("pickFlowers", handlePickFlowers as EventListener)
@@ -389,6 +437,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("resetGarden", handleResetGarden as EventListener)
     window.addEventListener("hideGarden", handleHideGarden as EventListener)
     window.addEventListener("spawnTestFlowers", handleSpawnTestFlowers)
+    window.addEventListener("testBunnyVisit", handleTestBunnyVisit)
 
     // Set connected status
     onConnectionChange(isVisible)
@@ -401,6 +450,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("resetGarden", handleResetGarden as EventListener)
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
       window.removeEventListener("spawnTestFlowers", handleSpawnTestFlowers)
+      window.removeEventListener("testBunnyVisit", handleTestBunnyVisit)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
@@ -645,12 +695,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
   return (
     <>
-      <div className="fixed left-0 right-0 z-10" style={{ bottom: "54px" }}>
+      <div className="fixed left-0 right-0 z-10" style={{ bottom: "52px" }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
             className="fixed left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "374px" }} // Updated position
+            style={{ bottom: "452px" }} // Updated position
           >
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
@@ -661,7 +711,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         )}
 
         {/* Main Garden Area - transparent background, no soil strip */}
-        <div className="relative overflow-hidden" style={{ height: "320px" }}>
+        <div className="relative overflow-hidden" style={{ height: "400px" }}>
           {/* Rain Effect - scrolls across when watered */}
           {showRainEffect && (
             <div
@@ -687,13 +737,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             </div>
           )}
 
-          {/* Bunny Animation */}
+          {/* Chill Bunny Animation - fades in/out at random position */}
           {bunnyActive && (
             <div
-              className="absolute bottom-0 pointer-events-none transition-all duration-2000 ease-in-out"
+              className="absolute bottom-0 transform -translate-x-1/2 pointer-events-none transition-opacity duration-2000 ease-in-out"
               style={{
                 left: `${bunnyPosition}%`,
-                transform: "translateX(-50%)",
+                opacity: bunnyOpacity,
                 zIndex: 60,
               }}
             >
@@ -707,8 +757,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
                 className="pixelated"
                 style={{
                   imageRendering: "pixelated",
-                  width: "120px",
-                  height: "auto",
+                  width: "auto", // Let width scale naturally
+                  height: "110px", // Set height to 110px (half of rose mature size 220px)
                 }}
               />
             </div>
@@ -719,7 +769,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             <div
               key={flowerId}
               className="fixed left-1/2 transform -translate-x-1/2 z-30 pointer-events-none"
-              style={{ bottom: "404px", left: `${flowerReveals[flowerId].x}%` }} // Updated position
+              style={{ bottom: "482px", left: `${flowerReveals[flowerId].x}%` }} // Updated position
             >
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {flowerReveals[flowerId].type}

@@ -42,7 +42,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [bunnyActive, setBunnyActive] = useState(false)
   const [bunnyPhase, setBunnyPhase] = useState<"arriving" | "exploring" | "eating" | "playing" | "leaving">("arriving")
   const [bunnyOpacity, setBunnyOpacity] = useState(0)
-  const [lastBunnyVisit, setLastBunnyVisit] = useState(Date.now())
+  const [lastBunnyVisit, setLastBunnyVisit] = useState(Date.now() - 19 * 60 * 1000) // Start 19 minutes ago so bunny can appear in 1 minute
   const [bunnyEatenCount, setBunnyEatenCount] = useState(0)
   const [bunnyPosition, setBunnyPosition] = useState(50)
   const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -240,6 +240,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         if (timeSinceLastBunny > twentyMinutes && !bunnyActive) {
           const matureFlowers = prevFlowers.filter((f) => f.stage === "fully-mature")
           console.log(`🐰 TRIGGER CONDITIONS MET: ${matureFlowers.length} mature flowers available`)
+          console.log(
+            `🐰 Time since last visit: ${Math.floor(timeSinceLastBunny / 60000)}m ${Math.floor((timeSinceLastBunny % 60000) / 1000)}s`,
+          )
 
           if (matureFlowers.length > 0) {
             console.log("🐰 TRIGGERING BUNNY VISIT - 20+ minutes elapsed")
@@ -250,7 +253,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             // Trigger the bunny visit with a small delay
             setTimeout(() => triggerBunnyVisit(matureFlowers), 100)
           } else {
-            console.log("🐰 No mature flowers available for bunny visit")
+            console.log("🐰 No mature flowers available for bunny visit - need fully mature flowers")
           }
         }
 

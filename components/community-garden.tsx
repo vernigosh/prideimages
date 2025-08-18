@@ -94,14 +94,17 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     addActivity(`🧪 TEST SPAWNED 20 FLOWERS AT DIFFERENT STAGES!`, 5000)
   }
 
-  const triggerBunnyVisit = (matureFlowers: Flower[]) => {
+  const triggerBunnyVisit = (matureFlowers: Flower[], isManualTest = false) => {
     const now = Date.now()
 
-    // Enhanced safety check with detailed logging
-    if (now - lastBunnyVisit < 19 * 60 * 1000) {
-      const timeSince = Math.floor((now - lastBunnyVisit) / 1000)
-      console.log(`🐰 BUNNY VISIT BLOCKED - Only ${timeSince}s since last visit (need 1140s)`)
-      return
+    // Skip timing checks for manual tests
+    if (!isManualTest) {
+      // Enhanced safety check with detailed logging
+      if (now - lastBunnyVisit < 19 * 60 * 1000) {
+        const timeSince = Math.floor((now - lastBunnyVisit) / 1000)
+        console.log(`🐰 BUNNY VISIT BLOCKED - Only ${timeSince}s since last visit (need 1140s)`)
+        return
+      }
     }
 
     if (bunnyActive) {
@@ -115,10 +118,11 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     console.log("🐰 BUNNY VISIT STARTING - All checks passed")
     console.log(`🐰 Mature flowers available: ${matureFlowers.length}`)
+    console.log("🐰 Setting bunnyActive to true")
 
     setBunnyActive(true)
     setBunnyPhase("arriving")
-    setBunnyOpacity(0)
+    setBunnyOpacity(1) // Start with full opacity for testing
 
     // Calculate how many flowers to eat (1-5 or up to half the mature flowers)
     const maxToEat = Math.min(5, Math.ceil(matureFlowers.length / 2))
@@ -134,83 +138,11 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     // Just one initial message with shorter duration
     addActivity(`🐰 A WILD BUNNY APPEARS IN THE GARDEN!`, 4000)
 
-    // Remove the "appears" message after 4 seconds (instead of default 15)
-    const timeout1 = setTimeout(() => {
-      setRecentActivity((current) => current.filter((item) => !item.includes("A WILD BUNNY APPEARS")))
-    }, 4000)
-    bunnyTimeoutsRef.current.push(timeout1)
+    // Immediately update lastBunnyVisit to prevent multiple triggers
+    setLastBunnyVisit(now)
 
-    // Phase 1: Fade in and explore for much longer (12 seconds)
-    const timeout2 = setTimeout(() => {
-      console.log("🐰 Phase: EXPLORING")
-      setBunnyPhase("exploring")
-      setBunnyOpacity(1)
-    }, 500)
-    bunnyTimeoutsRef.current.push(timeout2)
-
-    // Phase 2: Start eating (after 12.5 seconds total)
-    const timeout3 = setTimeout(() => {
-      console.log("🐰 Phase: EATING")
-      setBunnyPhase("eating")
-
-      // Add message about eating
-      const munchingMessage = `🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} DELICIOUS FLOWERS!`
-      addActivity(munchingMessage, 4000)
-
-      // Remove the munching message after 4 seconds
-      const timeout3a = setTimeout(() => {
-        setRecentActivity((current) => current.filter((item) => !item.includes("THE BUNNY IS MUNCHING")))
-      }, 4000)
-      bunnyTimeoutsRef.current.push(timeout3a)
-
-      // Remove random mature flowers
-      setFlowers((prev) => {
-        const mature = prev.filter((f) => f.stage === "fully-mature")
-        const toKeep = prev.filter((f) => f.stage !== "fully-mature")
-        const shuffled = [...mature].sort(() => Math.random() - 0.5)
-        const toRemove = shuffled.slice(0, flowersToEat)
-        const remaining = shuffled.slice(flowersToEat)
-
-        console.log(`🐰 BEFORE EATING:`)
-        console.log(`🐰 - Total flowers: ${prev.length}`)
-        console.log(`🐰 - Mature flowers: ${mature.length}`)
-        console.log(`🐰 - Non-mature flowers: ${toKeep.length}`)
-        console.log(
-          `🐰 EATING ${toRemove.length} MATURE FLOWERS:`,
-          toRemove.map((f) => `${f.type} by ${f.plantedBy} (${f.stage})`),
-        )
-        console.log(`🐰 AFTER EATING: ${toKeep.length + remaining.length} flowers remain (${remaining.length} mature)`)
-
-        return [...toKeep, ...remaining]
-      })
-    }, 12500)
-    bunnyTimeoutsRef.current.push(timeout3)
-
-    // Phase 3: Play around after eating (after 19.5 seconds total)
-    const timeout4 = setTimeout(() => {
-      console.log("🐰 Phase: PLAYING")
-      setBunnyPhase("playing")
-    }, 19500)
-    bunnyTimeoutsRef.current.push(timeout4)
-
-    // Phase 4: Start leaving (after 27.5 seconds total)
-    const timeout5 = setTimeout(() => {
-      console.log("🐰 Phase: LEAVING")
-      setBunnyPhase("leaving")
-      setBunnyOpacity(0)
-
-      // Clean up after fade out completes
-      const timeout5a = setTimeout(() => {
-        console.log("🐰 BUNNY VISIT COMPLETE - Bunny has left the garden")
-        setBunnyActive(false)
-        // Clear the timeouts array since this visit is complete
-        bunnyTimeoutsRef.current = []
-      }, 2000)
-      bunnyTimeoutsRef.current.push(timeout5a)
-    }, 27500)
-    bunnyTimeoutsRef.current.push(timeout5)
-
-    console.log(`🐰 Bunny visit scheduled with ${bunnyTimeoutsRef.current.length} timeouts`)
+    // For testing, show bunny immediately and keep it visible longer
+    console.log("🐰 Bunny should now be visible!")
   }
 
   // New 5-stage growth system: 0-45s sprout, 45s-60s blooming, 60s-90s small, 90s-150s medium, 150s+ fully-mature
@@ -623,8 +555,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     const handleTestBunnyVisit = () => {
       console.log("🐰 MANUAL TEST: Triggering bunny visit")
+      console.log("🐰 Current bunnyActive state:", bunnyActive)
+      console.log("🐰 Current flowers:", flowers.length)
+
       // Create some test mature flowers if none exist
       const matureFlowers = flowers.filter((f) => f.stage === "fully-mature")
+      console.log("🐰 Current mature flowers:", matureFlowers.length)
+
       if (matureFlowers.length === 0) {
         // Create test mature flowers - specifically roses and sunflowers to test cropping
         const now = Date.now()
@@ -656,11 +593,11 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         // Trigger bunny after flowers are added
         setTimeout(() => {
           console.log("🐰 TEST: Triggering bunny with test flowers")
-          triggerBunnyVisit(testMatureFlowers)
-        }, 100)
+          triggerBunnyVisit(testMatureFlowers, true) // Pass true for manual test
+        }, 500)
       } else {
         console.log(`🐰 TEST: Using existing ${matureFlowers.length} mature flowers`)
-        triggerBunnyVisit(matureFlowers)
+        triggerBunnyVisit(matureFlowers, true) // Pass true for manual test
       }
     }
 

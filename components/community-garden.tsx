@@ -29,6 +29,39 @@ const flowerTypes = {
   wildflower: { name: "Wildflower", growthTime: 45000 },
 }
 
+const flowerImages = {
+  rose: "/garden/flowers/rose-bush.webp",
+  tulip: "/garden/flowers/red-tulip.webp",
+  sunflower: "/garden/flowers/sunflower.webp",
+  daisy: "/garden/flowers/oxeye-daisy.webp",
+  lily: "/garden/flowers/lily-of-the-valley.webp",
+  wildflower: [
+    "/garden/flowers/azure-bluet-1.webp",
+    "/garden/flowers/azure-bluet-2.webp",
+    "/garden/flowers/azure-bluet-3.webp",
+    "/garden/flowers/cornflower.webp",
+    "/garden/flowers/allium.webp",
+    "/garden/flowers/blue-orchid.webp",
+    "/garden/flowers/cyan-flower.webp",
+    "/garden/flowers/peony.webp",
+    "/garden/flowers/poppy.webp",
+    "/garden/flowers/lilac.webp",
+  ],
+}
+
+const wildflowerImages = [
+  "/garden/flowers/azure-bluet-1.webp",
+  "/garden/flowers/azure-bluet-2.webp",
+  "/garden/flowers/azure-bluet-3.webp",
+  "/garden/flowers/cornflower.webp",
+  "/garden/flowers/allium.webp",
+  "/garden/flowers/blue-orchid.webp",
+  "/garden/flowers/cyan-flower.webp",
+  "/garden/flowers/peony.webp",
+  "/garden/flowers/poppy.webp",
+  "/garden/flowers/lilac.webp",
+]
+
 export function CommunityGarden({ isVisible, onConnectionChange, onHide }: CommunityGardenProps) {
   const [flowers, setFlowers] = useState<Flower[]>([])
   const [gardenStats, setGardenStats] = useState({
@@ -39,15 +72,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   })
   const [recentActivity, setRecentActivity] = useState<string[]>([])
   const [showRainEffect, setShowRainEffect] = useState(false)
-  const [bunnyActive, setBunnyActive] = useState(false)
-  const [bunnyPhase, setBunnyPhase] = useState<"arriving" | "exploring" | "eating" | "playing" | "leaving">("arriving")
-  const [bunnyOpacity, setBunnyOpacity] = useState(0)
+  // const [bunnyActive, setBunnyActive] = useState(false)
+  // const [bunnyPhase, setBunnyPhase] = useState<"arriving" | "exploring" | "eating" | "playing" | "leaving">("arriving")
+  // const [bunnyOpacity, setBunnyOpacity] = useState(0)
   const [lastBunnyVisit, setLastBunnyVisit] = useState(Date.now() - 19 * 60 * 1000) // Start 19 minutes ago so bunny can appear in 1 minute
-  const [bunnyEatenCount, setBunnyEatenCount] = useState(0)
-  const [bunnyPosition, setBunnyPosition] = useState(50)
+  // const [bunnyEatenCount, setBunnyEatenCount] = useState(0)
+  // const [bunnyPosition, setBunnyPosition] = useState(50)
   const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const rainTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const bunnyTimeoutsRef = useRef<NodeJS.Timeout[]>([]) // Track all bunny timeouts
+  // const bunnyTimeoutsRef = useRef<NodeJS.Timeout[]>([]) // Track all bunny timeouts
   const [flowerReveals, setFlowerReveals] = useState<{ [key: string]: { type: string; x: number; timestamp: number } }>(
     {},
   )
@@ -94,56 +127,130 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     addActivity(`🧪 TEST SPAWNED 20 FLOWERS AT DIFFERENT STAGES!`, 5000)
   }
 
-  const triggerBunnyVisit = (matureFlowers: Flower[], isManualTest = false) => {
-    const now = Date.now()
-
-    // Skip timing checks for manual tests
-    if (!isManualTest) {
-      // Enhanced safety check with detailed logging
-      if (now - lastBunnyVisit < 19 * 60 * 1000) {
-        const timeSince = Math.floor((now - lastBunnyVisit) / 1000)
-        console.log(`🐰 BUNNY VISIT BLOCKED - Only ${timeSince}s since last visit (need 1140s)`)
-        return
-      }
-    }
-
-    if (bunnyActive) {
-      console.log("🐰 BUNNY VISIT BLOCKED - Bunny already active")
-      return
-    }
-
-    // Clear any existing bunny timeouts to prevent overlapping animations
-    bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
-    bunnyTimeoutsRef.current = []
-
-    console.log("🐰 BUNNY VISIT STARTING - All checks passed")
-    console.log(`🐰 Mature flowers available: ${matureFlowers.length}`)
-    console.log("🐰 Setting bunnyActive to true")
-
-    setBunnyActive(true)
-    setBunnyPhase("arriving")
-    setBunnyOpacity(1) // Start with full opacity for testing
-
-    // Calculate how many flowers to eat (1-5 or up to half the mature flowers)
-    const maxToEat = Math.min(5, Math.ceil(matureFlowers.length / 2))
-    const flowersToEat = Math.floor(Math.random() * maxToEat) + 1
-    setBunnyEatenCount(flowersToEat)
-    console.log(`🐰 Bunny will eat ${flowersToEat} flowers`)
-
-    // Pick a random position along the flower bed - avoid edges for bunny
-    const bunnyX = Math.random() * 67 + 18 // 18% to 85% to avoid edges and allow for bunny size
-    setBunnyPosition(bunnyX)
-    console.log(`🐰 Bunny position: ${bunnyX.toFixed(1)}%`)
-
-    // Just one initial message with shorter duration
-    addActivity(`🐰 A WILD BUNNY APPEARS IN THE GARDEN!`, 4000)
-
-    // Immediately update lastBunnyVisit to prevent multiple triggers
-    setLastBunnyVisit(now)
-
-    // For testing, show bunny immediately and keep it visible longer
-    console.log("🐰 Bunny should now be visible!")
-  }
+  // const triggerBunnyVisit = (matureFlowers: Flower[], isManualTest = false) => {
+  //   const now = Date.now()
+  //
+  //   // Skip timing checks for manual tests
+  //   if (!isManualTest) {
+  //     // Enhanced safety check with detailed logging
+  //     if (now - lastBunnyVisit < 19 * 60 * 1000) {
+  //       const timeSince = Math.floor((now - lastBunnyVisit) / 1000)
+  //       console.log(`🐰 BUNNY VISIT BLOCKED - Only ${timeSince}s since last visit (need 1140s)`)
+  //       return
+  //     }
+  //   }
+  //
+  //   if (bunnyActive) {
+  //     console.log("🐰 BUNNY VISIT BLOCKED - Bunny already active")
+  //     return
+  //   }
+  //
+  //   // Clear any existing bunny timeouts to prevent overlapping animations
+  //   bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
+  //   bunnyTimeoutsRef.current = []
+  //
+  //   console.log("🐰 BUNNY VISIT STARTING - All checks passed")
+  //   console.log(`🐰 Mature flowers available: ${matureFlowers.length}`)
+  //
+  //   setBunnyActive(true)
+  //   setBunnyPhase("arriving")
+  //   setBunnyOpacity(0) // Start invisible
+  //
+  //   // Calculate how many flowers to eat (1-5 or up to half the mature flowers)
+  //   const maxToEat = Math.min(5, Math.ceil(matureFlowers.length / 2))
+  //   const flowersToEat = Math.floor(Math.random() * maxToEat) + 1
+  //   setBunnyEatenCount(flowersToEat)
+  //   console.log(`🐰 Bunny will eat ${flowersToEat} flowers`)
+  //
+  //   // Pick a random position along the flower bed - avoid edges for bunny
+  //   const bunnyX = Math.random() * 67 + 18 // 18% to 85% to avoid edges and allow for bunny size
+  //   setBunnyPosition(bunnyX)
+  //   console.log(`🐰 Bunny position: ${bunnyX.toFixed(1)}%`)
+  //
+  //   // Immediately update lastBunnyVisit to prevent multiple triggers
+  //   setLastBunnyVisit(now)
+  //
+  //   // Just one initial message with shorter duration
+  //   addActivity(`🐰 A WILD BUNNY APPEARS IN THE GARDEN!`, 4000)
+  //
+  //   // Remove the "appears" message after 4 seconds
+  //   const timeout1 = setTimeout(() => {
+  //     setRecentActivity((current) => current.filter((item) => !item.includes("A WILD BUNNY APPEARS")))
+  //   }, 4000)
+  //   bunnyTimeoutsRef.current.push(timeout1)
+  //
+  //   // Phase 1: Fade in and explore (0.5 seconds)
+  //   const timeout2 = setTimeout(() => {
+  //     console.log("🐰 Phase: EXPLORING")
+  //     setBunnyPhase("exploring")
+  //     setBunnyOpacity(1)
+  //   }, 500)
+  //   bunnyTimeoutsRef.current.push(timeout2)
+  //
+  //   // Phase 2: Start eating (after 12.5 seconds total)
+  //   const timeout3 = setTimeout(() => {
+  //     console.log("🐰 Phase: EATING")
+  //     setBunnyPhase("eating")
+  //
+  //     // Add message about eating
+  //     const munchingMessage = `🐰 THE BUNNY IS MUNCHING ON ${flowersToEat} DELICIOUS FLOWERS!`
+  //     addActivity(munchingMessage, 4000)
+  //
+  //     // Remove the munching message after 4 seconds
+  //     const timeout3a = setTimeout(() => {
+  //       setRecentActivity((current) => current.filter((item) => !item.includes("THE BUNNY IS MUNCHING")))
+  //     }, 4000)
+  //     bunnyTimeoutsRef.current.push(timeout3a)
+  //
+  //     // Remove random mature flowers
+  //     setFlowers((prev) => {
+  //       const mature = prev.filter((f) => f.stage === "fully-mature")
+  //       const toKeep = prev.filter((f) => f.stage !== "fully-mature")
+  //       const shuffled = [...mature].sort(() => Math.random() - 0.5)
+  //       const toRemove = shuffled.slice(0, flowersToEat)
+  //       const remaining = shuffled.slice(flowersToEat)
+  //
+  //       console.log(`🐰 BEFORE EATING:`)
+  //       console.log(`🐰 - Total flowers: ${prev.length}`)
+  //       console.log(`🐰 - Mature flowers: ${mature.length}`)
+  //       console.log(`🐰 - Non-mature flowers: ${toKeep.length}`)
+  //       console.log(
+  //         `🐰 EATING ${toRemove.length} MATURE FLOWERS:`,
+  //         toRemove.map((f) => `${f.type} by ${f.plantedBy} (${f.stage})`),
+  //       )
+  //       console.log(`🐰 AFTER EATING: ${toKeep.length + remaining.length} flowers remain (${remaining.length} mature)`)
+  //
+  //       return [...toKeep, ...remaining]
+  //     })
+  //   }, 12500)
+  //   bunnyTimeoutsRef.current.push(timeout3)
+  //
+  //   // Phase 3: Play around after eating (after 19.5 seconds total)
+  //   const timeout4 = setTimeout(() => {
+  //     console.log("🐰 Phase: PLAYING")
+  //     setBunnyPhase("playing")
+  //   }, 19500)
+  //   bunnyTimeoutsRef.current.push(timeout4)
+  //
+  //   // Phase 4: Start leaving (after 27.5 seconds total)
+  //   const timeout5 = setTimeout(() => {
+  //     console.log("🐰 Phase: LEAVING")
+  //     setBunnyPhase("leaving")
+  //     setBunnyOpacity(0)
+  //
+  //     // Clean up after fade out completes
+  //     const timeout5a = setTimeout(() => {
+  //       console.log("🐰 BUNNY VISIT COMPLETE - Bunny has left the garden")
+  //       setBunnyActive(false)
+  //       // Clear the timeouts array since this visit is complete
+  //       bunnyTimeoutsRef.current = []
+  //     }, 2000)
+  //     bunnyTimeoutsRef.current.push(timeout5a)
+  //   }, 27500)
+  //   bunnyTimeoutsRef.current.push(timeout5)
+  //
+  //   console.log(`🐰 Bunny visit scheduled with ${bunnyTimeoutsRef.current.length} timeouts`)
+  // }
 
   // New 5-stage growth system: 0-45s sprout, 45s-60s blooming, 60s-90s small, 90s-150s medium, 150s+ fully-mature
   useEffect(() => {
@@ -164,30 +271,30 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         if (minutesSince >= 19) {
           // Only log when we're close to trigger time
           console.log(
-            `🐰 Bunny check: ${minutesSince}m ${secondsSince}s since last visit (need 20m), bunnyActive: ${bunnyActive}`,
+            `🐰 Bunny check: ${minutesSince}m ${secondsSince}s since last visit (need 20m), bunnyActive: false`,
           )
         }
 
         // Only trigger bunny if enough time has passed AND bunny is not active
-        if (timeSinceLastBunny > twentyMinutes && !bunnyActive) {
-          const matureFlowers = prevFlowers.filter((f) => f.stage === "fully-mature")
-          console.log(`🐰 TRIGGER CONDITIONS MET: ${matureFlowers.length} mature flowers available`)
-          console.log(
-            `🐰 Time since last visit: ${Math.floor(timeSinceLastBunny / 60000)}m ${Math.floor((timeSinceLastBunny % 60000) / 1000)}s`,
-          )
-
-          if (matureFlowers.length > 0) {
-            console.log("🐰 TRIGGERING BUNNY VISIT - 20+ minutes elapsed")
-
-            // Immediately update lastBunnyVisit to prevent multiple triggers
-            setLastBunnyVisit(now)
-
-            // Trigger the bunny visit with a small delay
-            setTimeout(() => triggerBunnyVisit(matureFlowers), 100)
-          } else {
-            console.log("🐰 No mature flowers available for bunny visit - need fully mature flowers")
-          }
-        }
+        // if (timeSinceLastBunny > twentyMinutes && !bunnyActive) {
+        //   const matureFlowers = prevFlowers.filter((f) => f.stage === "fully-mature")
+        //   console.log(`🐰 TRIGGER CONDITIONS MET: ${matureFlowers.length} mature flowers available`)
+        //   console.log(
+        //     `🐰 Time since last visit: ${Math.floor(timeSinceLastBunny / 60000)}m ${Math.floor((timeSinceLastBunny % 60000) / 1000)}s`,
+        //   )
+        //
+        //   if (matureFlowers.length > 0) {
+        //     console.log("🐰 TRIGGERING BUNNY VISIT - 20+ minutes elapsed")
+        //
+        //     // Immediately update lastBunnyVisit to prevent multiple triggers
+        //     setLastBunnyVisit(now)
+        //
+        //     // Trigger the bunny visit with a small delay
+        //     setTimeout(() => triggerBunnyVisit(matureFlowers), 100)
+        //   } else {
+        //     console.log("🐰 No mature flowers available for bunny visit - need fully mature flowers")
+        //   }
+        // }
 
         return prevFlowers.map((flower) => {
           if (flower.stage === "fully-mature") return flower
@@ -208,43 +315,17 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
           // Trigger reveal when flower reaches small stage (after sparkle)
           if (oldStage === "blooming" && newStage === "small") {
-            let flowerName = flowerTypes[flower.type].name.toUpperCase()
+            const flowerName = flowerTypes[flower.type].name.toUpperCase()
 
             // For wildflowers, get the specific type name
             if (flower.type === "wildflower") {
-              const wildflowerImages = [
-                "/garden/flowers/azure-bluet-1.webp",
-                "/garden/flowers/azure-bluet-2.webp",
-                "/garden/flowers/azure-bluet-3.webp",
-                "/garden/flowers/cornflower.webp",
-                "/garden/flowers/allium.webp",
-                "/garden/flowers/blue-orchid.webp",
-                "/garden/flowers/cyan-flower.webp",
-                "/garden/flowers/peony.webp",
-                "/garden/flowers/poppy.webp",
-                "/garden/flowers/lilac.webp",
-              ]
-
               const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
               const randomIndex = seedValue % wildflowerImages.length
               const imagePath = wildflowerImages[randomIndex]
-              const specificType = imagePath.split("/").pop()?.split(".")[0] || "wildflower"
-
-              // Convert filename to display name
-              const displayNames: { [key: string]: string } = {
-                "azure-bluet-1": "AZURE BLUET",
-                "azure-bluet-2": "AZURE BLUET",
-                "azure-bluet-3": "AZURE BLUET",
-                cornflower: "CORNFLOWER",
-                allium: "ALLIUM",
-                "blue-orchid": "BLUE ORCHID",
-                "cyan-flower": "CYAN FLOWER",
-                peony: "PEONY",
-                poppy: "POPPY",
-                lilac: "LILAC",
-              }
-
-              flowerName = displayNames[specificType] || "WILDFLOWER"
+              // Extract flower name from path for sizing
+              const flowerKey = imagePath.split("/").pop()?.split(".")[0] || "wildflower"
+            } else {
+              const imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
             }
 
             setFlowerReveals((prev) => ({
@@ -275,10 +356,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       console.log("🌱 Growth interval stopping")
       if (growthIntervalRef.current) clearInterval(growthIntervalRef.current)
       // Clean up bunny timeouts when component unmounts
-      bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
-      bunnyTimeoutsRef.current = []
+      // bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
+      // bunnyTimeoutsRef.current = []
     }
-  }, [isVisible, bunnyActive, lastBunnyVisit]) // Dependencies ensure proper updates
+  }, [isVisible, onConnectionChange, onHide, flowers])
 
   // Gradually reduce saturation over time
   useEffect(() => {
@@ -530,10 +611,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       setLastBunnyVisit(Date.now()) // Reset bunny timer
       setLastWaterTime(0) // Reset water cooldown
       setGardenSaturation(100) // Reset saturation to 100%
-      setBunnyActive(false)
+      // setBunnyActive(false)
       // Clear any active bunny timeouts
-      bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
-      bunnyTimeoutsRef.current = []
+      // bunnyTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
+      // bunnyTimeoutsRef.current = []
       setGardenStats({
         totalFlowers: 0,
         activeGardeners: 0,
@@ -553,53 +634,53 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       handleTestSpawn()
     }
 
-    const handleTestBunnyVisit = () => {
-      console.log("🐰 MANUAL TEST: Triggering bunny visit")
-      console.log("🐰 Current bunnyActive state:", bunnyActive)
-      console.log("🐰 Current flowers:", flowers.length)
-
-      // Create some test mature flowers if none exist
-      const matureFlowers = flowers.filter((f) => f.stage === "fully-mature")
-      console.log("🐰 Current mature flowers:", matureFlowers.length)
-
-      if (matureFlowers.length === 0) {
-        // Create test mature flowers - specifically roses and sunflowers to test cropping
-        const now = Date.now()
-        const testMatureFlowers: Flower[] = []
-
-        // Add 2 roses and 2 sunflowers for cropping test - make sure they have unique IDs
-        const testFlowerData = [
-          { type: "rose", user: "TestUser0" },
-          { type: "sunflower", user: "TestUser1" },
-          { type: "rose", user: "TestUser2" },
-          { type: "sunflower", user: "TestUser3" },
-        ] as const
-
-        for (let i = 0; i < 4; i++) {
-          testMatureFlowers.push({
-            id: `test-mature-${now}-${i}-${testFlowerData[i].type}`, // More unique ID
-            type: testFlowerData[i].type,
-            color: "mixed",
-            x: 25 + i * 15, // Spread them out: 25%, 40%, 55%, 70% (safer spacing)
-            plantedBy: testFlowerData[i].user,
-            plantedAt: now - 400000, // Old enough to be mature
-            stage: "fully-mature",
-            lastWatered: now,
-          })
-        }
-        setFlowers((prev) => [...prev, ...testMatureFlowers])
-        console.log(`🐰 TEST: Created ${testMatureFlowers.length} test mature flowers`)
-
-        // Trigger bunny after flowers are added
-        setTimeout(() => {
-          console.log("🐰 TEST: Triggering bunny with test flowers")
-          triggerBunnyVisit(testMatureFlowers, true) // Pass true for manual test
-        }, 500)
-      } else {
-        console.log(`🐰 TEST: Using existing ${matureFlowers.length} mature flowers`)
-        triggerBunnyVisit(matureFlowers, true) // Pass true for manual test
-      }
-    }
+    // const handleTestBunnyVisit = () => {
+    //   console.log("🐰 MANUAL TEST: Triggering bunny visit")
+    //   console.log("🐰 Current bunnyActive state:", bunnyActive)
+    //   console.log("🐰 Current flowers:", flowers.length)
+    //
+    //   // Create some test mature flowers if none exist
+    //   const matureFlowers = flowers.filter((f) => f.stage === "fully-mature")
+    //   console.log("🐰 Current mature flowers:", matureFlowers.length)
+    //
+    //   if (matureFlowers.length === 0) {
+    //     // Create test mature flowers - specifically roses and sunflowers to test cropping
+    //     const now = Date.now()
+    //     const testMatureFlowers: Flower[] = []
+    //
+    //     // Add 2 roses and 2 sunflowers for cropping test - make sure they have unique IDs
+    //     const testFlowerData = [
+    //       { type: "rose", user: "TestUser0" },
+    //       { type: "sunflower", user: "TestUser1" },
+    //       { type: "rose", user: "TestUser2" },
+    //       { type: "sunflower", user: "TestUser3" },
+    //     ] as const
+    //
+    //     for (let i = 0; i < 4; i++) {
+    //       testMatureFlowers.push({
+    //         id: `test-mature-${now}-${i}-${testFlowerData[i].type}`, // More unique ID
+    //         type: testFlowerData[i].type,
+    //         color: "mixed",
+    //         x: 25 + i * 15, // Spread them out: 25%, 40%, 55%, 70% (safer spacing)
+    //         plantedBy: testFlowerData[i].user,
+    //         plantedAt: now - 400000, // Old enough to be mature
+    //         stage: "fully-mature",
+    //         lastWatered: now,
+    //       })
+    //     }
+    //     setFlowers((prev) => [...prev, ...testMatureFlowers])
+    //     console.log(`🐰 TEST: Created ${testMatureFlowers.length} test mature flowers`)
+    //
+    //     // Trigger bunny after flowers are added
+    //     setTimeout(() => {
+    //       console.log("🐰 TEST: Triggering bunny with test flowers")
+    //       triggerBunnyVisit(testMatureFlowers, true) // Pass true for manual test
+    //     }, 500)
+    //   } else {
+    //     console.log(`🐰 TEST: Using existing ${matureFlowers.length} mature flowers`)
+    //     triggerBunnyVisit(matureFlowers, true) // Pass true for manual test
+    //   }
+    // }
 
     window.addEventListener("plantFlower", handlePlantFlower as EventListener)
     window.addEventListener("waterGarden", handleWaterGarden as EventListener)
@@ -608,7 +689,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("resetGarden", handleResetGarden as EventListener)
     window.addEventListener("hideGarden", handleHideGarden as EventListener)
     window.addEventListener("spawnTestFlowers", handleSpawnTestFlowers)
-    window.addEventListener("testBunnyVisit", handleTestBunnyVisit)
+    // window.addEventListener("testBunnyVisit", handleTestBunnyVisit)
 
     // Set connected status
     onConnectionChange(isVisible)
@@ -621,7 +702,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("resetGarden", handleResetGarden as EventListener)
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
       window.removeEventListener("spawnTestFlowers", handleSpawnTestFlowers)
-      window.removeEventListener("testBunnyVisit", handleTestBunnyVisit)
+      // window.removeEventListener("testBunnyVisit", handleTestBunnyVisit)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
@@ -704,35 +785,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     }
 
     if (flower.stage === "small") {
-      const flowerImages = {
-        rose: "/garden/flowers/rose-bush.webp",
-        tulip: flower.specificType
-          ? `/garden/flowers/${flower.specificType}-tulip.webp`
-          : "/garden/flowers/red-tulip.webp",
-        sunflower: "/garden/flowers/sunflower.webp",
-        daisy: "/garden/flowers/oxeye-daisy.webp",
-        lily: "/garden/flowers/lily-of-the-valley.webp",
-        wildflower: [
-          "/garden/flowers/azure-bluet-1.webp",
-          "/garden/flowers/azure-bluet-2.webp",
-          "/garden/flowers/azure-bluet-3.webp",
-          "/garden/flowers/cornflower.webp",
-          "/garden/flowers/allium.webp",
-          "/garden/flowers/blue-orchid.webp",
-          "/garden/flowers/cyan-flower.webp",
-          "/garden/flowers/peony.webp",
-          "/garden/flowers/poppy.webp",
-          "/garden/flowers/lilac.webp",
-        ],
-      }
-
       let imageSrc = ""
       let flowerKey = flower.type
       if (flower.type === "wildflower") {
-        const wildflowers = flowerImages.wildflower as string[]
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
-        const randomIndex = seedValue % wildflowers.length
-        imageSrc = wildflowers[randomIndex]
+        const randomIndex = seedValue % wildflowerImages.length
+        imageSrc = wildflowerImages[randomIndex]
         // Extract flower name from path for sizing
         flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
@@ -756,35 +814,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     }
 
     if (flower.stage === "medium") {
-      const flowerImages = {
-        rose: "/garden/flowers/rose-bush.webp",
-        tulip: flower.specificType
-          ? `/garden/flowers/${flower.specificType}-tulip.webp`
-          : "/garden/flowers/red-tulip.webp",
-        sunflower: "/garden/flowers/sunflower.webp",
-        daisy: "/garden/flowers/oxeye-daisy.webp",
-        lily: "/garden/flowers/lily-of-the-valley.webp",
-        wildflower: [
-          "/garden/flowers/azure-bluet-1.webp",
-          "/garden/flowers/azure-bluet-2.webp",
-          "/garden/flowers/azure-bluet-3.webp",
-          "/garden/flowers/cornflower.webp",
-          "/garden/flowers/allium.webp",
-          "/garden/flowers/blue-orchid.webp",
-          "/garden/flowers/cyan-flower.webp",
-          "/garden/flowers/peony.webp",
-          "/garden/flowers/poppy.webp",
-          "/garden/flowers/lilac.webp",
-        ],
-      }
-
       let imageSrc = ""
       let flowerKey = flower.type
       if (flower.type === "wildflower") {
-        const wildflowers = flowerImages.wildflower as string[]
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
-        const randomIndex = seedValue % wildflowers.length
-        imageSrc = wildflowers[randomIndex]
+        const randomIndex = seedValue % wildflowerImages.length
+        imageSrc = wildflowerImages[randomIndex]
         // Extract flower name from path for sizing
         flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
@@ -809,35 +844,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     // Fully mature flowers - largest size, harvestable
     if (flower.stage === "fully-mature") {
-      const flowerImages = {
-        rose: "/garden/flowers/rose-bush.webp",
-        tulip: flower.specificType
-          ? `/garden/flowers/${flower.specificType}-tulip.webp`
-          : "/garden/flowers/red-tulip.webp",
-        sunflower: "/garden/flowers/sunflower.webp",
-        daisy: "/garden/flowers/oxeye-daisy.webp",
-        lily: "/garden/flowers/lily-of-the-valley.webp",
-        wildflower: [
-          "/garden/flowers/azure-bluet-1.webp",
-          "/garden/flowers/azure-bluet-2.webp",
-          "/garden/flowers/azure-bluet-3.webp",
-          "/garden/flowers/cornflower.webp",
-          "/garden/flowers/allium.webp",
-          "/garden/flowers/blue-orchid.webp",
-          "/garden/flowers/cyan-flower.webp",
-          "/garden/flowers/peony.webp",
-          "/garden/flowers/poppy.webp",
-          "/garden/flowers/lilac.webp",
-        ],
-      }
-
       let imageSrc = ""
       let flowerKey = flower.type
       if (flower.type === "wildflower") {
-        const wildflowers = flowerImages.wildflower as string[]
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
-        const randomIndex = seedValue % wildflowers.length
-        imageSrc = wildflowers[randomIndex]
+        const randomIndex = seedValue % wildflowerImages.length
+        imageSrc = wildflowerImages[randomIndex]
         // Extract flower name from path for sizing
         flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
@@ -915,31 +927,27 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           )}
 
           {/* Chill Bunny Animation - fades in/out at random position */}
-          {bunnyActive && (
-            <div
-              className="absolute bottom-2 transform -translate-x-1/2 pointer-events-none transition-opacity duration-2000 ease-in-out"
-              style={{
-                left: `${bunnyPosition}%`,
-                opacity: bunnyOpacity,
-                zIndex: 60,
-              }}
-            >
-              <img
-                src={
-                  bunnyPhase === "eating"
-                    ? "/garden/effects/pixelbunnyeating.gif"
-                    : "/garden/effects/bunnyhoppingbackandforth.gif"
-                }
-                alt="Garden Bunny"
-                className="pixelated"
-                style={{
-                  imageRendering: "pixelated",
-                  width: "auto", // Let width scale naturally
-                  height: "200px", // Increased from 110px to 200px
-                }}
-              />
-            </div>
-          )}
+          {/*{bunnyActive && (*/}
+          {/*  <div*/}
+          {/*    className="absolute bottom-2 transform -translate-x-1/2 pointer-events-none transition-opacity duration-2000 ease-in-out"*/}
+          {/*    style={{*/}
+          {/*      left: `${bunnyPosition}%`,*/}
+          {/*      opacity: bunnyOpacity,*/}
+          {/*      zIndex: 60,*/}
+          {/*    }}*/}
+          {/*  >*/}
+          {/*    <img*/}
+          {/*      src={bunnyPhase === "eating" ? "/garden/effects/pixelbunnyeating.gif" : "/garden/effects/bunnyhoppingbackandforth.gif"}*/}
+          {/*      alt="Garden Bunny"*/}
+          {/*      className="pixelated"*/}
+          {/*      style={{*/}
+          {/*        imageRendering: "pixelated",*/}
+          {/*        width: "auto", // Let width scale naturally*/}
+          {/*        height: "200px", // Increased from 110px to 200px*/}
+          {/*      }}*/}
+          {/*    />*/}
+          {/*  </div>*/}
+          {/*)}*/}
 
           {/* Flower Reveals - centered horizontally above garden */}
           {Object.keys(flowerReveals).map((flowerId) => (

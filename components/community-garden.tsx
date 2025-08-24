@@ -188,9 +188,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     const interval = setInterval(() => {
       const elapsed = Date.now() - bunnyStartTime
-      const phase1Duration = 2000 // arriving
-      const phase2Duration = 3000 // eating/exploring
-      const phase3Duration = 2000 // playing/leaving
+      const phase1Duration = 10000 // arriving - changed from 5000 to 10000
+      const phase2Duration = 5000 // eating/exploring - changed from 10000 to 5000
+      const phase3Duration = 10000 // playing/leaving - changed from 5000 to 10000
 
       if (elapsed < phase1Duration) {
         setBunnyPhase("arriving")

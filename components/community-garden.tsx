@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import FlowerCelebration from "./flower-celebration" // Import FlowerCelebration component
 
 interface Flower {
   id: string
@@ -87,6 +88,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [userFlowerCounts, setUserFlowerCounts] = useState<{ [username: string]: number }>({}) // New state for user flower totals
   const [userPickedTotals, setUserPickedTotals] = useState<{ [username: string]: number }>({}) // New state for lifetime picked totals
   const [gardenSaturation, setGardenSaturation] = useState(100) // Start at 100% saturation
+  const [showFlowerCelebration, setShowFlowerCelebration] = useState(false) // Add flower celebration tracking state
+  const [celebrationUsername, setCelebrationUsername] = useState("") // Add flower celebration tracking state
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -490,8 +493,31 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         return
       }
 
+      // Count flowers by type for inventory tracking
+      const flowerCounts = userPickableFlowers.reduce(
+        (counts, flower) => {
+          counts[flower.type] = (counts[flower.type] || 0) + 1
+          return counts
+        },
+        {} as { [key: string]: number },
+      )
+
+      // Dispatch flower picked events for each type
+      Object.entries(flowerCounts).forEach(([flowerType, amount]) => {
+        window.dispatchEvent(
+          new CustomEvent("flowerPicked", {
+            detail: { username, flowerType, amount },
+          }),
+        )
+      })
+
       // Update lifetime picked total
       const newPickedTotal = (userPickedTotals[username] || 0) + userPickableFlowers.length
+
+      if (newPickedTotal >= 10 && (userPickedTotals[username] || 0) < 10) {
+        window.dispatchEvent(new CustomEvent("showFlowerCelebration", { detail: { username } }))
+      }
+
       setUserPickedTotals((prev) => ({
         ...prev,
         [username]: newPickedTotal,
@@ -505,7 +531,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
       // Show picking message with lifetime total
       addActivity(
-        `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}!`,
+        `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}! USE !FLOWERS TO CHECK INVENTORY!`,
         5000,
       )
 
@@ -573,6 +599,31 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
     }
 
+    const handleMatureAllFlowers = (event: CustomEvent) => {
+      const { username } = event.detail
+      setFlowers((prev) => prev.map((flower) => ({ ...flower, stage: "fully-mature" as const })))
+      addActivity(`✨ ${username.toUpperCase()} USED GARDEN BLESSING - ALL FLOWERS ARE NOW MATURE!`, 5000)
+    }
+
+    const handleRainbowRain = (event: CustomEvent) => {
+      const { username } = event.detail
+      addActivity(`🌈 ${username.toUpperCase()} TRIGGERED RAINBOW RAIN!`, 5000)
+
+      // Trigger rainbow rain effect (enhanced version of regular rain)
+      if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
+
+      rainTimeoutRef.current = setTimeout(() => {
+        console.log("Rainbow rain animation timer created")
+      }, 100)
+
+      setTimeout(() => {
+        if (rainTimeoutRef.current) {
+          clearTimeout(rainTimeoutRef.current)
+          rainTimeoutRef.current = null
+        }
+      }, 8000) // Longer duration for rainbow rain
+    }
+
     window.addEventListener("plantFlower", handlePlantFlower as EventListener)
     window.addEventListener("waterGarden", handleWaterGarden as EventListener)
     window.addEventListener("pickFlowers", handlePickFlowers as EventListener)
@@ -581,6 +632,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("hideGarden", handleHideGarden as EventListener)
     window.addEventListener("spawnTestFlowers", handleSpawnTestFlowers)
     window.addEventListener("testBunnyVisit", handleTestBunnyVisit)
+    window.addEventListener("matureAllFlowers", handleMatureAllFlowers as EventListener)
+    window.addEventListener("triggerRainbowRain", handleRainbowRain as EventListener)
 
     // Set connected status
     onConnectionChange(isVisible)
@@ -594,6 +647,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
       window.removeEventListener("spawnTestFlowers", handleSpawnTestFlowers)
       window.removeEventListener("testBunnyVisit", handleTestBunnyVisit)
+      window.removeEventListener("matureAllFlowers", handleMatureAllFlowers as EventListener)
+      window.removeEventListener("triggerRainbowRain", handleRainbowRain as EventListener)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
@@ -778,12 +833,20 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       waterLevel: 100,
     })
     setRecentActivity([])
+    setShowFlowerCelebration(false) // Reset celebration state
+    setCelebrationUsername("") // Reset celebration state
   }
 
   if (!isVisible) return null
 
   return (
     <>
+      <FlowerCelebration
+        isVisible={showFlowerCelebration}
+        username={celebrationUsername}
+        onHide={() => setShowFlowerCelebration(false)}
+      />
+
       <div className="fixed left-0 right-0 z-10" style={{ bottom: "72px" }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (

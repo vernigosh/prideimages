@@ -11,8 +11,11 @@ import { WorkTimer } from "@/components/work-timer"
 import { SocialTimer } from "@/components/social-timer"
 import { DarkTimer } from "@/components/dark-timer"
 import { BlurbOverlay } from "@/components/blurb-overlay"
-import { ColorWar } from "@/components/color-war"
 import { CommunityGarden } from "@/components/community-garden"
+import { TipGoal } from "@/components/tip-goal"
+import { TipCelebration } from "@/components/tip-celebration"
+import { FlowerShop } from "@/components/flower-shop"
+import { FlowerCelebration } from "@/components/flower-celebration" // Import FlowerCelebration component
 
 interface Blurb {
   id: string
@@ -123,10 +126,6 @@ export default function DJRandomizer() {
   const [blurbShadowSize, setBlurbShadowSize] = useState(2)
   const [blurbFontWeight, setBlurbFontWeight] = useState<"normal" | "bold" | "black">("bold")
 
-  // Color War settings
-  const [showColorWar, setShowColorWar] = useState(false)
-  const [colorWarConnected, setColorWarConnected] = useState(false)
-
   // Dark timer settings
   const [showDarkTimer, setShowDarkTimer] = useState(false)
   const [darkTimerConnected, setDarkTimerConnected] = useState(false)
@@ -143,14 +142,22 @@ export default function DJRandomizer() {
   const [showGarden, setShowGarden] = useState(false)
   const [gardenConnected, setGardenConnected] = useState(false)
 
+  // Tip Goal settings
+  const [tipGoalConnected, setTipGoalConnected] = useState(false)
+
+  // Flower Shop settings
+  const [showFlowerShop, setShowFlowerShop] = useState(false)
+
+  // Flower Celebration settings
+  const [showFlowerCelebration, setShowFlowerCelebration] = useState(false)
+  const [celebrationUsername, setCelebrationUsername] = useState("")
+
   // Add event listeners for timer commands
   useEffect(() => {
-    const handleStartColorWar = (event: CustomEvent) => {
-      console.log("Page: Received startColorWar event", event.detail)
-      if (!showColorWar) {
-        console.log("Page: Enabling color war")
-        setShowColorWar(true)
-      }
+    const handleShowTipGoal = (event: CustomEvent) => {
+      console.log("Page: Received showTipGoal event", event.detail)
+      // Dispatch event to tip goal component to show immediately
+      window.dispatchEvent(new CustomEvent("forceTipGoalShow", { detail: event.detail }))
     }
 
     const handleStartDarkTimer = (event: CustomEvent) => {
@@ -177,11 +184,6 @@ export default function DJRandomizer() {
       }
     }
 
-    const handleHideColorWar = (event: CustomEvent) => {
-      console.log("Page: Received hideColorWar event", event.detail)
-      setShowColorWar(false)
-    }
-
     const handleHideDarkTimer = (event: CustomEvent) => {
       console.log("Page: Received hideDarkTimer event", event.detail)
       setShowDarkTimer(false)
@@ -199,11 +201,7 @@ export default function DJRandomizer() {
 
     const handleHideAnyTimer = (event: CustomEvent) => {
       console.log("Page: Received hideAnyTimer event", event.detail)
-      // Hide whichever timer is currently visible (priority order: Color War > Dark > Social > Work)
-      if (showColorWar) {
-        console.log("Page: Hiding color war via !hidetimer")
-        setShowColorWar(false)
-      } else if (showDarkTimer) {
+      if (showDarkTimer) {
         console.log("Page: Hiding dark timer via !hidetimer")
         setShowDarkTimer(false)
       } else if (showSocialTimer) {
@@ -219,11 +217,7 @@ export default function DJRandomizer() {
 
     const handleResetAnyTimer = (event: CustomEvent) => {
       console.log("Page: Received resetAnyTimer event", event.detail)
-      // Reset whichever timer is currently visible (priority order: Color War > Dark > Social > Work)
-      if (showColorWar) {
-        console.log("Page: Resetting color war via !resettimer")
-        window.dispatchEvent(new CustomEvent("resetColorWar", { detail: event.detail }))
-      } else if (showDarkTimer) {
+      if (showDarkTimer) {
         console.log("Page: Resetting dark timer via !resettimer")
         window.dispatchEvent(new CustomEvent("resetDarkTimer", { detail: event.detail }))
       } else if (showSocialTimer) {
@@ -250,11 +244,33 @@ export default function DJRandomizer() {
       setShowGarden(false)
     }
 
-    window.addEventListener("startColorWar", handleStartColorWar as EventListener)
+    const handleShowFlowerShop = (event: CustomEvent) => {
+      console.log("Page: Received showFlowerShop event", event.detail)
+      setShowFlowerShop(true)
+    }
+
+    const handleHideFlowerShop = () => {
+      setShowFlowerShop(false)
+    }
+
+    const handleFlowerCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received flower celebration event for", username)
+      setCelebrationUsername(username)
+      setShowFlowerCelebration(true)
+    }
+
+    const handleShowFlowerCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showFlowerCelebration event for", username)
+      setCelebrationUsername(username)
+      setShowFlowerCelebration(true)
+    }
+
+    window.addEventListener("showTipGoal", handleShowTipGoal as EventListener)
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
-    window.addEventListener("hideColorWar", handleHideColorWar as EventListener)
     window.addEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
     window.addEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
     window.addEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
@@ -262,13 +278,15 @@ export default function DJRandomizer() {
     window.addEventListener("resetAnyTimer", handleResetAnyTimer as EventListener)
     window.addEventListener("startGarden", handleStartGarden as EventListener)
     window.addEventListener("hideGarden", handleHideGarden as EventListener)
+    window.addEventListener("showFlowerShop", handleShowFlowerShop as EventListener)
+    window.addEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
+    window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
 
     return () => {
-      window.removeEventListener("startColorWar", handleStartColorWar as EventListener)
+      window.removeEventListener("showTipGoal", handleShowTipGoal as EventListener)
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
       window.removeEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
       window.removeEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
-      window.removeEventListener("hideColorWar", handleHideColorWar as EventListener)
       window.removeEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
       window.removeEventListener("hideWorkTimer", handleHideWorkTimer as EventListener)
       window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
@@ -276,8 +294,11 @@ export default function DJRandomizer() {
       window.removeEventListener("resetAnyTimer", handleResetAnyTimer as EventListener)
       window.removeEventListener("startGarden", handleStartGarden as EventListener)
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
+      window.removeEventListener("showFlowerShop", handleShowFlowerShop as EventListener)
+      window.removeEventListener("showFlowerCelebration", handleFlowerCelebration as EventListener)
+      window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
     }
-  }, [showColorWar, showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
+  }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
   // Simulate chat command integration
   useEffect(() => {
@@ -299,12 +320,12 @@ export default function DJRandomizer() {
   const handleSpin = (username: string) => {
     if (isSpinning) return
 
-    // Hide all timers and games when spinning
-    if (showColorWar) setShowColorWar(false)
     if (showDarkTimer) setShowDarkTimer(false)
     if (showWorkTimer) setShowWorkTimer(false)
     if (showSocialTimer) setShowSocialTimer(false)
     if (showGarden) setShowGarden(false)
+    if (showFlowerShop) setShowFlowerShop(false)
+    if (showFlowerCelebration) setShowFlowerCelebration(false)
 
     setIsVisible(true)
     setIsSpinning(true)
@@ -320,10 +341,7 @@ export default function DJRandomizer() {
     setSelectedTrick(null)
     setLastCommand(`!hidespin by ${username}`)
 
-    // Restore timers/games based on connection status (highest priority first)
-    if (colorWarConnected) {
-      setShowColorWar(true)
-    } else if (darkTimerConnected) {
+    if (darkTimerConnected) {
       setShowDarkTimer(true)
     } else if (socialTimerConnected) {
       setShowSocialTimer(true)
@@ -331,6 +349,10 @@ export default function DJRandomizer() {
       setShowWorkTimer(true)
     } else if (gardenConnected) {
       setShowGarden(true)
+    } else if (showFlowerShop) {
+      setShowFlowerShop(true)
+    } else if (showFlowerCelebration) {
+      setShowFlowerCelebration(true)
     }
   }
 
@@ -415,25 +437,8 @@ export default function DJRandomizer() {
     return null
   }
 
-  // Determine which full-screen element to show (Color War takes priority)
-  const getFullScreenElement = () => {
-    if (showColorWar) {
-      return (
-        <ColorWar
-          isVisible={showColorWar}
-          onConnectionChange={setColorWarConnected}
-          onHide={() => setShowColorWar(false)}
-        />
-      )
-    }
-    return null
-  }
-
   // Determine which right-side element to show (Dark Timer > Social Timer > Work Timer)
   const getRightSideElement = () => {
-    // Don't show right-side elements if Color War is active
-    if (showColorWar) return null
-
     if (showDarkTimer) {
       return (
         <DarkTimer
@@ -505,13 +510,10 @@ export default function DJRandomizer() {
           fontWeight={blurbFontWeight}
         />
 
-        {/* Full Screen Elements (Color War) */}
-        {getFullScreenElement()}
+        {/* Upper Left Elements (DJ Spinner with flip transition) */}
+        {getUpperLeftElement()}
 
-        {/* Upper Left Elements (DJ Spinner with flip transition) - Hidden during Color War */}
-        {!showColorWar && getUpperLeftElement()}
-
-        {/* Right Side Elements (Timers) - Hidden during Color War */}
+        {/* Right Side Elements (Timers) */}
         {getRightSideElement()}
 
         {/* Community Garden - Always at bottom when visible */}
@@ -522,6 +524,21 @@ export default function DJRandomizer() {
             onHide={() => setShowGarden(false)}
           />
         )}
+
+        {/* Flower Shop - Always at bottom when visible */}
+        {showFlowerShop && <FlowerShop isVisible={showFlowerShop} onHide={() => setShowFlowerShop(false)} />}
+
+        {/* Flower Celebration - Always at bottom when visible */}
+        {showFlowerCelebration && (
+          <FlowerCelebration
+            isVisible={showFlowerCelebration}
+            username={celebrationUsername}
+            onHide={() => setShowFlowerCelebration(false)}
+          />
+        )}
+
+        <TipGoal onConnectionChange={setTipGoalConnected} />
+        <TipCelebration />
       </div>
 
       {/* Separator Line */}
@@ -543,12 +560,6 @@ export default function DJRandomizer() {
               {showBlurbs
                 ? `${blurbs.filter((b) => b.enabled).length} active, every ${blurbIntervalMinutes}min`
                 : "Hidden"}
-            </p>
-          </div>
-          <div className="text-center">
-            <h3 className="text-xl font-bold text-black mb-2">⚔️ Color War</h3>
-            <p className="text-black/70">
-              {showColorWar ? (colorWarConnected ? "BATTLE ACTIVE!" : "Connecting...") : "Hidden"}
             </p>
           </div>
           <div className="text-center">
@@ -574,6 +585,18 @@ export default function DJRandomizer() {
             <p className="text-black/70">
               {showGarden ? (gardenConnected ? "Growing beautifully!" : "Connecting...") : "Hidden"}
             </p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">💐 Flower Shop</h3>
+            <p className="text-black/70">{showFlowerShop ? "Visible" : "Hidden"}</p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">🌼 Flower Celebration</h3>
+            <p className="text-black/70">{showFlowerCelebration ? `Celebrating ${celebrationUsername}!` : "Hidden"}</p>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">💰 Tip Goal</h3>
+            <p className="text-black/70">{tipGoalConnected ? "Auto-showing every 5min!" : "Connecting..."}</p>
           </div>
         </div>
         <div className="text-center mt-4">
@@ -630,9 +653,6 @@ export default function DJRandomizer() {
         setBlurbShadowSize={setBlurbShadowSize}
         blurbFontWeight={blurbFontWeight}
         setBlurbFontWeight={setBlurbFontWeight}
-        showColorWar={showColorWar}
-        setShowColorWar={setShowColorWar}
-        colorWarConnected={colorWarConnected}
         showDarkTimer={showDarkTimer}
         setShowDarkTimer={setShowDarkTimer}
         darkTimerConnected={darkTimerConnected}
@@ -645,6 +665,15 @@ export default function DJRandomizer() {
         showGarden={showGarden}
         setShowGarden={setShowGarden}
         gardenConnected={gardenConnected}
+        showFlowerShop={showFlowerShop}
+        setShowFlowerShop={setShowFlowerShop}
+        showFlowerCelebration={showFlowerCelebration}
+        setShowFlowerCelebration={setShowFlowerCelebration}
+        celebrationUsername={celebrationUsername}
+        setCelebrationUsername={setCelebrationUsername}
+        showTipGoal={false}
+        setShowTipGoal={() => {}}
+        tipGoalConnected={tipGoalConnected}
         overlayBackground={overlayBackground}
         setOverlayBackground={setOverlayBackground}
         chatConnected={chatConnected}

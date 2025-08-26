@@ -13,7 +13,6 @@ import { DarkTimer } from "@/components/dark-timer"
 import { BlurbOverlay } from "@/components/blurb-overlay"
 import { CommunityGarden } from "@/components/community-garden"
 import { TipGoal } from "@/components/tip-goal"
-import { TipCelebration } from "@/components/tip-celebration"
 import { FlowerShop } from "@/components/flower-shop"
 import { FlowerCelebration } from "@/components/flower-celebration" // Import FlowerCelebration component
 
@@ -538,7 +537,7 @@ export default function DJRandomizer() {
         )}
 
         <TipGoal onConnectionChange={setTipGoalConnected} />
-        <TipCelebration />
+        {/* Removed TipCelebration component usage */}
       </div>
 
       {/* Separator Line */}

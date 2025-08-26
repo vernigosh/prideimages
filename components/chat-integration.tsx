@@ -455,6 +455,25 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <Play className="w-4 h-4" />
               Test Flower Celebration
             </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Simulating tip received")
+                window.dispatchEvent(
+                  new CustomEvent("streamelements-tip", {
+                    detail: {
+                      username: "TestTipper",
+                      amount: 5.0,
+                      message: "Great stream! Keep it up!",
+                    },
+                  }),
+                )
+                addRecentCommand("Simulated tip by TestTipper (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-green-500 hover:bg-green-600 text-white"
+            >
+              <Play className="w-4 h-4" />
+              Test Tip Animation
+            </button>
           </div>
           <p className="text-xs mt-2 text-black/70">Use these buttons to test functionality without chat commands</p>
         </div>

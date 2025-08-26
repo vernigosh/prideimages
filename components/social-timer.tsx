@@ -9,7 +9,7 @@ interface SocialTimerProps {
 }
 
 export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(20 * 60) // 20 minutes for social
+  const [timeLeft, setTimeLeft] = useState(2 * 60) // 2 minutes for social
   const [isRunning, setIsRunning] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -81,7 +81,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
 
   // Auto-start timer when it becomes visible from a command
   useEffect(() => {
-    if (isVisible && timeLeft === 20 * 60 && !isRunning) {
+    if (isVisible && timeLeft === 2 * 60 && !isRunning) {
       console.log("[v0] Social Timer: Auto-starting because timer just became visible")
       console.log("[v0] Social timer visibility changed, current state:", { isVisible, timeLeft, isRunning })
       setTimeout(() => {
@@ -93,7 +93,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
 
   const startSocialTimer = () => {
     console.log("[v0] Social Timer: startSocialTimer called - resetting and starting")
-    setTimeLeft(20 * 60)
+    setTimeLeft(2 * 60)
     // Use setTimeout to ensure state updates are processed
     setTimeout(() => {
       setIsRunning(true)
@@ -103,7 +103,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
 
   const resetSocialTimer = () => {
     console.log("[v0] Social Timer: resetSocialTimer called - resetting and restarting")
-    setTimeLeft(20 * 60)
+    setTimeLeft(2 * 60)
     setTimeout(() => {
       setIsRunning(true)
       console.log("[v0] Social Timer: isRunning set to true via reset")
@@ -112,11 +112,11 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
 
   const hideSocialTimer = () => {
     setIsRunning(false)
-    setTimeLeft(20 * 60)
+    setTimeLeft(2 * 60)
     onHide()
   }
 
-  const totalTime = 20 * 60
+  const totalTime = 2 * 60
   const progress = (totalTime - timeLeft) / totalTime
 
   const minutes = Math.floor(timeLeft / 60)

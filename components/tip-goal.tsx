@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { useStreamElements } from "./streamelements-service"
 
@@ -24,6 +23,10 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
   const totalProgressPercentage = Math.round((totalProgress / actualTarget) * 100)
   const remainingAmount = Math.max(actualTarget - totalProgress, 0)
   const isGoalReached = totalProgress >= actualTarget
+
+  const formatCurrency = (amount: number) => {
+    return amount.toFixed(2)
+  }
 
   useEffect(() => {
     const showTipGoal = () => {
@@ -98,69 +101,67 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
   if (!isVisible) return null
 
   return (
-    <div className="fixed top-32 right-8 z-50">
-      <Card className="w-96 bg-[#ffb8ad] border-2 border-white shadow-2xl">
-        <CardContent className="p-6">
-          {/* Header */}
+    <div className="fixed top-24 right-8 z-50 w-96">
+      <div className="p-6">
+        {/* Header */}
+        <div className="text-center mb-4">
+          <h2 className="text-3xl font-bold font-sans text-white mb-2 uppercase">Third Deck Fund</h2>
+          <div className="text-white text-3xl font-sans font-bold uppercase">
+            <span className="font-bold">${formatCurrency(totalProgress)}</span> /{" "}
+            <span className="font-bold">${formatCurrency(actualTarget)}</span>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <Progress value={totalProgressPercentage} className="h-6 bg-white/20 [&>div]:bg-pink-500" />
+          <div className="flex justify-between text-3xl text-white mt-2 font-sans font-bold uppercase">
+            <span className="font-bold">{totalProgressPercentage}%</span>
+            <span className="font-bold">${formatCurrency(remainingAmount)} TO GO</span>
+          </div>
+        </div>
+
+        {/* Goal Status */}
+        {isGoalReached ? (
           <div className="text-center mb-4">
-            <h2 className="text-2xl font-bold font-sans text-gray-900 mb-2 uppercase">Third Deck Fund</h2>
-            <div className="text-gray-800 text-2xl font-sans font-bold uppercase">
-              <span className="font-bold">${totalProgress.toFixed(2)}</span> /{" "}
-              <span className="font-bold">${actualTarget}</span>
+            <div className="text-3xl animate-bounce">🎉</div>
+            <div className="text-white font-bold font-sans text-3xl uppercase">GOAL REACHED!</div>
+            <div className="text-white text-3xl font-sans font-bold uppercase">THIRD DECK INCOMING!</div>
+          </div>
+        ) : (
+          <div className="text-center mb-4">{/* Removed tip button instruction for less height */}</div>
+        )}
+
+        {/* Recent Tippers */}
+        {recentTippers.length > 0 && (
+          <div className="border-t border-white/20 pt-4">
+            <div className="text-white text-3xl mb-3 font-sans font-bold uppercase">RECENT SUPPORTERS:</div>
+            <div className="flex flex-wrap gap-2">
+              {recentTippers.map((tipper, index) => (
+                <span
+                  key={index}
+                  className="bg-white/30 text-white text-3xl px-3 py-2 rounded-full font-sans font-bold uppercase"
+                >
+                  {tipper.name} <span className="font-bold">${formatCurrency(tipper.amount)}</span>
+                </span>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Progress Bar */}
-          <div className="mb-4">
-            <Progress value={totalProgressPercentage} className="h-6 bg-white/20 [&>div]:bg-pink-500" />
-            <div className="flex justify-between text-lg text-gray-800 mt-2 font-sans font-bold uppercase">
-              <span className="font-bold">{totalProgressPercentage}%</span>
-              <span className="font-bold">${remainingAmount} TO GO</span>
+        {/* Celebration Overlay */}
+        {showCelebration && (
+          <div className="absolute inset-0 bg-[#ffb8ad] rounded-lg flex items-center justify-center animate-pulse">
+            <div className="text-center text-gray-900">
+              <div className="text-5xl mb-3">🎉🎊🎉</div>
+              <div className="text-3xl font-bold font-sans uppercase">THIRD DECK FUNDED!</div>
+              <div className="text-2xl font-sans font-bold uppercase">
+                <span className="font-bold">${formatCurrency(actualTarget)}</span> ACHIEVED!
+              </div>
             </div>
           </div>
-
-          {/* Goal Status */}
-          {isGoalReached ? (
-            <div className="text-center mb-4">
-              <div className="text-3xl animate-bounce">🎉</div>
-              <div className="text-gray-900 font-bold font-sans text-xl uppercase">GOAL REACHED!</div>
-              <div className="text-gray-800 text-lg font-sans font-bold uppercase">THIRD DECK INCOMING!</div>
-            </div>
-          ) : (
-            <div className="text-center mb-4">{/* Removed tip button instruction for less height */}</div>
-          )}
-
-          {/* Recent Tippers */}
-          {recentTippers.length > 0 && (
-            <div className="border-t border-white/20 pt-4">
-              <div className="text-gray-800 text-base mb-3 font-sans font-bold uppercase">RECENT SUPPORTERS:</div>
-              <div className="flex flex-wrap gap-2">
-                {recentTippers.map((tipper, index) => (
-                  <span
-                    key={index}
-                    className="bg-white/30 text-gray-900 text-base px-3 py-2 rounded-full font-sans font-bold uppercase"
-                  >
-                    {tipper.name} <span className="font-bold">${tipper.amount}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Celebration Overlay */}
-          {showCelebration && (
-            <div className="absolute inset-0 bg-[#ffb8ad] rounded-lg flex items-center justify-center animate-pulse">
-              <div className="text-center text-gray-900">
-                <div className="text-5xl mb-3">🎉🎊🎉</div>
-                <div className="text-3xl font-bold font-sans uppercase">THIRD DECK FUNDED!</div>
-                <div className="text-2xl font-sans font-bold uppercase">
-                  <span className="font-bold">${actualTarget}</span> ACHIEVED!
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   )
 }

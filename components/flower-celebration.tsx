@@ -19,7 +19,7 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
       const timer = setTimeout(() => {
         setOpacity(0)
         setTimeout(onHide, 500) // Wait for fade out
-      }, 20000)
+      }, 60000) // Changed from 20000 to 60000 (60 seconds)
 
       return () => clearTimeout(timer)
     } else {

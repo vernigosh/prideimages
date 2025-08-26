@@ -174,6 +174,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Work timer stop command detected")
           window.dispatchEvent(new CustomEvent("stopWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!social") {
+          console.log("Social timer start command detected")
+          window.dispatchEvent(new CustomEvent("startSocialTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!resettimer" && (isMod || isBroadcaster || isVip)) {
           console.log("Universal reset timer command detected")
           // Dispatch event to reset any visible timer
@@ -261,11 +265,9 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         // FLOWER SHOP COMMANDS
         else if (command === "!flowers") {
           console.log("Check flower inventory command detected")
-          window.dispatchEvent(new CustomEvent("showFlowerShop", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!shop") {
           console.log("Show flower shop command detected")
-          window.dispatchEvent(new CustomEvent("showFlowerShop", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command.startsWith("!redeem")) {
           console.log("Redeem flower item command detected")

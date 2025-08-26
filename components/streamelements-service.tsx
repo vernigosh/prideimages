@@ -36,9 +36,9 @@ interface StreamElementsEvent {
 
 export function useStreamElements() {
   const [goalData, setGoalData] = useState({
-    current: 0,
-    target: 100,
-    percentage: 0,
+    current: 66.9, // Current cumulative tips since Aug 1, 2025
+    target: 2500, // Third deck fund target
+    percentage: Math.round((66.9 / 2500) * 100),
   })
   const [recentTippers, setRecentTippers] = useState<Array<{ name: string; amount: number }>>([])
   const [isConnected, setIsConnected] = useState(false)
@@ -57,6 +57,13 @@ export function useStreamElements() {
           console.log("[v0] Connected to StreamElements")
           setIsConnected(true)
 
+          setGoalData({
+            current: 66.9, // Current cumulative tips since Aug 1, 2025
+            target: 2500, // Third deck fund target
+            percentage: Math.round((66.9 / 2500) * 100),
+          })
+          console.log("[v0] Set baseline tip goal data on connection")
+
           // Authenticate with JWT token
           ws.send(
             JSON.stringify({
@@ -67,6 +74,19 @@ export function useStreamElements() {
               },
             }),
           )
+
+          setTimeout(() => {
+            ws.send(
+              JSON.stringify({
+                type: "get",
+                nonce: `nonce-session-${Date.now()}`,
+                data: {
+                  resource: "session",
+                  room: "64ae97ecc90c5bc26b0c0f97",
+                },
+              }),
+            )
+          }, 1000)
 
           // Subscribe to channel session updates for tip goal data
           ws.send(
@@ -102,17 +122,36 @@ export function useStreamElements() {
             const message = JSON.parse(event.data)
             console.log("[v0] StreamElements message:", message)
 
+            if (message.type === "authenticated") {
+              console.log("[v0] StreamElements authenticated successfully")
+              setGoalData((prev) => ({
+                current: Math.max(prev.current, 66.9), // Ensure we don't go below baseline
+                target: 2500,
+                percentage: Math.round((Math.max(prev.current, 66.9) / 2500) * 100),
+              }))
+              console.log("[v0] Confirmed baseline tip goal data after authentication")
+            }
+
             // Handle session data (includes tip goal info)
-            if (message.type === "session:update" || message.type === "authenticated") {
+            if (message.type === "session:update" || message.type === "session" || message.data?.session) {
+              console.log("[v0] Received session data:", message.data)
               const sessionData = message.data?.session?.data || message.data
               if (sessionData && sessionData["tip-goal"]) {
                 const tipGoalData = sessionData["tip-goal"]
-                const current = tipGoalData.amount || 0
-                const target = tipGoalData.target || 100
+                const sessionAmount = tipGoalData.amount || 0
+                const cumulativeBase = 66.9 // Tips since Aug 1, 2025
+                const current = sessionAmount + cumulativeBase
+                const target = 2500 // Third deck fund target
                 const percentage = target > 0 ? Math.round((current / target) * 100) : 0
 
                 setGoalData({ current, target, percentage })
-                console.log("[v0] Updated tip goal:", { current, target, percentage })
+                console.log("[v0] Updated cumulative tip goal:", {
+                  current,
+                  target,
+                  percentage,
+                  sessionAmount,
+                  cumulativeBase,
+                })
               }
             }
 
@@ -122,11 +161,23 @@ export function useStreamElements() {
 
             // Handle tip events from activities
             if (message.type === "event" && message.data?.activity?.type === "tip") {
-              // Updated to handle activities structure
               const tipData = message.data.activity.data
               if (tipData.username && tipData.amount) {
+                const tipAmount = Number.parseFloat(tipData.amount)
+
+                setGoalData((prev) => {
+                  const newCurrent = prev.current + tipAmount
+                  const newPercentage = Math.round((newCurrent / prev.target) * 100)
+                  console.log("[v0] Updated tip goal with new tip:", { newCurrent, tipAmount, newPercentage })
+                  return {
+                    ...prev,
+                    current: newCurrent,
+                    percentage: newPercentage,
+                  }
+                })
+
                 setRecentTippers((prev) => [
-                  { name: tipData.username, amount: Number.parseFloat(tipData.amount) },
+                  { name: tipData.username, amount: tipAmount },
                   ...prev.slice(0, 4), // Keep last 5 tippers
                 ])
 
@@ -135,7 +186,7 @@ export function useStreamElements() {
                   new CustomEvent("streamelements-tip", {
                     detail: {
                       username: tipData.username,
-                      amount: Number.parseFloat(tipData.amount),
+                      amount: tipAmount,
                       message: tipData.message || "",
                     },
                   }),

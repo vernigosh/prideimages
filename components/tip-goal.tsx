@@ -13,8 +13,11 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
   const [showCelebration, setShowCelebration] = useState(false)
   const [lastGoalReached, setLastGoalReached] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isFlashing, setIsFlashing] = useState(false)
 
-  const actualCurrent = 41.9 // Current tips from StreamElements
+  console.log("[v0] Tip goal data:", { goalData, isConnected })
+
+  const actualCurrent = goalData.current || 66.9 // Fallback to actual current amount since Aug 1
   const actualTarget = 2500 // Goal for third deck
   const savedAmount = 1400 // Already saved separately
   const totalProgress = actualCurrent + savedAmount // Combined progress
@@ -70,9 +73,16 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
 
     const handleStreamElementsTip = (event: CustomEvent) => {
       const { username, amount } = event.detail
-      console.log("[v0] New tip received:", { username, amount })
+      console.log("[v0] New tip received - showing popup immediately:", { username, amount })
 
+      // Show popup immediately when tip is received
       setIsVisible(true)
+
+      // Add flash animation
+      setIsFlashing(true)
+      setTimeout(() => setIsFlashing(false), 1000) // Flash for 1 second
+
+      // Keep popup visible for 60 seconds
       setTimeout(() => {
         setIsVisible(false)
       }, 60000)
@@ -84,6 +94,26 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
       window.removeEventListener("streamelements-tip", handleStreamElementsTip as EventListener)
     }
   }, [isVisible, isConnected, onConnectionChange])
+
+  useEffect(() => {
+    const handleGlobalTipEvent = (event: CustomEvent) => {
+      const { username, amount } = event.detail
+      console.log("[v0] Global tip event - triggering immediate popup:", { username, amount })
+
+      // Show popup immediately regardless of current visibility
+      setIsVisible(true)
+      setIsFlashing(true)
+
+      setTimeout(() => setIsFlashing(false), 1000)
+      setTimeout(() => setIsVisible(false), 60000)
+    }
+
+    window.addEventListener("streamelements-tip", handleGlobalTipEvent as EventListener)
+
+    return () => {
+      window.removeEventListener("streamelements-tip", handleGlobalTipEvent as EventListener)
+    }
+  }, [])
 
   useEffect(() => {
     if (isGoalReached && !lastGoalReached && actualCurrent > 0) {
@@ -101,7 +131,11 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
   if (!isVisible) return null
 
   return (
-    <div className="fixed top-24 right-8 z-50 w-96">
+    <div
+      className={`fixed top-24 right-8 z-50 w-96 transition-all duration-300 ${
+        isFlashing ? "animate-pulse scale-105 ring-4 ring-pink-500 ring-opacity-75" : ""
+      }`}
+    >
       <div className="p-6">
         {/* Header */}
         <div className="text-center mb-4">
@@ -114,7 +148,12 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
 
         {/* Progress Bar */}
         <div className="mb-4">
-          <Progress value={totalProgressPercentage} className="h-6 bg-white/20 [&>div]:bg-pink-500" />
+          <Progress
+            value={totalProgressPercentage}
+            className={`h-6 bg-white/20 [&>div]:bg-pink-500 transition-all duration-500 ${
+              isFlashing ? "[&>div]:bg-pink-400 [&>div]:animate-pulse" : ""
+            }`}
+          />
           <div className="flex justify-between text-3xl text-white mt-2 font-sans font-bold uppercase">
             <span className="font-bold">{totalProgressPercentage}%</span>
             <span className="font-bold">${formatCurrency(remainingAmount)} TO GO</span>

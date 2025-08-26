@@ -99,10 +99,10 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
 
   return (
     <div className="fixed top-8 left-8 z-50">
-      <Card className="w-96 bg-[#ffb8ad] border-2 border-white shadow-2xl">
-        <CardContent className="p-8">
+      <Card className="w-[500px] bg-[#ffb8ad] border-2 border-white shadow-2xl">
+        <CardContent className="p-6">
           {/* Header */}
-          <div className="text-center mb-6">
+          <div className="text-center mb-4">
             <h2 className="text-4xl font-bold font-sans text-gray-900 mb-2">Third Deck Fund</h2>
             <div className="text-gray-800 text-2xl font-sans font-bold">
               <span className="font-bold">${totalProgress.toFixed(2)}</span> /{" "}
@@ -111,7 +111,7 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
           </div>
 
           {/* Progress Bar */}
-          <div className="mb-6">
+          <div className="mb-4">
             <Progress value={totalProgressPercentage} className="h-6 bg-white/20 [&>div]:bg-pink-500" />
             <div className="flex justify-between text-lg text-gray-800 mt-2 font-sans font-bold">
               <span className="font-bold">{totalProgressPercentage}%</span>
@@ -121,13 +121,13 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
 
           {/* Goal Status */}
           {isGoalReached ? (
-            <div className="text-center mb-6">
+            <div className="text-center mb-4">
               <div className="text-3xl animate-bounce">🎉</div>
               <div className="text-gray-900 font-bold font-sans text-xl">GOAL REACHED!</div>
               <div className="text-gray-800 text-lg font-sans font-bold">Third deck incoming!</div>
             </div>
           ) : (
-            <div className="text-center mb-6">
+            <div className="text-center mb-4">
               <div className="text-gray-800 text-lg font-sans font-bold">
                 If you'd like to tip, find the tip button below!
               </div>

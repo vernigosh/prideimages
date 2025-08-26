@@ -98,7 +98,7 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
   if (!isVisible) return null
 
   return (
-    <div className="fixed top-8 left-8 z-50">
+    <div className="fixed top-32 right-8 z-50">
       <Card className="w-[500px] bg-[#ffb8ad] border-2 border-white shadow-2xl">
         <CardContent className="p-6">
           {/* Header */}
@@ -127,11 +127,7 @@ export function TipGoal({ onConnectionChange }: TipGoalProps) {
               <div className="text-gray-800 text-lg font-sans font-bold">Third deck incoming!</div>
             </div>
           ) : (
-            <div className="text-center mb-4">
-              <div className="text-gray-800 text-lg font-sans font-bold">
-                If you'd like to tip, find the tip button below!
-              </div>
-            </div>
+            <div className="text-center mb-4">{/* Removed tip button instruction for less height */}</div>
           )}
 
           {/* Recent Tippers */}

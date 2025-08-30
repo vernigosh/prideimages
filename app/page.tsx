@@ -12,9 +12,9 @@ import { SocialTimer } from "@/components/social-timer"
 import { DarkTimer } from "@/components/dark-timer"
 import { BlurbOverlay } from "@/components/blurb-overlay"
 import { CommunityGarden } from "@/components/community-garden"
-import { TipGoal } from "@/components/tip-goal"
 import { FlowerShop } from "@/components/flower-shop"
 import { FlowerCelebration } from "@/components/flower-celebration" // Import FlowerCelebration component
+import { FlowerLeaderboard } from "@/components/flower-leaderboard" // Import FlowerLeaderboard component
 
 interface Blurb {
   id: string
@@ -141,9 +141,6 @@ export default function DJRandomizer() {
   const [showGarden, setShowGarden] = useState(false)
   const [gardenConnected, setGardenConnected] = useState(false)
 
-  // Tip Goal settings
-  const [tipGoalConnected, setTipGoalConnected] = useState(false)
-
   // Flower Shop settings
   const [showFlowerShop, setShowFlowerShop] = useState(false)
 
@@ -151,14 +148,10 @@ export default function DJRandomizer() {
   const [showFlowerCelebration, setShowFlowerCelebration] = useState(false)
   const [celebrationUsername, setCelebrationUsername] = useState("")
 
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
+
   // Add event listeners for timer commands
   useEffect(() => {
-    const handleShowTipGoal = (event: CustomEvent) => {
-      console.log("Page: Received showTipGoal event", event.detail)
-      // Dispatch event to tip goal component to show immediately
-      window.dispatchEvent(new CustomEvent("forceTipGoalShow", { detail: event.detail }))
-    }
-
     const handleStartDarkTimer = (event: CustomEvent) => {
       console.log("Page: Received startDarkTimer event", event.detail)
       if (!showDarkTimer) {
@@ -266,7 +259,11 @@ export default function DJRandomizer() {
       setShowFlowerCelebration(true)
     }
 
-    window.addEventListener("showTipGoal", handleShowTipGoal as EventListener)
+    const handleRequestLeaderboard = (event: CustomEvent) => {
+      console.log("Page: Received requestLeaderboard event", event.detail)
+      setShowLeaderboard(true)
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -280,9 +277,9 @@ export default function DJRandomizer() {
     window.addEventListener("showFlowerShop", handleShowFlowerShop as EventListener)
     window.addEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
+    window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
 
     return () => {
-      window.removeEventListener("showTipGoal", handleShowTipGoal as EventListener)
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
       window.removeEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
       window.removeEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -294,8 +291,9 @@ export default function DJRandomizer() {
       window.removeEventListener("startGarden", handleStartGarden as EventListener)
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
       window.removeEventListener("showFlowerShop", handleShowFlowerShop as EventListener)
-      window.removeEventListener("showFlowerCelebration", handleFlowerCelebration as EventListener)
+      window.removeEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
+      window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
@@ -325,6 +323,7 @@ export default function DJRandomizer() {
     if (showGarden) setShowGarden(false)
     if (showFlowerShop) setShowFlowerShop(false)
     if (showFlowerCelebration) setShowFlowerCelebration(false)
+    if (showLeaderboard) setShowLeaderboard(false)
 
     setIsVisible(true)
     setIsSpinning(true)
@@ -352,6 +351,8 @@ export default function DJRandomizer() {
       setShowFlowerShop(true)
     } else if (showFlowerCelebration) {
       setShowFlowerCelebration(true)
+    } else if (showLeaderboard) {
+      setShowLeaderboard(true)
     }
   }
 
@@ -536,8 +537,7 @@ export default function DJRandomizer() {
           />
         )}
 
-        <TipGoal onConnectionChange={setTipGoalConnected} />
-        {/* Removed TipCelebration component usage */}
+        {showLeaderboard && <FlowerLeaderboard isVisible={showLeaderboard} onHide={() => setShowLeaderboard(false)} />}
       </div>
 
       {/* Separator Line */}
@@ -593,9 +593,10 @@ export default function DJRandomizer() {
             <h3 className="text-xl font-bold text-black mb-2">🌼 Flower Celebration</h3>
             <p className="text-black/70">{showFlowerCelebration ? `Celebrating ${celebrationUsername}!` : "Hidden"}</p>
           </div>
+          {/* Add leaderboard status */}
           <div className="text-center">
-            <h3 className="text-xl font-bold text-black mb-2">💰 Tip Goal</h3>
-            <p className="text-black/70">{tipGoalConnected ? "Auto-showing every 5min!" : "Connecting..."}</p>
+            <h3 className="text-xl font-bold text-black mb-2">🏆 Flower Leaderboard</h3>
+            <p className="text-black/70">{showLeaderboard ? "Visible" : "Hidden"}</p>
           </div>
         </div>
         <div className="text-center mt-4">
@@ -670,9 +671,6 @@ export default function DJRandomizer() {
         setShowFlowerCelebration={setShowFlowerCelebration}
         celebrationUsername={celebrationUsername}
         setCelebrationUsername={setCelebrationUsername}
-        showTipGoal={false}
-        setShowTipGoal={() => {}}
-        tipGoalConnected={tipGoalConnected}
         overlayBackground={overlayBackground}
         setOverlayBackground={setOverlayBackground}
         chatConnected={chatConnected}

@@ -18,7 +18,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
   const [allowedUsers, setAllowedUsers] = useState("mods") // Changed default from "everyone" to "mods"
   const [cooldownSeconds, setCooldownSeconds] = useState(10)
   const [lastSpinTime, setLastSpinTime] = useState(0)
-  const [tipGoal, setTipGoal] = useState<number | null>(null)
 
   const clientRef = useRef<any>(null)
 
@@ -27,12 +26,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
     const savedChannel = localStorage.getItem("twitch-channel") || "vernigosh"
     const savedAllowedUsers = localStorage.getItem("allowed-users") || "mods" // Default to mods
     const savedCooldown = localStorage.getItem("cooldown-seconds")
-    const savedTipGoal = localStorage.getItem("tip-goal")
 
     if (savedChannel) setChannel(savedChannel)
     if (savedAllowedUsers) setAllowedUsers(savedAllowedUsers)
     if (savedCooldown) setCooldownSeconds(Number.parseInt(savedCooldown))
-    if (savedTipGoal) setTipGoal(Number.parseInt(savedTipGoal))
   }, [])
 
   // Manual test functions
@@ -119,11 +116,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           command !== "!attack" &&
           command !== "!charge" &&
           command !== "!battle" &&
-          command !== "!clearold" &&
-          command !== "!goal" &&
-          !command.startsWith("!setgoal") &&
-          command !== "!resetgoal" &&
-          !command.startsWith("!addtip")
+          command !== "!clearold"
 
         if (isRestrictedCommand) {
           let canUseCommand = false
@@ -242,44 +235,13 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Test bunny visit command detected")
           window.dispatchEvent(new CustomEvent("testBunnyVisit", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        }
-        // TIP GOAL COMMANDS - Updated to work with StreamElements integration
-        else if (command === "!goal") {
-          console.log("Show tip goal command detected")
-          window.dispatchEvent(
-            new CustomEvent("showTipGoal", {
-              detail: { username },
-            }),
-          )
-          addRecentCommand(`${command} by ${username}`)
-        } else if (command.startsWith("!setgoal") && (isMod || isBroadcaster || isVip)) {
-          console.log("Set tip goal command detected - Note: Using StreamElements real-time data")
-          addRecentCommand(`${command} by ${username} (StreamElements handles goal setting)`)
-        } else if (command === "!resetgoal" && (isMod || isBroadcaster || isVip)) {
-          console.log("Reset tip goal command detected - Note: Using StreamElements real-time data")
-          addRecentCommand(`${command} by ${username} (StreamElements handles goal reset)`)
-        } else if (command.startsWith("!addtip") && (isMod || isBroadcaster || isVip)) {
-          console.log("Add tip command detected - Note: Using StreamElements real-time data")
-          addRecentCommand(`${command} by ${username} (StreamElements handles tip tracking)`)
-        }
-        // FLOWER SHOP COMMANDS
-        else if (command === "!flowers") {
-          console.log("Check flower inventory command detected")
-          addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!shop") {
-          console.log("Show flower shop command detected")
-          addRecentCommand(`${command} by ${username}`)
-        } else if (command.startsWith("!redeem")) {
-          console.log("Redeem flower item command detected")
-          const parts = command.split(" ")
-          const itemId = parts[1]
-          if (itemId) {
-            window.dispatchEvent(new CustomEvent("redeemFlowerItem", { detail: { username, itemId } }))
-            addRecentCommand(`${command} by ${username}`)
-          }
         } else if (command === "!celebrate" && (isMod || isBroadcaster || isVip)) {
           console.log("Trigger flower celebration command detected")
           window.dispatchEvent(new CustomEvent("showFlowerCelebration", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!leaderboard") {
+          console.log("Leaderboard command detected")
+          window.dispatchEvent(new CustomEvent("requestLeaderboard", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
@@ -297,7 +259,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         localStorage.setItem("twitch-channel", channel)
         localStorage.setItem("allowed-users", allowedUsers)
         localStorage.setItem("cooldown-seconds", cooldownSeconds.toString())
-        localStorage.setItem("tip-goal", tipGoal ? tipGoal.toString() : "")
       })
 
       client.on("disconnected", (reason) => {
@@ -426,22 +387,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("Manual test: Showing tip goal")
-                window.dispatchEvent(
-                  new CustomEvent("showTipGoal", {
-                    detail: { username: "Manual Test" },
-                  }),
-                )
-                addRecentCommand("!goal by Manual Test (manual)")
-              }}
-              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-purple-400 hover:bg-purple-500 text-white"
-            >
-              <Play className="w-4 h-4" />
-              Test Tip Goal
-              <span className="text-xs ml-2">{isConnected ? "🟢 Live" : "🔴 Offline"}</span>
-            </button>
-            <button
-              onClick={() => {
                 console.log("Manual test: Triggering flower celebration")
                 window.dispatchEvent(
                   new CustomEvent("showFlowerCelebration", {
@@ -457,22 +402,18 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("Manual test: Simulating tip received")
+                console.log("Manual test: Showing leaderboard")
                 window.dispatchEvent(
-                  new CustomEvent("streamelements-tip", {
-                    detail: {
-                      username: "TestTipper",
-                      amount: 5.0,
-                      message: "Great stream! Keep it up!",
-                    },
+                  new CustomEvent("requestLeaderboard", {
+                    detail: { username: "Manual Test" },
                   }),
                 )
-                addRecentCommand("Simulated tip by TestTipper (manual)")
+                addRecentCommand("Leaderboard by Manual Test (manual)")
               }}
-              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-green-500 hover:bg-green-600 text-white"
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-purple-400 hover:bg-purple-500 text-white"
             >
               <Play className="w-4 h-4" />
-              Test Tip Animation
+              Test Leaderboard
             </button>
           </div>
           <p className="text-xs mt-2 text-black/70">Use these buttons to test functionality without chat commands</p>
@@ -513,17 +454,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 onChange={(e) => setCooldownSeconds(Number.parseInt(e.target.value) || 0)}
                 min="0"
                 max="300"
-                className="w-full p-3 border-2 border-black rounded"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-black mb-2">Tip Goal (amount)</label>
-              <input
-                type="number"
-                value={tipGoal || ""}
-                onChange={(e) => setTipGoal(Number.parseInt(e.target.value) || null)}
-                min="0"
                 className="w-full p-3 border-2 border-black rounded"
               />
             </div>
@@ -575,12 +505,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                     <span>Permissions:</span>
                     <span className="text-xs">{allowedUsers}</span>
                   </div>
-                  {tipGoal !== null && (
-                    <div className="flex justify-between">
-                      <span>Tip Goal:</span>
-                      <span>${tipGoal}</span>
-                    </div>
-                  )}
                 </>
               )}
             </div>
@@ -659,18 +583,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!bunny</code>
                 <span className="ml-2">Test bunny visit (mods only)</span>
               </div>
-              <div>
-                <code className="bg-black text-purple-400 px-2 py-1 rounded font-bold">!goal</code>
-                <span className="ml-2 font-bold">Show current StreamElements tip goal 💰</span>
-              </div>
-              <div>
-                <code className="bg-black text-purple-400 px-2 py-1 rounded">!setgoal 100</code>
-                <span className="ml-2">Set in StreamElements dashboard (auto-syncs)</span>
-              </div>
-              <div>
-                <code className="bg-black text-purple-400 px-2 py-1 rounded">Tips</code>
-                <span className="ml-2">Real-time updates from StreamElements</span>
-              </div>
               {/* FLOWER SHOP COMMANDS */}
               <div>
                 <code className="bg-black text-green-400 px-2 py-1 rounded">!flowers</code>
@@ -688,6 +600,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <div>
                 <code className="bg-black text-pink-400 px-2 py-1 rounded">!celebrate</code>
                 <span className="ml-2">Trigger flower celebration (mods only)</span>
+              </div>
+              {/* Added command for leaderboard */}
+              <div>
+                <code className="bg-black text-purple-400 px-2 py-1 rounded">!leaderboard</code>
+                <span className="ml-2">Show top 4 flower pickers 🏆</span>
               </div>
             </div>
             <div className="mt-4 p-3 bg-green-100 rounded">
@@ -709,17 +626,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                   space for new plants
                 </li>
                 <li>5. Watch your flowers grow from seeds to beautiful blooms! 🌱→✨→🌸</li>
-              </ol>
-            </div>
-            <div className="mt-4 p-3 bg-purple-100 rounded">
-              <h4 className="font-bold text-purple-800 mb-2">💰 STREAMELEMENTS TIP GOAL:</h4>
-              <ol className="text-sm space-y-1 text-purple-700">
-                <li>1. Set goal in StreamElements dashboard (auto-syncs to overlay)</li>
-                <li>
-                  2. Viewers check progress: <code className="bg-gray-800 text-white px-1 rounded">!goal</code>
-                </li>
-                <li>3. Tips automatically update goal progress in real-time</li>
-                <li>4. Celebrate when goal is reached! 🎉</li>
               </ol>
             </div>
             <div className="mt-4 p-3 bg-green-100 rounded">
@@ -746,18 +652,28 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <li>2. Enjoy the flower celebration animation!</li>
               </ol>
             </div>
+            <div className="mt-4 p-3 bg-purple-100 rounded">
+              <h4 className="font-bold text-purple-800 mb-2">🏆 LEADERBOARD:</h4>
+              <ol className="text-sm space-y-1 text-purple-700">
+                <li>
+                  1. View top flower pickers with{" "}
+                  <code className="bg-gray-800 text-white px-1 rounded">!leaderboard</code>
+                </li>
+                <li>2. See who has picked the most flowers!</li>
+              </ol>
+            </div>
 
             <p className="text-xs mt-2 text-black/70">
               🎯 <strong>Community Garden</strong>: Collaborative flower growing with beautiful pixel rain effects!
-            </p>
-            <p className="text-xs mt-1 text-black/70">
-              💰 <strong>StreamElements Tip Goal</strong>: Real-time tip goal tracking with automatic updates!
             </p>
             <p className="text-xs mt-1 text-black/70">
               🛍️ <strong>Flower Shop</strong>: Manage your flower inventory and redeem rewards!
             </p>
             <p className="text-xs mt-1 text-black/70">
               🎉 <strong>Flower Celebration</strong>: Celebrate reaching milestones with a fun animation!
+            </p>
+            <p className="text-xs mt-1 text-black/70">
+              🏆 <strong>Leaderboard</strong>: See who has picked the most flowers!
             </p>
           </div>
         </div>

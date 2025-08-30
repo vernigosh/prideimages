@@ -624,6 +624,23 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }, 8000) // Longer duration for rainbow rain
     }
 
+    const handleShowFlowerCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showFlowerCelebration event for", username)
+      setCelebrationUsername(username)
+      setShowFlowerCelebration(true)
+    }
+
+    const handleRequestLeaderboard = (event: CustomEvent) => {
+      console.log("Community Garden: Received requestLeaderboard event", event.detail)
+      // Dispatch leaderboard data to the leaderboard component
+      window.dispatchEvent(
+        new CustomEvent("showLeaderboard", {
+          detail: { userPickedTotals },
+        }),
+      )
+    }
+
     window.addEventListener("plantFlower", handlePlantFlower as EventListener)
     window.addEventListener("waterGarden", handleWaterGarden as EventListener)
     window.addEventListener("pickFlowers", handlePickFlowers as EventListener)
@@ -634,6 +651,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("testBunnyVisit", handleTestBunnyVisit)
     window.addEventListener("matureAllFlowers", handleMatureAllFlowers as EventListener)
     window.addEventListener("triggerRainbowRain", handleRainbowRain as EventListener)
+    window.addEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
+    window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
+    window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
 
     // Set connected status
     onConnectionChange(isVisible)
@@ -649,6 +669,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("testBunnyVisit", handleTestBunnyVisit)
       window.removeEventListener("matureAllFlowers", handleMatureAllFlowers as EventListener)
       window.removeEventListener("triggerRainbowRain", handleRainbowRain as EventListener)
+      window.removeEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
+      window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
+      window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
   }, [isVisible, onConnectionChange, onHide, flowers])

@@ -2,21 +2,6 @@
 
 import { useEffect, useRef, useState } from "react"
 
-interface StreamElementsData {
-  tipGoal: {
-    amount: number
-    target: number
-  }
-  session: {
-    data: {
-      "tip-goal": {
-        amount: number
-        target: number
-      }
-    }
-  }
-}
-
 interface StreamElementsEvent {
   type: string
   data: {
@@ -35,11 +20,6 @@ interface StreamElementsEvent {
 }
 
 export function useStreamElements() {
-  const [goalData, setGoalData] = useState({
-    current: 66.9, // Current cumulative tips since Aug 1, 2025
-    target: 2500, // Third deck fund target
-    percentage: Math.round((66.9 / 2500) * 100),
-  })
   const [recentTippers, setRecentTippers] = useState<Array<{ name: string; amount: number }>>([])
   const [isConnected, setIsConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
@@ -57,45 +37,11 @@ export function useStreamElements() {
           console.log("[v0] Connected to StreamElements")
           setIsConnected(true)
 
-          setGoalData({
-            current: 66.9, // Current cumulative tips since Aug 1, 2025
-            target: 2500, // Third deck fund target
-            percentage: Math.round((66.9 / 2500) * 100),
-          })
-          console.log("[v0] Set baseline tip goal data on connection")
-
           // Authenticate with JWT token
           ws.send(
             JSON.stringify({
               type: "authenticate",
               data: {
-                token: JWT_TOKEN,
-                token_type: "jwt",
-              },
-            }),
-          )
-
-          setTimeout(() => {
-            ws.send(
-              JSON.stringify({
-                type: "get",
-                nonce: `nonce-session-${Date.now()}`,
-                data: {
-                  resource: "session",
-                  room: "64ae97ecc90c5bc26b0c0f97",
-                },
-              }),
-            )
-          }, 1000)
-
-          // Subscribe to channel session updates for tip goal data
-          ws.send(
-            JSON.stringify({
-              type: "subscribe",
-              nonce: `nonce-${Date.now()}`,
-              data: {
-                topic: "channel.session.update",
-                room: "64ae97ecc90c5bc26b0c0f97", // Channel ID from JWT
                 token: JWT_TOKEN,
                 token_type: "jwt",
               },
@@ -108,7 +54,7 @@ export function useStreamElements() {
               type: "subscribe",
               nonce: `nonce-${Date.now()}-activities`,
               data: {
-                topic: "channel.activities", // Fixed invalid topic from channel.tip to channel.activities
+                topic: "channel.activities",
                 room: "64ae97ecc90c5bc26b0c0f97",
                 token: JWT_TOKEN,
                 token_type: "jwt",
@@ -124,75 +70,24 @@ export function useStreamElements() {
 
             if (message.type === "authenticated") {
               console.log("[v0] StreamElements authenticated successfully")
-              setGoalData((prev) => ({
-                current: Math.max(prev.current, 66.9), // Ensure we don't go below baseline
-                target: 2500,
-                percentage: Math.round((Math.max(prev.current, 66.9) / 2500) * 100),
-              }))
-              console.log("[v0] Confirmed baseline tip goal data after authentication")
-            }
-
-            // Handle session data (includes tip goal info)
-            if (message.type === "session:update" || message.type === "session" || message.data?.session) {
-              console.log("[v0] Received session data:", message.data)
-              const sessionData = message.data?.session?.data || message.data
-              if (sessionData && sessionData["tip-goal"]) {
-                const tipGoalData = sessionData["tip-goal"]
-                const sessionAmount = tipGoalData.amount || 0
-                const cumulativeBase = 66.9 // Tips since Aug 1, 2025
-                const current = sessionAmount + cumulativeBase
-                const target = 2500 // Third deck fund target
-                const percentage = target > 0 ? Math.round((current / target) * 100) : 0
-
-                setGoalData({ current, target, percentage })
-                console.log("[v0] Updated cumulative tip goal:", {
-                  current,
-                  target,
-                  percentage,
-                  sessionAmount,
-                  cumulativeBase,
-                })
-              }
             }
 
             if (message.type === "response" && message.data?.subscribed) {
               console.log("[v0] Successfully subscribed to:", message.data.topic)
             }
 
-            // Handle tip events from activities
+            // Handle tip events from activities - only for celebration, not goal tracking
             if (message.type === "event" && message.data?.activity?.type === "tip") {
               const tipData = message.data.activity.data
               if (tipData.username && tipData.amount) {
                 const tipAmount = Number.parseFloat(tipData.amount)
-
-                setGoalData((prev) => {
-                  const newCurrent = prev.current + tipAmount
-                  const newPercentage = Math.round((newCurrent / prev.target) * 100)
-                  console.log("[v0] Updated tip goal with new tip:", { newCurrent, tipAmount, newPercentage })
-                  return {
-                    ...prev,
-                    current: newCurrent,
-                    percentage: newPercentage,
-                  }
-                })
 
                 setRecentTippers((prev) => [
                   { name: tipData.username, amount: tipAmount },
                   ...prev.slice(0, 4), // Keep last 5 tippers
                 ])
 
-                // Dispatch custom event for tip goal popup
-                window.dispatchEvent(
-                  new CustomEvent("streamelements-tip", {
-                    detail: {
-                      username: tipData.username,
-                      amount: tipAmount,
-                      message: tipData.message || "",
-                    },
-                  }),
-                )
-
-                console.log("[v0] Tip event dispatched:", {
+                console.log("[v0] Tip event received:", {
                   username: tipData.username,
                   amount: tipData.amount,
                   message: tipData.message,
@@ -231,7 +126,6 @@ export function useStreamElements() {
   }, [])
 
   return {
-    goalData,
     recentTippers,
     isConnected,
   }

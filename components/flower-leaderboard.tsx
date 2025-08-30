@@ -70,7 +70,7 @@ export function FlowerLeaderboard({ isVisible, onHide }: FlowerLeaderboardProps)
     <div className="fixed top-32 right-8 z-50 pointer-events-none">
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 shadow-2xl">
         <div className="text-center mb-3">
-          <h2 className="text-2xl font-black text-white font-sans uppercase">FLOWER CHAMPIONS</h2>
+          <h2 className="text-2xl font-black text-white font-sans uppercase">TODAY'S TOP PICKERS</h2>
         </div>
 
         <div className="space-y-2">
@@ -90,10 +90,6 @@ export function FlowerLeaderboard({ isVisible, onHide }: FlowerLeaderboardProps)
               </div>
             ))
           )}
-        </div>
-
-        <div className="text-center mt-3 text-2xl font-black text-white font-sans uppercase">
-          LIFETIME FLOWERS PICKED
         </div>
       </div>
     </div>

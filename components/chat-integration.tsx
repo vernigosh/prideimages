@@ -243,6 +243,26 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Leaderboard command detected")
           window.dispatchEvent(new CustomEvent("showLeaderboard", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!testleaderboard" && (isMod || isBroadcaster || isVip)) {
+          console.log("Test leaderboard command detected")
+          window.dispatchEvent(
+            new CustomEvent("showLeaderboard", {
+              detail: {
+                username,
+                testData: {
+                  FlowerMaster99: 47,
+                  GardenQueen: 32,
+                  PetalPicker: 28,
+                  BloomCollector: 19,
+                  RoseWhisperer: 15,
+                  TulipLover: 12,
+                  SunflowerFan: 8,
+                  DaisyDreamer: 5,
+                },
+              },
+            }),
+          )
+          addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
         }
@@ -629,6 +649,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <code className="bg-black text-purple-400 px-2 py-1 rounded">!leaderboard</code>
                 <span className="ml-2">Show top 4 flower pickers 🏆</span>
               </div>
+              {/* Added command for test leaderboard */}
+              <div>
+                <code className="bg-black text-red-400 px-2 py-1 rounded">!testleaderboard</code>
+                <span className="ml-2">Test leaderboard with fake data (mods only)</span>
+              </div>
             </div>
             <div className="mt-4 p-3 bg-green-100 rounded">
               <h4 className="font-bold text-green-800 mb-2">🌸 COMMUNITY GARDEN GAMEPLAY:</h4>
@@ -685,6 +710,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <li>2. See who has picked the most flowers!</li>
               </ol>
             </div>
+            <div className="mt-4 p-3 bg-red-100 rounded">
+              <h4 className="font-bold text-red-800 mb-2">🧪 TEST LEADERBOARD:</h4>
+              <ol className="text-sm space-y-1 text-red-700">
+                <li>
+                  1. Mod triggers test leaderboard with{" "}
+                  <code className="bg-gray-800 text-white px-1 rounded">!testleaderboard</code>
+                </li>
+                <li>2. See fake leaderboard data!</li>
+              </ol>
+            </div>
 
             <p className="text-xs mt-2 text-black/70">
               🎯 <strong>Community Garden</strong>: Collaborative flower growing with beautiful pixel rain effects!
@@ -697,6 +732,9 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </p>
             <p className="text-xs mt-1 text-black/70">
               🏆 <strong>Leaderboard</strong>: See who has picked the most flowers!
+            </p>
+            <p className="text-xs mt-1 text-black/70">
+              🧪 <strong>Test Leaderboard</strong>: Test leaderboard with fake data!
             </p>
           </div>
         </div>

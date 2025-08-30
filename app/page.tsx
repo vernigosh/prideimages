@@ -264,6 +264,14 @@ export default function DJRandomizer() {
       setShowLeaderboard(true)
     }
 
+    const handleShowLeaderboard = (event: CustomEvent) => {
+      console.log("Page: Received showLeaderboard event", event.detail)
+      setShowLeaderboard(true)
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("leaderboardData", { detail: event.detail }))
+      }, 100)
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -278,6 +286,7 @@ export default function DJRandomizer() {
     window.addEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
+    window.addEventListener("showLeaderboard", handleShowLeaderboard as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -294,6 +303,7 @@ export default function DJRandomizer() {
       window.removeEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
+      window.removeEventListener("showLeaderboard", handleShowLeaderboard as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 

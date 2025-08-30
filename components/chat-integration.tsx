@@ -241,7 +241,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!leaderboard") {
           console.log("Leaderboard command detected")
-          window.dispatchEvent(new CustomEvent("requestLeaderboard", { detail: { username } }))
+          window.dispatchEvent(new CustomEvent("showLeaderboard", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
@@ -402,12 +402,35 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("Manual test: Showing leaderboard")
+                console.log("[v0] Manual test: Showing leaderboard")
+                console.log("[v0] Test data being sent:", {
+                  FlowerMaster99: 47,
+                  GardenQueen: 32,
+                  PetalPicker: 28,
+                  BloomCollector: 19,
+                  RoseWhisperer: 15,
+                  TulipLover: 12,
+                  SunflowerFan: 8,
+                  DaisyDreamer: 5,
+                })
                 window.dispatchEvent(
-                  new CustomEvent("requestLeaderboard", {
-                    detail: { username: "Manual Test" },
+                  new CustomEvent("showLeaderboard", {
+                    detail: {
+                      username: "Manual Test",
+                      testData: {
+                        FlowerMaster99: 47,
+                        GardenQueen: 32,
+                        PetalPicker: 28,
+                        BloomCollector: 19,
+                        RoseWhisperer: 15,
+                        TulipLover: 12,
+                        SunflowerFan: 8,
+                        DaisyDreamer: 5,
+                      },
+                    },
                   }),
                 )
+                console.log("[v0] showLeaderboard event dispatched")
                 addRecentCommand("Leaderboard by Manual Test (manual)")
               }}
               className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-purple-400 hover:bg-purple-500 text-white"

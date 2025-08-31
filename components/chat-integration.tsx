@@ -64,10 +64,21 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
     console.log("Attempting to connect to Twitch chat...")
 
     try {
-      const tmi = await import("tmi.js")
-      console.log("TMI.js loaded successfully")
+      let tmi
+      try {
+        tmi = await import("tmi.js")
+        console.log("TMI.js loaded successfully")
+      } catch (importError) {
+        console.error("Failed to import tmi.js:", importError)
+        throw new Error("tmi.js library not available. Please ensure it's installed.")
+      }
 
-      const client = new tmi.default.Client({
+      const Client = tmi.default?.Client || tmi.Client
+      if (!Client) {
+        throw new Error("TMI Client not found in imported module")
+      }
+
+      const client = new Client({
         channels: [channel.toLowerCase().replace("#", "")],
         connection: {
           reconnect: true,
@@ -303,7 +314,12 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
     } catch (error) {
       console.error("Failed to connect to Twitch:", error)
       setIsConnecting(false)
-      addRecentCommand(`Failed to connect to Twitch: ${error instanceof Error ? error.message : "Unknown error"} ❌`)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
+      addRecentCommand(`Failed to connect to Twitch: ${errorMessage} ❌`)
+
+      if (errorMessage.includes("tmi.js")) {
+        addRecentCommand("Note: tmi.js library may not be installed. Check console for details.")
+      }
     }
   }
 

@@ -140,7 +140,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         }
 
         // Check cooldown only for DJ spinner commands
-        if (command === "!spin" || command === "!djspin" || command === "!trick") {
+        if (
+          (command === "!spin" || command === "!djspin" || command === "!trick") &&
+          (isMod || isBroadcaster || isVip)
+        ) {
           const now = Date.now()
           if (now - lastSpinTime < cooldownSeconds * 1000) {
             console.log("Command on cooldown")
@@ -149,7 +152,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           setLastSpinTime(now)
         }
 
-        if (command === "!spin" || command === "!djspin" || command === "!trick") {
+        if (
+          (command === "!spin" || command === "!djspin" || command === "!trick") &&
+          (isMod || isBroadcaster || isVip)
+        ) {
           console.log("DJ Spinner command detected")
           onSpin(username)
           addRecentCommand(`${command} by ${username}`)
@@ -157,7 +163,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide DJ command detected")
           onHide(username)
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!dark") {
+        } else if (command === "!dark" && (isMod || isBroadcaster || isVip)) {
           console.log("Dark timer start command detected")
           window.dispatchEvent(new CustomEvent("startDarkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
@@ -165,16 +171,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide dark timer command detected")
           window.dispatchEvent(new CustomEvent("hideDarkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!worktimer" || command === "!timer") {
+        } else if ((command === "!worktimer" || command === "!timer") && (isMod || isBroadcaster || isVip)) {
           console.log("Work timer start command detected")
           // Trigger work timer start
           window.dispatchEvent(new CustomEvent("startWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!stoptimer") {
+        } else if (command === "!stoptimer" && (isMod || isBroadcaster || isVip)) {
           console.log("Work timer stop command detected")
           window.dispatchEvent(new CustomEvent("stopWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!social") {
+        } else if (command === "!social" && (isMod || isBroadcaster || isVip)) {
           console.log("Social timer start command detected")
           window.dispatchEvent(new CustomEvent("startSocialTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
@@ -586,7 +592,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               {/* Existing Commands */}
               <div>
                 <code className="bg-black text-white px-2 py-1 rounded">!dark</code>
-                <span className="ml-2">Start 20min Dark Vernigosh mode</span>
+                <span className="ml-2">Start 20min Dark Vernigosh mode (VIP+)</span>
               </div>
               <div>
                 <code className="bg-black text-blue-400 px-2 py-1 rounded">!water</code>

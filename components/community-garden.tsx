@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import FlowerCelebration from "./flower-celebration" // Import FlowerCelebration component
+import { GardenLegendCelebration } from "./garden-legend-celebration" // Import the new Garden Legend celebration component
 
 interface Flower {
   id: string
@@ -90,6 +91,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [gardenSaturation, setGardenSaturation] = useState(100) // Start at 100% saturation
   const [showFlowerCelebration, setShowFlowerCelebration] = useState(false) // Add flower celebration tracking state
   const [celebrationUsername, setCelebrationUsername] = useState("") // Add flower celebration tracking state
+  const [showGardenLegendCelebration, setShowGardenLegendCelebration] = useState(false) // Add state for Garden Legend celebration
+  const [legendCelebrationUsername, setLegendCelebrationUsername] = useState("") // Add state for Garden Legend celebration
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -518,6 +521,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         window.dispatchEvent(new CustomEvent("showFlowerCelebration", { detail: { username } }))
       }
 
+      if (newPickedTotal >= 20 && (userPickedTotals[username] || 0) < 20) {
+        window.dispatchEvent(new CustomEvent("showGardenLegendCelebration", { detail: { username } }))
+      }
+
       setUserPickedTotals((prev) => ({
         ...prev,
         [username]: newPickedTotal,
@@ -631,6 +638,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       setShowFlowerCelebration(true)
     }
 
+    const handleShowGardenLegendCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showGardenLegendCelebration event for", username)
+      setLegendCelebrationUsername(username)
+      setShowGardenLegendCelebration(true)
+    }
+
     const handleRequestLeaderboard = (event: CustomEvent) => {
       console.log("Community Garden: Received requestLeaderboard event", event.detail)
       // Dispatch leaderboard data to the leaderboard component
@@ -653,6 +667,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("triggerRainbowRain", handleRainbowRain as EventListener)
     window.addEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
+    window.addEventListener("showGardenLegendCelebration", handleShowGardenLegendCelebration as EventListener) // Add event listener for Garden Legend celebration
     window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
 
     // Set connected status
@@ -671,6 +686,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("triggerRainbowRain", handleRainbowRain as EventListener)
       window.removeEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
+      window.removeEventListener("showGardenLegendCelebration", handleShowGardenLegendCelebration as EventListener) // Remove event listener for Garden Legend celebration
       window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
@@ -858,6 +874,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     setRecentActivity([])
     setShowFlowerCelebration(false) // Reset celebration state
     setCelebrationUsername("") // Reset celebration state
+    setShowGardenLegendCelebration(false) // Reset celebration state
+    setLegendCelebrationUsername("") // Reset celebration state
   }
 
   if (!isVisible) return null
@@ -868,6 +886,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         isVisible={showFlowerCelebration}
         username={celebrationUsername}
         onHide={() => setShowFlowerCelebration(false)}
+      />
+
+      <GardenLegendCelebration
+        isVisible={showGardenLegendCelebration}
+        username={legendCelebrationUsername}
+        onHide={() => setShowGardenLegendCelebration(false)}
       />
 
       <div className="fixed left-0 right-0 z-10" style={{ bottom: "72px" }}>

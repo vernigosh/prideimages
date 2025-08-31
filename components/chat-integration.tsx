@@ -119,15 +119,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
         // Check permissions for restricted commands only
         const isRestrictedCommand =
-          !command.startsWith("!plant") &&
-          command !== "!water" &&
-          command !== "!watering" &&
-          command !== "!pick" &&
-          command !== "!pick old" &&
-          command !== "!attack" &&
-          command !== "!charge" &&
-          command !== "!battle" &&
-          command !== "!clearold"
+          command === "!resettimer" ||
+          command === "!hidetimer" ||
+          command === "!hidedark" ||
+          command === "!hidespin" ||
+          command === "!hidesj"
 
         if (isRestrictedCommand) {
           let canUseCommand = false
@@ -214,10 +210,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             }),
           )
           addRecentCommand(`!plant ${finalType} by ${username}`)
-        } else if (command === "!water" || command === "!watering") {
+        } else if (command === "!water" || command === "!watering" || command === "!rain") {
           console.log("Water garden command detected")
           window.dispatchEvent(new CustomEvent("waterGarden", { detail: { username } }))
-          addRecentCommand(`!water by ${username}`)
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!pick") {
           console.log("Pick garden command detected")
           window.dispatchEvent(new CustomEvent("pickFlowers", { detail: { username } }))
@@ -593,16 +589,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <span className="ml-2">Start 20min Dark Vernigosh mode</span>
               </div>
               <div>
-                <code className="bg-black text-white px-2 py-1 rounded">!spin</code>
-                <span className="ml-2">Spin the DJ technique wheel</span>
+                <code className="bg-black text-blue-400 px-2 py-1 rounded">!water</code>
+                <span className="ml-2">Water the garden 💧</span>
               </div>
               <div>
-                <code className="bg-black text-white px-2 py-1 rounded">!worktimer</code>
-                <span className="ml-2">Start 25-minute work session</span>
+                <code className="bg-black text-blue-400 px-2 py-1 rounded">!rain</code>
+                <span className="ml-2">Water the garden 💧</span>
               </div>
               <div>
-                <code className="bg-black text-white px-2 py-1 rounded">!social</code>
-                <span className="ml-2">Start 2-minute social timer</span>
+                <code className="bg-black text-yellow-400 px-2 py-1 rounded">!pick</code>
+                <span className="ml-2">Pick your own mature flowers 🌸</span>
               </div>
 
               {/* COMMUNITY GARDEN COMMANDS - Updated !garden to !startgarden */}
@@ -613,14 +609,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <div>
                 <code className="bg-black text-green-400 px-2 py-1 rounded">!plant rose</code>
                 <span className="ml-2">Plant a flower (rose, tulip, sunflower, daisy, lily)</span>
-              </div>
-              <div>
-                <code className="bg-black text-blue-400 px-2 py-1 rounded">!water</code>
-                <span className="ml-2">Water the garden 💧 (5min cooldown)</span>
-              </div>
-              <div>
-                <code className="bg-black text-yellow-400 px-2 py-1 rounded">!pick</code>
-                <span className="ml-2">Pick your own mature flowers 🌸</span>
               </div>
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!pickold</code>
@@ -641,19 +629,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!bunny</code>
                 <span className="ml-2">Test bunny visit (mods only)</span>
-              </div>
-              {/* FLOWER SHOP COMMANDS */}
-              <div>
-                <code className="bg-black text-green-400 px-2 py-1 rounded">!flowers</code>
-                <span className="ml-2">Check your flower inventory 🌸</span>
-              </div>
-              <div>
-                <code className="bg-black text-green-400 px-2 py-1 rounded">!shop</code>
-                <span className="ml-2">Browse flower redemption shop 🛒</span>
-              </div>
-              <div>
-                <code className="bg-black text-green-400 px-2 py-1 rounded">!redeem garden_blessing</code>
-                <span className="ml-2">Redeem rewards with flowers 💫</span>
               </div>
               {/* Added command for flower celebration */}
               <div>
@@ -682,28 +657,14 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                   cooldown per person)
                 </li>
                 <li>
-                  3. Help garden grow: <code className="bg-gray-800 text-white px-1 rounded">!water</code> creates rain
-                  effect! (5min cooldown)
+                  3. Help garden grow: <code className="bg-gray-800 text-white px-1 rounded">!water</code> or{" "}
+                  <code className="bg-gray-800 text-white px-1 rounded">!rain</code> creates rain effect!
                 </li>
                 <li>
                   4. Pick mature flowers: <code className="bg-gray-800 text-white px-1 rounded">!pick</code> clears
                   space for new plants
                 </li>
                 <li>5. Watch your flowers grow from seeds to beautiful blooms! 🌱→✨→🌸</li>
-              </ol>
-            </div>
-            <div className="mt-4 p-3 bg-green-100 rounded">
-              <h4 className="font-bold text-green-800 mb-2">🛍️ FLOWER SHOP:</h4>
-              <ol className="text-sm space-y-1 text-green-700">
-                <li>
-                  1. Check inventory: <code className="bg-gray-800 text-white px-1 rounded">!flowers</code>
-                </li>
-                <li>
-                  2. Browse shop: <code className="bg-gray-800 text-white px-1 rounded">!shop</code>
-                </li>
-                <li>
-                  3. Redeem items: <code className="bg-gray-800 text-white px-1 rounded">!redeem garden_blessing</code>
-                </li>
               </ol>
             </div>
             <div className="mt-4 p-3 bg-pink-100 rounded">
@@ -739,9 +700,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
             <p className="text-xs mt-2 text-black/70">
               🎯 <strong>Community Garden</strong>: Collaborative flower growing with beautiful pixel rain effects!
-            </p>
-            <p className="text-xs mt-1 text-black/70">
-              🛍️ <strong>Flower Shop</strong>: Manage your flower inventory and redeem rewards!
             </p>
             <p className="text-xs mt-1 text-black/70">
               🎉 <strong>Flower Celebration</strong>: Celebrate reaching milestones with a fun animation!

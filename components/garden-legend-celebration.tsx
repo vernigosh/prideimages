@@ -13,19 +13,35 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
 
   useEffect(() => {
     if (isVisible) {
-      // Fade in
-      setTimeout(() => setOpacity(1), 100)
+      console.log("[v0] Garden Legend celebration started for", username)
 
-      const timer = setTimeout(() => {
+      // Fade in
+      const fadeInTimer = setTimeout(() => setOpacity(1), 100)
+
+      const hideTimer = setTimeout(() => {
+        console.log("[v0] Garden Legend celebration timeout reached, starting fade out")
         setOpacity(0)
-        setTimeout(onHide, 500) // Wait for fade out
+
+        // Wait for fade out animation then call onHide
+        const fadeOutTimer = setTimeout(() => {
+          console.log("[v0] Garden Legend celebration calling onHide")
+          if (onHide) {
+            onHide()
+          }
+        }, 500) // Wait for fade out
+
+        return () => clearTimeout(fadeOutTimer)
       }, 45000) // 45 seconds for Garden Legend
 
-      return () => clearTimeout(timer)
+      return () => {
+        console.log("[v0] Garden Legend celebration cleanup")
+        clearTimeout(fadeInTimer)
+        clearTimeout(hideTimer)
+      }
     } else {
       setOpacity(0)
     }
-  }, [isVisible, onHide])
+  }, [isVisible, username, onHide]) // Added username and onHide to dependencies
 
   if (!isVisible) return null
 

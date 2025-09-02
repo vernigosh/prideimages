@@ -50,7 +50,7 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
           GARDEN IN FULL BLOOM!
         </div>
         <div className="text-3xl font-bold text-yellow-400 font-sans uppercase animate-bounce text-balance drop-shadow-lg">
-          BEE PARADE TIME!
+          THE BEES THANK THE COMMUNITY WITH A PARADE
         </div>
       </div>
 

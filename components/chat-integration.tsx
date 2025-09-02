@@ -252,12 +252,12 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Trigger flower celebration command detected")
           window.dispatchEvent(new CustomEvent("showFlowerCelebration", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!leaderboard") {
-          console.log("Leaderboard command detected")
+        } else if (command === "!flowerboard") {
+          console.log("Flowerboard command detected")
           window.dispatchEvent(new CustomEvent("requestLeaderboard", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!testleaderboard" && (isMod || isBroadcaster || isVip)) {
-          console.log("Test leaderboard command detected")
+        } else if (command === "!testflowerboard" && (isMod || isBroadcaster || isVip)) {
+          console.log("Test flowerboard command detected")
           window.dispatchEvent(
             new CustomEvent("showLeaderboard", {
               detail: {
@@ -440,7 +440,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("[v0] Manual test: Showing leaderboard")
+                console.log("[v0] Manual test: Showing flowerboard")
                 console.log("[v0] Test data being sent:", {
                   FlowerMaster99: 47,
                   GardenQueen: 32,
@@ -469,12 +469,12 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                   }),
                 )
                 console.log("[v0] showLeaderboard event dispatched")
-                addRecentCommand("Leaderboard by Manual Test (manual)")
+                addRecentCommand("Flowerboard by Manual Test (manual)")
               }}
               className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-purple-400 hover:bg-purple-500 text-white"
             >
               <Play className="w-4 h-4" />
-              Test Leaderboard
+              Test Flowerboard
             </button>
           </div>
           <p className="text-xs mt-2 text-black/70">Use these buttons to test functionality without chat commands</p>
@@ -641,15 +641,15 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <code className="bg-black text-pink-400 px-2 py-1 rounded">!celebrate</code>
                 <span className="ml-2">Trigger flower celebration (mods only)</span>
               </div>
-              {/* Added command for leaderboard */}
+              {/* Added command for flowerboard */}
               <div>
-                <code className="bg-black text-purple-400 px-2 py-1 rounded">!leaderboard</code>
+                <code className="bg-black text-purple-400 px-2 py-1 rounded">!flowerboard</code>
                 <span className="ml-2">Show top 4 flower pickers 🏆</span>
               </div>
-              {/* Added command for test leaderboard */}
+              {/* Added command for test flowerboard */}
               <div>
-                <code className="bg-black text-red-400 px-2 py-1 rounded">!testleaderboard</code>
-                <span className="ml-2">Test leaderboard with fake data (mods only)</span>
+                <code className="bg-black text-red-400 px-2 py-1 rounded">!testflowerboard</code>
+                <span className="ml-2">Test flowerboard with fake data (mods only)</span>
               </div>
             </div>
             <div className="mt-4 p-3 bg-green-100 rounded">
@@ -684,23 +684,23 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               </ol>
             </div>
             <div className="mt-4 p-3 bg-purple-100 rounded">
-              <h4 className="font-bold text-purple-800 mb-2">🏆 LEADERBOARD:</h4>
+              <h4 className="font-bold text-purple-800 mb-2">🏆 FLOWERBOARD:</h4>
               <ol className="text-sm space-y-1 text-purple-700">
                 <li>
                   1. View top flower pickers with{" "}
-                  <code className="bg-gray-800 text-white px-1 rounded">!leaderboard</code>
+                  <code className="bg-gray-800 text-white px-1 rounded">!flowerboard</code>
                 </li>
                 <li>2. See who has picked the most flowers!</li>
               </ol>
             </div>
             <div className="mt-4 p-3 bg-red-100 rounded">
-              <h4 className="font-bold text-red-800 mb-2">🧪 TEST LEADERBOARD:</h4>
+              <h4 className="font-bold text-red-800 mb-2">🧪 TEST FLOWERBOARD:</h4>
               <ol className="text-sm space-y-1 text-red-700">
                 <li>
-                  1. Mod triggers test leaderboard with{" "}
-                  <code className="bg-gray-800 text-white px-1 rounded">!testleaderboard</code>
+                  1. Mod triggers test flowerboard with{" "}
+                  <code className="bg-gray-800 text-white px-1 rounded">!testflowerboard</code>
                 </li>
-                <li>2. See fake leaderboard data!</li>
+                <li>2. See fake flowerboard data!</li>
               </ol>
             </div>
 
@@ -711,10 +711,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               🎉 <strong>Flower Celebration</strong>: Celebrate reaching milestones with a fun animation!
             </p>
             <p className="text-xs mt-1 text-black/70">
-              🏆 <strong>Leaderboard</strong>: See who has picked the most flowers!
+              🏆 <strong>Flowerboard</strong>: See who has picked the most flowers!
             </p>
             <p className="text-xs mt-1 text-black/70">
-              🧪 <strong>Test Leaderboard</strong>: Test leaderboard with fake data!
+              🧪 <strong>Test Flowerboard</strong>: Test flowerboard with fake data!
             </p>
           </div>
         </div>

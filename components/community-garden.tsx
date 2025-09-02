@@ -64,6 +64,20 @@ const wildflowerImages = [
   "/garden/flowers/lilac.webp",
 ]
 
+const flowerRarity = {
+  // Common flowers (60% total probability)
+  daisy: 25,
+  wildflower: 20,
+  lily: 15,
+
+  // Medium rarity (30% total probability)
+  tulip: 30,
+
+  // Rare tall flowers (10% total probability)
+  sunflower: 5,
+  rose: 5,
+}
+
 export function CommunityGarden({ isVisible, onConnectionChange, onHide }: CommunityGardenProps) {
   const [flowers, setFlowers] = useState<Flower[]>([])
   const [gardenStats, setGardenStats] = useState({
@@ -352,15 +366,27 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     const handlePlantFlower = (event: CustomEvent) => {
       const { username } = event.detail
 
-      // Randomize flower type
-      const flowerTypeKeys = Object.keys(flowerTypes) as Array<keyof typeof flowerTypes>
-      const randomFlowerType = flowerTypeKeys[Math.floor(Math.random() * flowerTypeKeys.length)]
+      const getRandomFlowerType = () => {
+        const totalWeight = Object.values(flowerRarity).reduce((sum, weight) => sum + weight, 0)
+        let random = Math.random() * totalWeight
+
+        for (const [flowerType, weight] of Object.entries(flowerRarity)) {
+          random -= weight
+          if (random <= 0) {
+            return flowerType as keyof typeof flowerTypes
+          }
+        }
+
+        // Fallback to daisy if something goes wrong
+        return "daisy" as keyof typeof flowerTypes
+      }
+
+      const randomFlowerType = getRandomFlowerType()
 
       console.log(`Community Garden: ${username} planting ${randomFlowerType}`)
 
-      const now = Date.now()
       // Check if user has planted 2 flowers recently (allow 2 flowers per user per 5-minute window)
-      const userFlowers = flowers.filter((f) => f.plantedBy === username && now - f.plantedAt < 300000)
+      const userFlowers = flowers.filter((f) => f.plantedBy === username && Date.now() - f.plantedAt < 300000)
       if (userFlowers.length >= 2) {
         console.log("Community Garden: User has reached flower limit")
         addActivity(
@@ -396,14 +422,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
 
       const newFlower: Flower = {
-        id: `${username}-${now}`,
+        id: `${username}-${Date.now()}`,
         type: randomFlowerType,
         color: "mixed",
         x: newX,
         plantedBy: username,
-        plantedAt: now,
+        plantedAt: Date.now(),
         stage: "sprout",
-        lastWatered: now,
+        lastWatered: Date.now(),
         specificType,
       }
 

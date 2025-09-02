@@ -254,7 +254,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!leaderboard") {
           console.log("Leaderboard command detected")
-          window.dispatchEvent(new CustomEvent("showLeaderboard", { detail: { username } }))
+          window.dispatchEvent(new CustomEvent("requestLeaderboard", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!testleaderboard" && (isMod || isBroadcaster || isVip)) {
           console.log("Test leaderboard command detected")

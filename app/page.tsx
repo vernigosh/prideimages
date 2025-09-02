@@ -15,6 +15,7 @@ import { CommunityGarden } from "@/components/community-garden"
 import { FlowerShop } from "@/components/flower-shop"
 import { FlowerCelebration } from "@/components/flower-celebration" // Import FlowerCelebration component
 import { FlowerLeaderboard } from "@/components/flower-leaderboard" // Import FlowerLeaderboard component
+import BeeParadeCelebration from "@/components/bee-parade-celebration" // Import BeeParadeCelebration component
 
 interface Blurb {
   id: string
@@ -150,6 +151,10 @@ export default function DJRandomizer() {
 
   const [showLeaderboard, setShowLeaderboard] = useState(false)
 
+  // Bee Parade Celebration settings
+  const [showBeeParadeCelebration, setShowBeeParadeCelebration] = useState(false)
+  const [beeParadeUsername, setBeeParadeUsername] = useState("")
+
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = (event: CustomEvent) => {
@@ -272,6 +277,12 @@ export default function DJRandomizer() {
       }, 100)
     }
 
+    const handleShowBeeParade = (event: CustomEvent) => {
+      console.log("Page: Received showBeeParade event", event.detail)
+      setBeeParadeUsername("Garden Community")
+      setShowBeeParadeCelebration(true)
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -287,6 +298,7 @@ export default function DJRandomizer() {
     window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
     window.addEventListener("showLeaderboard", handleShowLeaderboard as EventListener)
+    window.addEventListener("showBeeParade", handleShowBeeParade as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -304,6 +316,7 @@ export default function DJRandomizer() {
       window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
       window.removeEventListener("showLeaderboard", handleShowLeaderboard as EventListener)
+      window.removeEventListener("showBeeParade", handleShowBeeParade as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
@@ -334,6 +347,7 @@ export default function DJRandomizer() {
     if (showFlowerShop) setShowFlowerShop(false)
     if (showFlowerCelebration) setShowFlowerCelebration(false)
     if (showLeaderboard) setShowLeaderboard(false)
+    if (showBeeParadeCelebration) setShowBeeParadeCelebration(false)
 
     setIsVisible(true)
     setIsSpinning(true)
@@ -363,6 +377,8 @@ export default function DJRandomizer() {
       setShowFlowerCelebration(true)
     } else if (showLeaderboard) {
       setShowLeaderboard(true)
+    } else if (showBeeParadeCelebration) {
+      setShowBeeParadeCelebration(true)
     }
   }
 
@@ -547,6 +563,14 @@ export default function DJRandomizer() {
           />
         )}
 
+        {/* Bee Parade Celebration - Always at bottom when visible */}
+        {showBeeParadeCelebration && (
+          <BeeParadeCelebration
+            isVisible={showBeeParadeCelebration}
+            onHide={() => setShowBeeParadeCelebration(false)}
+          />
+        )}
+
         {showLeaderboard && <FlowerLeaderboard isVisible={showLeaderboard} onHide={() => setShowLeaderboard(false)} />}
       </div>
 
@@ -607,6 +631,11 @@ export default function DJRandomizer() {
           <div className="text-center">
             <h3 className="text-xl font-bold text-black mb-2">🏆 Flower Leaderboard</h3>
             <p className="text-black/70">{showLeaderboard ? "Visible" : "Hidden"}</p>
+          </div>
+          {/* Add bee parade celebration status */}
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">🐝 Bee Parade Celebration</h3>
+            <p className="text-black/70">{showBeeParadeCelebration ? `Celebrating ${beeParadeUsername}!` : "Hidden"}</p>
           </div>
         </div>
         <div className="text-center mt-4">

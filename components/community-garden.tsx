@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import FlowerCelebration from "./flower-celebration" // Import FlowerCelebration component
 import { GardenLegendCelebration } from "./garden-legend-celebration" // Import the new Garden Legend celebration component
+import { BeeParadeCelebration } from "./bee-parade-celebration" // Import the new Bee Parade celebration component
 
 interface Flower {
   id: string
@@ -107,6 +108,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [celebrationUsername, setCelebrationUsername] = useState("") // Add flower celebration tracking state
   const [showGardenLegendCelebration, setShowGardenLegendCelebration] = useState(false) // Add state for Garden Legend celebration
   const [legendCelebrationUsername, setLegendCelebrationUsername] = useState("") // Add state for Garden Legend celebration
+  const [showBeeParadeCelebration, setShowBeeParadeCelebration] = useState(false) // Add state for Bee Parade celebration
+  const [beeParadeUsername, setBeeParadeUsername] = useState("") // Add state for Bee Parade celebration
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -400,6 +403,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       if (flowers.length >= 20) {
         console.log("Community Garden: Garden is full")
         addActivity(`🌸 GARDEN IS FULL! TRY HARVESTING SOME FLOWERS FIRST.`, 7000)
+
+        // Trigger bee parade celebration if not already shown recently
+        const now = Date.now()
+        const lastBeeParade = localStorage.getItem("lastBeeParade")
+        const timeSinceLastParade = lastBeeParade ? now - Number.parseInt(lastBeeParade) : Number.POSITIVE_INFINITY
+
+        if (timeSinceLastParade > 300000) {
+          // 5 minutes cooldown
+          console.log("Community Garden: Triggering bee parade for full garden")
+          localStorage.setItem("lastBeeParade", now.toString())
+          window.dispatchEvent(new CustomEvent("showBeeParade"))
+        }
+
         return
       }
 
@@ -671,6 +687,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       setShowGardenLegendCelebration(true)
     }
 
+    const handleShowBeeParadeCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showBeeParadeCelebration event for", username)
+      setBeeParadeUsername(username)
+      setShowBeeParadeCelebration(true)
+    }
+
     const handleRequestLeaderboard = (event: CustomEvent) => {
       console.log("Community Garden: Received requestLeaderboard event", event.detail)
       // Dispatch leaderboard data to the leaderboard component
@@ -694,6 +717,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("showGardenLegendCelebration", handleShowGardenLegendCelebration as EventListener) // Add event listener for Garden Legend celebration
+    window.addEventListener("showBeeParadeCelebration", handleShowBeeParadeCelebration as EventListener) // Add event listener for Bee Parade celebration
     window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
 
     // Set connected status
@@ -713,6 +737,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("showGardenLegendCelebration", handleShowGardenLegendCelebration as EventListener) // Remove event listener for Garden Legend celebration
+      window.removeEventListener("showBeeParadeCelebration", handleShowBeeParadeCelebration as EventListener) // Remove event listener for Bee Parade celebration
       window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
@@ -902,6 +927,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     setCelebrationUsername("") // Reset celebration state
     setShowGardenLegendCelebration(false) // Reset celebration state
     setLegendCelebrationUsername("") // Reset celebration state
+    setShowBeeParadeCelebration(false) // Reset celebration state
+    setBeeParadeUsername("") // Reset celebration state
   }
 
   if (!isVisible) return null
@@ -918,6 +945,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         isVisible={showGardenLegendCelebration}
         username={legendCelebrationUsername}
         onHide={() => setShowGardenLegendCelebration(false)}
+      />
+
+      <BeeParadeCelebration
+        isVisible={showBeeParadeCelebration}
+        username={beeParadeUsername}
+        onHide={() => setShowBeeParadeCelebration(false)}
       />
 
       <div className="fixed left-0 right-0 z-10" style={{ bottom: "72px" }}>

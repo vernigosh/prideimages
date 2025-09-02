@@ -476,6 +476,21 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <Play className="w-4 h-4" />
               Test Flowerboard
             </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Triggering bee parade")
+                window.dispatchEvent(
+                  new CustomEvent("showBeeParade", {
+                    detail: { username: "Manual Test" },
+                  }),
+                )
+                addRecentCommand("Bee parade by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-yellow-400 hover:bg-yellow-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Test Bee Parade
+            </button>
           </div>
           <p className="text-xs mt-2 text-black/70">Use these buttons to test functionality without chat commands</p>
         </div>

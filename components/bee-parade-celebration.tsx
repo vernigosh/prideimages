@@ -46,10 +46,10 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
 
       {/* Celebration text */}
       <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-        <div className="text-6xl font-black text-white font-sans uppercase animate-pulse mb-4 text-balance">
+        <div className="text-6xl font-black text-white font-sans uppercase animate-pulse mb-4 text-balance drop-shadow-lg">
           GARDEN IN FULL BLOOM!
         </div>
-        <div className="text-3xl font-black text-yellow-400 font-sans uppercase animate-bounce text-balance">
+        <div className="text-3xl font-bold text-yellow-400 font-sans uppercase animate-bounce text-balance drop-shadow-lg">
           BEE PARADE TIME!
         </div>
       </div>

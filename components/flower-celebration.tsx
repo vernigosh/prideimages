@@ -14,14 +14,17 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
   useEffect(() => {
     if (isVisible) {
       // Fade in
-      setTimeout(() => setOpacity(1), 100)
+      const fadeInTimer = setTimeout(() => setOpacity(1), 100)
 
-      const timer = setTimeout(() => {
+      const hideTimer = setTimeout(() => {
         setOpacity(0)
         setTimeout(onHide, 500) // Wait for fade out
-      }, 35000) // Updated from 60000 to 35000 (35 seconds)
+      }, 35000) // 35 seconds
 
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(fadeInTimer)
+        clearTimeout(hideTimer)
+      }
     } else {
       setOpacity(0)
     }

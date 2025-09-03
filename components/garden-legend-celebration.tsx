@@ -23,16 +23,15 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
         setOpacity(0)
 
         // Wait for fade out animation then call onHide
-        const fadeOutTimer = setTimeout(() => {
+        setTimeout(() => {
           console.log("[v0] Garden Legend celebration calling onHide")
           if (onHide) {
             onHide()
           }
         }, 500) // Wait for fade out
-
-        return () => clearTimeout(fadeOutTimer)
       }, 45000) // 45 seconds for Garden Legend
 
+      // Return cleanup function from main useEffect, not from inside setTimeout
       return () => {
         console.log("[v0] Garden Legend celebration cleanup")
         clearTimeout(fadeInTimer)

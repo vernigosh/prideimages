@@ -104,9 +104,9 @@ export default function DJRandomizer() {
   const [timeZone, setTimeZone] = useState("Europe/Rome") // Changed default to Rome
   const [timeFontSize, setTimeFontSize] = useState(40) // Changed default from 48 to 40
   const [showSeconds, setShowSeconds] = useState(false)
-  const [textColor, setTextColor] = useState("#ffffff")
-  const [shadowColor, setShadowColor] = useState("#000000")
-  const [shadowSize, setShadowSize] = useState(0) // Changed default from 2 to 0 (no shadow)
+  const [textColor, setTextColor] = useState("#ffffff") // Reverted back to white as user preferred
+  const [shadowColor, setShadowColor] = useState("#000000") // Changed back to black shadow
+  const [shadowSize, setShadowSize] = useState(0) // Reverted shadow size to 0 for version 99 styling
   const [fontWeight, setFontWeight] = useState<"normal" | "bold" | "black">("bold")
   const [overlayBackground, setOverlayBackground] = useState<"transparent" | "black">("transparent")
 

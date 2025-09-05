@@ -13,17 +13,22 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
 
   useEffect(() => {
     if (isVisible) {
-      // Fade in
-      const fadeInTimer = setTimeout(() => setOpacity(1), 100)
+      let fadeInTimer: NodeJS.Timeout
+      let hideTimer: NodeJS.Timeout
+      let fadeOutTimer: NodeJS.Timeout
 
-      const hideTimer = setTimeout(() => {
+      // Fade in
+      fadeInTimer = setTimeout(() => setOpacity(1), 100)
+
+      hideTimer = setTimeout(() => {
         setOpacity(0)
-        setTimeout(onHide, 500) // Wait for fade out
+        fadeOutTimer = setTimeout(onHide, 500) // Wait for fade out
       }, 35000) // 35 seconds
 
       return () => {
         clearTimeout(fadeInTimer)
         clearTimeout(hideTimer)
+        clearTimeout(fadeOutTimer)
       }
     } else {
       setOpacity(0)

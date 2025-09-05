@@ -18,12 +18,14 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
       // Fade in
       const fadeInTimer = setTimeout(() => setOpacity(1), 100)
 
+      let fadeOutTimer: NodeJS.Timeout | null = null
+
       const hideTimer = setTimeout(() => {
         console.log("[v0] Garden Legend celebration timeout reached, starting fade out")
         setOpacity(0)
 
         // Wait for fade out animation then call onHide
-        setTimeout(() => {
+        fadeOutTimer = setTimeout(() => {
           console.log("[v0] Garden Legend celebration calling onHide")
           if (onHide) {
             onHide()
@@ -31,11 +33,13 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
         }, 500) // Wait for fade out
       }, 45000) // 45 seconds for Garden Legend
 
-      // Return cleanup function from main useEffect, not from inside setTimeout
       return () => {
         console.log("[v0] Garden Legend celebration cleanup")
         clearTimeout(fadeInTimer)
         clearTimeout(hideTimer)
+        if (fadeOutTimer) {
+          clearTimeout(fadeOutTimer)
+        }
       }
     } else {
       setOpacity(0)

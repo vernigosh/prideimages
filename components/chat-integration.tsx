@@ -123,7 +123,8 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           command === "!hidetimer" ||
           command === "!hidedark" ||
           command === "!hidespin" ||
-          command === "!hidesj"
+          command === "!hidesj" ||
+          command === "!hidelegend"
 
         if (isRestrictedCommand) {
           let canUseCommand = false
@@ -193,6 +194,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Universal hide timer command detected")
           // Dispatch event to hide any visible timer
           window.dispatchEvent(new CustomEvent("hideAnyTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidelegend" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide garden legend celebration command detected")
+          window.dispatchEvent(new CustomEvent("hideGardenLegend", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         }
         // COMMUNITY GARDEN COMMANDS - Changed !garden to !startgarden
@@ -491,6 +496,21 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <Play className="w-4 h-4" />
               Test Bee Parade
             </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Hiding garden legend celebration")
+                window.dispatchEvent(
+                  new CustomEvent("hideGardenLegend", {
+                    detail: { username: "Manual Test" },
+                  }),
+                )
+                addRecentCommand("Hide garden legend celebration by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-gray-400 hover:bg-gray-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Hide Garden Legend Celebration
+            </button>
           </div>
           <p className="text-xs mt-2 text-black/70">Use these buttons to test functionality without chat commands</p>
         </div>
@@ -666,6 +686,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!testflowerboard</code>
                 <span className="ml-2">Test flowerboard with fake data (mods only)</span>
               </div>
+              {/* Added command for hide garden legend */}
+              <div>
+                <code className="bg-black text-gray-400 px-2 py-1 rounded">!hidelegend</code>
+                <span className="ml-2">Hide garden legend celebration (mods only)</span>
+              </div>
             </div>
             <div className="mt-4 p-3 bg-green-100 rounded">
               <h4 className="font-bold text-green-800 mb-2">🌸 COMMUNITY GARDEN GAMEPLAY:</h4>
@@ -718,6 +743,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <li>2. See fake flowerboard data!</li>
               </ol>
             </div>
+            <div className="mt-4 p-3 bg-gray-100 rounded">
+              <h4 className="font-bold text-gray-800 mb-2">🚧 HIDE GARDEN LEGEND:</h4>
+              <ol className="text-sm space-y-1 text-gray-700">
+                <li>
+                  1. Mod triggers hide garden legend celebration with{" "}
+                  <code className="bg-gray-800 text-white px-1 rounded">!hidelegend</code>
+                </li>
+                <li>2. Hide the garden legend celebration animation!</li>
+              </ol>
+            </div>
 
             <p className="text-xs mt-2 text-black/70">
               🎯 <strong>Community Garden</strong>: Collaborative flower growing with beautiful pixel rain effects!
@@ -730,6 +765,9 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </p>
             <p className="text-xs mt-1 text-black/70">
               🧪 <strong>Test Flowerboard</strong>: Test flowerboard with fake data!
+            </p>
+            <p className="text-xs mt-1 text-black/70">
+              🚧 <strong>Hide Garden Legend Celebration</strong>: Hide the garden legend celebration animation!
             </p>
           </div>
         </div>

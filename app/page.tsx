@@ -16,6 +16,7 @@ import { FlowerShop } from "@/components/flower-shop"
 import { FlowerCelebration } from "@/components/flower-celebration" // Import FlowerCelebration component
 import { FlowerLeaderboard } from "@/components/flower-leaderboard" // Import FlowerLeaderboard component
 import BeeParadeCelebration from "@/components/bee-parade-celebration" // Import BeeParadeCelebration component
+import { GardenLegendCelebration } from "@/components/garden-legend-celebration" // Import GardenLegendCelebration component
 
 interface Blurb {
   id: string
@@ -155,6 +156,10 @@ export default function DJRandomizer() {
   const [showBeeParadeCelebration, setShowBeeParadeCelebration] = useState(false)
   const [beeParadeUsername, setBeeParadeUsername] = useState("")
 
+  // Garden Legend Celebration settings
+  const [showGardenLegendCelebration, setShowGardenLegendCelebration] = useState(false)
+  const [legendCelebrationUsername, setLegendCelebrationUsername] = useState("")
+
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = (event: CustomEvent) => {
@@ -283,6 +288,18 @@ export default function DJRandomizer() {
       setShowBeeParadeCelebration(true)
     }
 
+    const handleShowGardenLegend = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showGardenLegend event for", username)
+      setLegendCelebrationUsername(username)
+      setShowGardenLegendCelebration(true)
+    }
+
+    const handleHideGardenLegend = (event: CustomEvent) => {
+      console.log("Page: Received hideGardenLegend event", event.detail)
+      setShowGardenLegendCelebration(false)
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -299,6 +316,8 @@ export default function DJRandomizer() {
     window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
     window.addEventListener("showLeaderboard", handleShowLeaderboard as EventListener)
     window.addEventListener("showBeeParade", handleShowBeeParade as EventListener)
+    window.addEventListener("showGardenLegend", handleShowGardenLegend as EventListener)
+    window.addEventListener("hideGardenLegend", handleHideGardenLegend as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -317,6 +336,8 @@ export default function DJRandomizer() {
       window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
       window.removeEventListener("showLeaderboard", handleShowLeaderboard as EventListener)
       window.removeEventListener("showBeeParade", handleShowBeeParade as EventListener)
+      window.removeEventListener("showGardenLegend", handleShowGardenLegend as EventListener)
+      window.removeEventListener("hideGardenLegend", handleHideGardenLegend as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
@@ -348,6 +369,7 @@ export default function DJRandomizer() {
     if (showFlowerCelebration) setShowFlowerCelebration(false)
     if (showLeaderboard) setShowLeaderboard(false)
     if (showBeeParadeCelebration) setShowBeeParadeCelebration(false)
+    if (showGardenLegendCelebration) setShowGardenLegendCelebration(false)
 
     setIsVisible(true)
     setIsSpinning(true)
@@ -379,6 +401,8 @@ export default function DJRandomizer() {
       setShowLeaderboard(true)
     } else if (showBeeParadeCelebration) {
       setShowBeeParadeCelebration(true)
+    } else if (showGardenLegendCelebration) {
+      setShowGardenLegendCelebration(true)
     }
   }
 
@@ -571,6 +595,15 @@ export default function DJRandomizer() {
           />
         )}
 
+        {/* Garden Legend Celebration - Always at bottom when visible */}
+        {showGardenLegendCelebration && (
+          <GardenLegendCelebration
+            isVisible={showGardenLegendCelebration}
+            username={legendCelebrationUsername}
+            onHide={() => setShowGardenLegendCelebration(false)}
+          />
+        )}
+
         {showLeaderboard && <FlowerLeaderboard isVisible={showLeaderboard} onHide={() => setShowLeaderboard(false)} />}
       </div>
 
@@ -636,6 +669,13 @@ export default function DJRandomizer() {
           <div className="text-center">
             <h3 className="text-xl font-bold text-black mb-2">🐝 Bee Parade Celebration</h3>
             <p className="text-black/70">{showBeeParadeCelebration ? `Celebrating ${beeParadeUsername}!` : "Hidden"}</p>
+          </div>
+          {/* Add garden legend celebration status */}
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">👑 Garden Legend Celebration</h3>
+            <p className="text-black/70">
+              {showGardenLegendCelebration ? `Celebrating ${legendCelebrationUsername}!` : "Hidden"}
+            </p>
           </div>
         </div>
         <div className="text-center mt-4">

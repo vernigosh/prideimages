@@ -10,10 +10,12 @@ interface GardenLegendCelebrationProps {
 
 export default function GardenLegendCelebration({ isVisible, username, onHide }: GardenLegendCelebrationProps) {
   const [opacity, setOpacity] = useState(0)
+  const [shouldRender, setShouldRender] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
       console.log("[v0] Garden Legend celebration started for", username)
+      setShouldRender(true)
 
       // Fade in
       const fadeInTimer = setTimeout(() => setOpacity(1), 100)
@@ -27,6 +29,7 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
         // Wait for fade out animation then call onHide
         fadeOutTimer = setTimeout(() => {
           console.log("[v0] Garden Legend celebration calling onHide")
+          setShouldRender(false)
           if (onHide) {
             onHide()
           }
@@ -42,11 +45,19 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
         }
       }
     } else {
+      console.log("[v0] Garden Legend celebration forced to hide")
       setOpacity(0)
-    }
-  }, [isVisible, username, onHide]) // Added username and onHide to dependencies
+      const hideTimer = setTimeout(() => {
+        setShouldRender(false)
+      }, 500)
 
-  if (!isVisible) return null
+      return () => {
+        clearTimeout(hideTimer)
+      }
+    }
+  }, [isVisible, username, onHide])
+
+  if (!shouldRender) return null
 
   return (
     <div

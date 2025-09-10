@@ -627,69 +627,77 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               {/* Existing Commands */}
               <div>
                 <code className="bg-black text-white px-2 py-1 rounded">!dark</code>
-                <span className="ml-2">Start 20min Dark Vernigosh mode (VIP+)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Start 20min Dark Vernigosh mode (VIP+)</span>
               </div>
               <div>
                 <code className="bg-black text-blue-400 px-2 py-1 rounded">!water</code>
-                <span className="ml-2">Water the garden 💧</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Water the garden 💧</span>
               </div>
               <div>
                 <code className="bg-black text-blue-400 px-2 py-1 rounded">!rain</code>
-                <span className="ml-2">Water the garden 💧</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Water the garden 💧</span>
               </div>
               <div>
                 <code className="bg-black text-yellow-400 px-2 py-1 rounded">!pick</code>
-                <span className="ml-2">Pick your own mature flowers 🌸</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Pick your own mature flowers 🌸</span>
               </div>
 
               {/* COMMUNITY GARDEN COMMANDS - Updated !garden to !startgarden */}
               <div>
                 <code className="bg-black text-green-400 px-2 py-1 rounded font-bold">!startgarden</code>
-                <span className="ml-2 font-bold">Start Community Garden (mods only)</span>
+                <span className="ml-2 font-bold text-black bg-pink-200 px-1 rounded">
+                  Start Community Garden (mods only)
+                </span>
               </div>
               <div>
                 <code className="bg-black text-green-400 px-2 py-1 rounded">!plant rose</code>
-                <span className="ml-2">Plant a flower (rose, tulip, sunflower, daisy, lily)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">
+                  Plant a flower (rose, tulip, sunflower, daisy, lily)
+                </span>
               </div>
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!pickold</code>
-                <span className="ml-2">Pick old flowers (mods only)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Pick old flowers (mods only)</span>
               </div>
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!resetgarden</code>
-                <span className="ml-2">Reset garden (mods only)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Reset garden (mods only)</span>
               </div>
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!hidegarden</code>
-                <span className="ml-2">Hide garden (mods only)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Hide garden (mods only)</span>
               </div>
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!testspawn</code>
-                <span className="ml-2">Spawn 20 test flowers (mods only)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Spawn 20 test flowers (mods only)</span>
               </div>
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!bunny</code>
-                <span className="ml-2">Test bunny visit (mods only)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Test bunny visit (mods only)</span>
               </div>
               {/* Added command for flower celebration */}
               <div>
                 <code className="bg-black text-pink-400 px-2 py-1 rounded">!celebrate</code>
-                <span className="ml-2">Trigger flower celebration (mods only)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Trigger flower celebration (mods only)</span>
               </div>
               {/* Added command for flowerboard */}
               <div>
                 <code className="bg-black text-purple-400 px-2 py-1 rounded">!flowerboard</code>
-                <span className="ml-2">Show top 4 flower pickers 🏆</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Show top 4 flower pickers 🏆</span>
               </div>
               {/* Added command for test flowerboard */}
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!testflowerboard</code>
-                <span className="ml-2">Test flowerboard with fake data (mods only)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">
+                  Test flowerboard with fake data (mods only)
+                </span>
               </div>
               {/* Added command for hide garden legend */}
               <div>
                 <code className="bg-black text-gray-400 px-2 py-1 rounded">!hidelegend</code>
-                <span className="ml-2">Hide garden legend celebration (mods only)</span>
+                <span className="ml-2 text-black bg-pink-200 px-1 rounded">
+                  Hide garden legend celebration (mods only)
+                </span>
               </div>
             </div>
             <div className="mt-4 p-3 bg-green-100 rounded">

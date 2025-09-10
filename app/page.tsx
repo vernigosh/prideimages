@@ -296,8 +296,10 @@ export default function DJRandomizer() {
     }
 
     const handleHideGardenLegend = (event: CustomEvent) => {
-      console.log("Page: Received hideGardenLegend event", event.detail)
+      console.log("[v0] Page: Received hideGardenLegend event", event.detail)
+      console.log("[v0] Page: Current showGardenLegendCelebration state:", showGardenLegendCelebration)
       setShowGardenLegendCelebration(false)
+      console.log("[v0] Page: Set showGardenLegendCelebration to false")
     }
 
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)

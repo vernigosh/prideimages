@@ -55,7 +55,7 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
         clearTimeout(hideTimer)
       }
     }
-  }, [isVisible, username, onHide])
+  }, [isVisible, username]) // Removed onHide from dependencies to prevent timer recreation
 
   if (!shouldRender) return null
 

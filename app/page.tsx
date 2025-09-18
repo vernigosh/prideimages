@@ -49,6 +49,10 @@ const initialTricks = [
   { name: "Drum Cut", definition: "Cut the drums out for half a bar, then slam them back" },
   { name: "Rhythmic Fader Cuts", definition: "Chop volume fader rhythmically for stutter effect" },
   { name: "Different Genre/BPM Track", definition: "Drop something totally outside your usual set" },
+  {
+    name: "Reverb Silence Drop",
+    definition: "Stop outgoing track with platter + reverb, creating beats of reverb silence before new song drops",
+  },
 
   // CDJ-3000 Specific
   { name: "Slip Roll", definition: "Loop roll in slip mode for glitchy rolls" },

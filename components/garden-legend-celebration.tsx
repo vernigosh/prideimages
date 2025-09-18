@@ -45,17 +45,12 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
         }
       }
     } else {
-      console.log("[v0] Garden Legend celebration forced to hide")
+      console.log("[v0] Garden Legend celebration forced to hide immediately")
       setOpacity(0)
-      const hideTimer = setTimeout(() => {
-        setShouldRender(false)
-      }, 500)
-
-      return () => {
-        clearTimeout(hideTimer)
-      }
+      setShouldRender(false)
+      // No timeout needed - hide immediately for manual commands
     }
-  }, [isVisible, username]) // Removed onHide from dependencies to prevent timer recreation
+  }, [isVisible, username])
 
   if (!shouldRender) return null
 

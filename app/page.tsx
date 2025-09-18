@@ -24,59 +24,61 @@ interface Blurb {
   enabled: boolean
 }
 
-// DJ Tricks data with definitions
 const initialTricks = [
-  { name: "Backspin + Echo", definition: "Reverse the track while adding echo effect for dramatic transition" },
-  { name: "Beat Chopping", definition: "Cut and rearrange beats using hot cues for rhythmic variation" },
-  { name: "Beatmatching (Manual)", definition: "Manually sync BPM without sync button using pitch fader" },
-  { name: "Big Echo Out", definition: "End track with heavy echo/delay effect for smooth fadeout" },
-  { name: "Double Drop", definition: "Drop two tracks simultaneously at their peak moments" },
-  { name: "Filter Sweep", definition: "Use high/low pass filters to create sweeping transition effects" },
-  { name: "Flanger Effect", definition: "Apply flanger for whooshing metallic sound during transitions" },
-  { name: "Hot Cue Juggling", definition: "Use hot cues to create new rhythmic patterns and loops" },
-  { name: "Loop Roll", definition: "Create rolling effect by looping small sections with decreasing lengths" },
-  { name: "Phrase Matching", definition: "Align musical phrases (8/16/32 bars) for seamless transitions" },
-  { name: "Quick Cut", definition: "Sharp, immediate cut between tracks without blending" },
-  { name: "Reverb Throw", definition: "Add reverb before cutting to create space and atmosphere" },
-  { name: "Scratch Transition", definition: "Use turntable scratching techniques to transition between tracks" },
-  { name: "Slip Mode Tricks", definition: "Use slip mode to manipulate audio while maintaining timeline" },
-  { name: "Stutter Effect", definition: "Create stuttering rhythm using beat effects or manual techniques" },
-  { name: "Transform Scratch", definition: "Use crossfader to create rhythmic on/off patterns while scratching" },
-  { name: "Vinyl Brake", definition: "Simulate vinyl stopping effect using brake/spindown" },
-  { name: "Word Play", definition: "Isolate and repeat vocal phrases for creative mixing" },
-  { name: "Air Horn Drop", definition: "Use air horn sample before major drop or transition" },
-  { name: "Bass Drop Isolation", definition: "Cut all frequencies except bass for dramatic drop effect" },
+  // Basic FX & Transitions
+  { name: "Backspin + Echo", definition: "Reverse the track with echo for dramatic exit" },
+  { name: "Beatmatching (Manual)", definition: "Sync BPMs with pitch fader + ears only" },
+  { name: "Big Echo Out", definition: "End track with heavy echo/delay fadeout" },
+  { name: "Double Drop", definition: "Two tracks hit their peak at once" },
+  { name: "Filter Sweep", definition: "High/low pass sweep for tension" },
+  { name: "Flanger", definition: "Metallic whoosh effect" },
+  { name: "Hot Cue Juggling", definition: "Play with hot cues for variation" },
+  { name: "Loop Roll", definition: "Rolling loop with shrinking lengths" },
+  { name: "EQ-Only Transition", definition: "Blend tracks using EQ only (no faders)" },
 
-  // New CDJ-3000 Specific Tricks
-  {
-    name: "Harmonic Key Shift",
-    definition: "Use CDJ-3000's key shift feature to create perfect harmonic transitions between tracks",
-  },
-  {
-    name: "Slip Mode Scratch",
-    definition: "Scratch using slip mode to manipulate audio while keeping the timeline intact",
-  },
-  {
-    name: "Loop Shortening",
-    definition: "Progressively shorten loop lengths to build intensity and create rolling effects",
-  },
+  // Advanced / Performance Tricks
+  { name: "Quick Cut", definition: "Hard, instant switch to new track" },
+  { name: "Reverb Throw", definition: "Reverb burst before cutting a track" },
+  { name: "Try Scratching", definition: "Attempt a scratch (any style you can manage)" },
+  { name: "Slip Mode Tricks", definition: "Manipulate track while timeline keeps running" },
+  { name: "Stutter Effect (Echo)", definition: "Use echo to create glitchy stutters" },
+  { name: "Vinyl Brake", definition: "Slow stop/spindown for dramatic exit" },
+  { name: "Reverse Build", definition: "Reverse loop + FX to build tension" },
+  { name: "Left-Handed Mix", definition: "Do the whole transition with your non-dominant hand" },
+  { name: "Silent Drop", definition: "Kill all sound briefly before the drop" },
+  { name: "Drum Cut", definition: "Cut the drums out for half a bar, then slam them back" },
+  { name: "Rhythmic Fader Cuts", definition: "Chop volume fader rhythmically for stutter effect" },
+  { name: "Different Genre/BPM Track", definition: "Drop something totally outside your usual set" },
 
-  // New V10 Mixer Specific Tricks
-  { name: "Send FX", definition: "Use V10's send effects to add depth and space without affecting the dry signal" },
-  { name: "Use Big Knobs", definition: "Utilize the V10's large parameter knobs for smooth, precise effect control" },
-  { name: "Apply Filter to Master", definition: "Use the master filter on the V10 to affect the entire mix output" },
-  {
-    name: "Mix Only Using Trim",
-    definition: "Create transitions using only the trim knobs without touching faders or EQ",
-  },
+  // CDJ-3000 Specific
+  { name: "Slip Roll", definition: "Loop roll in slip mode for glitchy rolls" },
+  { name: "Loop Shortening", definition: "Shrink loop lengths to build energy" },
+  { name: "Tease New Song", definition: "Tease a vocal, synth, or beat from next track" },
+  { name: "Beat Jump Trick", definition: "Use beat jumps to shift phrasing or stutter tracks" },
 
-  // New Genre-Specific House/Techno Tricks
-  { name: "Bass Line Swap", definition: "Switch basslines between tracks while keeping the drum patterns intact" },
-  { name: "Extend Breakdown", definition: "Use loops and effects to extend breakdown sections for longer build-ups" },
-  {
-    name: "Tension and Release",
-    definition: "Build musical tension with filters/effects, then release for maximum impact",
-  },
+  // V10 Mixer Specific
+  { name: "Send FX", definition: "Use send effects without altering dry signal" },
+  { name: "Use Big Knobs", definition: "Perform using V10's big parameter knobs" },
+  { name: "Apply Filter to Master", definition: "Affect whole output with master filter" },
+  { name: "Mix Only Using Trim", definition: "Transition using trims only" },
+  { name: "Isolated Send FX", definition: "Send only one channel into FX return" },
+  { name: "Per-Channel Filter Play", definition: "Filter one channel against a clean one" },
+
+  // FX Specials (V10 Beat FX)
+  { name: "Delay", definition: "Use delay for repeats or freeze feedback into transition" },
+  { name: "Reverb", definition: "Wash out a sound or swell into a breakdown" },
+  { name: "Spiral", definition: "Pitch-swept delay for trippy transitions" },
+  { name: "Helix", definition: "Layered feedback build-up for dramatic tension" },
+  { name: "Phaser", definition: "Psychedelic sweep across mids/highs" },
+
+  // Genre-Specific (House / Techno / Trance)
+  { name: "Bass Line Swap", definition: "Swap basslines while keeping drums" },
+  { name: "Extend Breakdown", definition: "Stretch breakdown with loops/effects" },
+  { name: "Extra Sauce", definition: "Add FX to buildup for more tension" },
+  { name: "Kick Swap", definition: "Switch one kick with another mid-mix" },
+  { name: "Snare Build Extension", definition: "Loop snares/claps to fake out drop" },
+  { name: "Long Transition (32+ Bars)", definition: "Seamless extended blend" },
+  { name: "Polyrhythm Loop", definition: "Off-grid loop for hypnotic layered rhythms" },
 ]
 
 // Default blurbs
@@ -300,6 +302,8 @@ export default function DJRandomizer() {
       console.log("[v0] Page: Current showGardenLegendCelebration state:", showGardenLegendCelebration)
       setShowGardenLegendCelebration(false)
       console.log("[v0] Page: Set showGardenLegendCelebration to false")
+      setLegendCelebrationUsername("")
+      console.log("[v0] Page: Cleared legendCelebrationUsername to force re-render")
     }
 
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -602,7 +606,11 @@ export default function DJRandomizer() {
           <GardenLegendCelebration
             isVisible={showGardenLegendCelebration}
             username={legendCelebrationUsername}
-            onHide={() => setShowGardenLegendCelebration(false)}
+            onHide={() => {
+              console.log("[v0] Page: Garden Legend onHide callback triggered")
+              setShowGardenLegendCelebration(false)
+              setLegendCelebrationUsername("")
+            }}
           />
         )}
 

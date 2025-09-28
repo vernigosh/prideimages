@@ -48,9 +48,12 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
       console.log("[v0] Garden Legend celebration forced to hide immediately")
       setOpacity(0)
       setShouldRender(false)
-      // No timeout needed - hide immediately for manual commands
+      // Call onHide immediately to ensure parent state is updated
+      if (onHide) {
+        onHide()
+      }
     }
-  }, [isVisible, username])
+  }, [isVisible, username, onHide])
 
   if (!shouldRender) return null
 

@@ -67,7 +67,7 @@ export function FlowerLeaderboard({ isVisible, onHide }: FlowerLeaderboardProps)
   if (!isVisible) return null
 
   return (
-    <div className="fixed top-32 right-8 z-50 pointer-events-none">
+    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 shadow-2xl">
         <div className="text-center mb-3">
           <h2 className="text-2xl font-black text-white font-sans uppercase">TODAY'S TOP PICKERS</h2>

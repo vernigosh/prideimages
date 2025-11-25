@@ -64,9 +64,9 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
             style={{ animationDelay: `${index * 0.8}s` }}
           >
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/8%20Bit%20Pixel%20Art%20Sticker-cxHk2AuIbHg27LpdEOypYnE9ey4l2l.gif"
+              src="/images/8-20bit-20pixel-20art-20sticker.gif"
               alt="Pixel bee"
-              className="w-12 h-12 pixelated"
+              className="w-24 h-24 pixelated"
               style={{ imageRendering: "pixelated" }}
             />
           </div>
@@ -80,9 +80,9 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
             style={{ animationDelay: `${2 + index * 0.7}s` }}
           >
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/8%20Bit%20Pixel%20Art%20Sticker-cxHk2AuIbHg27LpdEOypYnE9ey4l2l.gif"
+              src="/images/8-20bit-20pixel-20art-20sticker.gif"
               alt="Pixel bee"
-              className="w-12 h-12 pixelated scale-x-[-1]"
+              className="w-24 h-24 pixelated scale-x-[-1]"
               style={{ imageRendering: "pixelated" }}
             />
           </div>
@@ -96,9 +96,9 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
             style={{ animationDelay: `${6 + index * 1}s` }}
           >
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/8%20Bit%20Pixel%20Art%20Sticker-cxHk2AuIbHg27LpdEOypYnE9ey4l2l.gif"
+              src="/images/8-20bit-20pixel-20art-20sticker.gif"
               alt="Pixel bee"
-              className="w-12 h-12 pixelated"
+              className="w-24 h-24 pixelated"
               style={{ imageRendering: "pixelated" }}
             />
           </div>

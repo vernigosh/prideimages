@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react"
 import FlowerCelebration from "./flower-celebration" // Import FlowerCelebration component
 import { GardenLegendCelebration } from "./garden-legend-celebration" // Import the new Garden Legend celebration component
 import { BeeParadeCelebration } from "./bee-parade-celebration" // Import the new Bee Parade celebration component
+import { MasterGardenerCelebration } from "./master-gardener-celebration" // Import the new Master Gardener celebration component
+import { NaturesGuardianCelebration } from "./natures-guardian-celebration" // Import the new Nature's Guardian celebration component
 
 interface Flower {
   id: string
@@ -110,6 +112,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [legendCelebrationUsername, setLegendCelebrationUsername] = useState("") // Add state for Garden Legend celebration
   const [showBeeParadeCelebration, setShowBeeParadeCelebration] = useState(false) // Add state for Bee Parade celebration
   const [beeParadeUsername, setBeeParadeUsername] = useState("") // Add state for Bee Parade celebration
+  const [showMasterGardenerCelebration, setShowMasterGardenerCelebration] = useState(false) // Add state for Master Gardener celebration
+  const [masterGardenerUsername, setMasterGardenerUsername] = useState("") // Add state for Master Gardener celebration
+  const [showNaturesGuardianCelebration, setShowNaturesGuardianCelebration] = useState(false) // Add state for Nature's Guardian celebration
+  const [naturesGuardianUsername, setNaturesGuardianUsername] = useState("") // Add state for Nature's Guardian celebration
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -567,6 +573,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         window.dispatchEvent(new CustomEvent("showGardenLegendCelebration", { detail: { username } }))
       }
 
+      if (newPickedTotal >= 30 && (userPickedTotals[username] || 0) < 30) {
+        window.dispatchEvent(new CustomEvent("showMasterGardener", { detail: { username } }))
+      }
+
+      if (newPickedTotal >= 50 && (userPickedTotals[username] || 0) < 50) {
+        window.dispatchEvent(new CustomEvent("showNaturesGuardian", { detail: { username } }))
+      }
+
       setUserPickedTotals((prev) => ({
         ...prev,
         [username]: newPickedTotal,
@@ -694,6 +708,20 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       setShowBeeParadeCelebration(true)
     }
 
+    const handleShowMasterGardenerCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showMasterGardener event for", username)
+      setMasterGardenerUsername(username)
+      setShowMasterGardenerCelebration(true)
+    }
+
+    const handleShowNaturesGuardianCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showNaturesGuardian event for", username)
+      setNaturesGuardianUsername(username)
+      setShowNaturesGuardianCelebration(true)
+    }
+
     const handleRequestLeaderboard = (event: CustomEvent) => {
       console.log("Community Garden: Received requestLeaderboard event", event.detail)
       // Dispatch leaderboard data to the leaderboard component
@@ -718,6 +746,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("showGardenLegendCelebration", handleShowGardenLegendCelebration as EventListener) // Add event listener for Garden Legend celebration
     window.addEventListener("showBeeParadeCelebration", handleShowBeeParadeCelebration as EventListener) // Add event listener for Bee Parade celebration
+    window.addEventListener("showMasterGardener", handleShowMasterGardenerCelebration as EventListener) // Add event listener for Master Gardener celebration
+    window.addEventListener("showNaturesGuardian", handleShowNaturesGuardianCelebration as EventListener) // Add event listener for Nature's Guardian celebration
     window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
 
     // Set connected status
@@ -738,6 +768,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("showGardenLegendCelebration", handleShowGardenLegendCelebration as EventListener) // Remove event listener for Garden Legend celebration
       window.removeEventListener("showBeeParadeCelebration", handleShowBeeParadeCelebration as EventListener) // Remove event listener for Bee Parade celebration
+      window.removeEventListener("showMasterGardener", handleShowMasterGardenerCelebration as EventListener) // Remove event listener for Master Gardener celebration
+      window.removeEventListener("showNaturesGuardian", handleShowNaturesGuardianCelebration as EventListener) // Remove event listener for Nature's Guardian celebration
       window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
@@ -929,6 +961,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     setLegendCelebrationUsername("") // Reset celebration state
     setShowBeeParadeCelebration(false) // Reset celebration state
     setBeeParadeUsername("") // Reset celebration state
+    setShowMasterGardenerCelebration(false) // Reset celebration state
+    setMasterGardenerUsername("") // Reset celebration state
+    setShowNaturesGuardianCelebration(false) // Reset celebration state
+    setNaturesGuardianUsername("") // Reset celebration state
   }
 
   if (!isVisible) return null
@@ -951,6 +987,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         isVisible={showBeeParadeCelebration}
         username={beeParadeUsername}
         onHide={() => setShowBeeParadeCelebration(false)}
+      />
+
+      <MasterGardenerCelebration
+        isVisible={showMasterGardenerCelebration}
+        username={masterGardenerUsername}
+        onHide={() => setShowMasterGardenerCelebration(false)}
+      />
+
+      <NaturesGuardianCelebration
+        isVisible={showNaturesGuardianCelebration}
+        username={naturesGuardianUsername}
+        onHide={() => setShowNaturesGuardianCelebration(false)}
       />
 
       <div className="fixed left-0 right-0 z-10" style={{ bottom: "72px" }}>

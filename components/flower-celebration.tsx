@@ -32,7 +32,7 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
         clearTimeout(hideTimer)
       }
     }
-  }, [isVisible, onHide])
+  }, [isVisible])
 
   if (!isVisible) return null
 

@@ -101,6 +101,16 @@ interface OverlaySettingsProps {
   showColorWar: boolean
   setShowColorWar: (show: boolean) => void
   colorWarConnected: boolean
+
+  // Flower Shop settings
+  showFlowerShop: boolean
+  setShowFlowerShop: (show: boolean) => void
+
+  // Flower Celebration settings
+  showFlowerCelebration: boolean
+  setShowFlowerCelebration: (show: boolean) => void
+  celebrationUsername: string
+  setCelebrationUsername: (username: string) => void
 }
 
 export function OverlaySettings({
@@ -162,9 +172,15 @@ export function OverlaySettings({
   showColorWar,
   setShowColorWar,
   colorWarConnected,
+  showFlowerShop,
+  setShowFlowerShop,
+  showFlowerCelebration,
+  setShowFlowerCelebration,
+  celebrationUsername,
+  setCelebrationUsername,
 }: OverlaySettingsProps) {
   const [activeTab, setActiveTab] = useState<
-    "time" | "blurbs" | "colorwar" | "dark" | "timer" | "social" | "dj" | "chat"
+    "time" | "blurbs" | "colorwar" | "dark" | "timer" | "social" | "dj" | "chat" | "flowershop" | "flowercelebration"
   >("time")
   const [editingBlurbId, setEditingBlurbId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState("")
@@ -332,6 +348,24 @@ export function OverlaySettings({
           >
             <Gamepad2 className="w-4 h-4" />
             Color War
+          </button>
+          <button
+            onClick={() => setActiveTab("flowershop")}
+            className={`flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded ${
+              activeTab === "flowershop" ? "bg-coral text-black" : "bg-white text-black hover:bg-gray-100"
+            }`}
+          >
+            <Palette className="w-4 h-4" />
+            Flower Shop
+          </button>
+          <button
+            onClick={() => setActiveTab("flowercelebration")}
+            className={`flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded ${
+              activeTab === "flowercelebration" ? "bg-coral text-black" : "bg-white text-black hover:bg-gray-100"
+            }`}
+          >
+            <MessageCircle className="w-4 h-4" />
+            Flower Celebration
           </button>
         </div>
 
@@ -1031,6 +1065,88 @@ export function OverlaySettings({
               <p className="text-xs mt-2 text-black/70">
                 🎯 Epic team battles using your brand colors! Pink vs Green supremacy!
               </p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "flowershop" && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">Show Flower Shop</label>
+              <input
+                type="checkbox"
+                checked={showFlowerShop}
+                onChange={(e) => setShowFlowerShop(e.target.checked)}
+                className="w-5 h-5"
+              />
+            </div>
+            <div className="p-4 border-2 border-black rounded bg-white">
+              <h3 className="font-bold text-black mb-2">💐 Flower Shop Commands</h3>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <code className="bg-black text-white px-2 py-1 rounded">!flowershop</code>
+                  <span className="ml-2">Open Flower Shop</span>
+                </div>
+                <div>
+                  <code className="bg-black text-white px-2 py-1 rounded">!closeflowershop</code>
+                  <span className="ml-2">Close Flower Shop</span>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-gray-100 rounded">
+                <h4 className="font-semibold text-black mb-2">Connection Status</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${showFlowerShop ? "bg-green-500" : "bg-red-500"}`}></div>
+                    <span className="text-sm">{showFlowerShop ? "Connected to Twitch Chat" : "Disconnected"}</span>
+                  </div>
+                  <div className="text-xs text-gray-600">Shop must be visible to connect to chat</div>
+                  <div className="text-xs text-gray-600">Check browser console (F12) for connection logs</div>
+                </div>
+              </div>
+              <p className="text-xs mt-2 text-black/70">💡 Only broadcasters and moderators can control the shop</p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "flowercelebration" && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">Show Flower Celebration</label>
+              <input
+                type="checkbox"
+                checked={showFlowerCelebration}
+                onChange={(e) => setShowFlowerCelebration(e.target.checked)}
+                className="w-5 h-5"
+              />
+            </div>
+            <div className="p-4 border-2 border-black rounded bg-white">
+              <h3 className="font-bold text-black mb-2">🌼 Flower Celebration Commands</h3>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <code className="bg-black text-white px-2 py-1 rounded">!celebrate</code>
+                  <span className="ml-2">Celebrate a user's flower picking</span>
+                </div>
+                <div>
+                  <code className="bg-black text-white px-2 py-1 rounded">!hidecelebrate</code>
+                  <span className="ml-2">Hide celebration (mods only)</span>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-gray-100 rounded">
+                <h4 className="font-semibold text-black mb-2">Connection Status</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-3 h-3 rounded-full ${showFlowerCelebration ? "bg-green-500" : "bg-red-500"}`}
+                    ></div>
+                    <span className="text-sm">
+                      {showFlowerCelebration ? "Connected to Twitch Chat" : "Disconnected"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-600">Celebration must be visible to connect to chat</div>
+                  <div className="text-xs text-gray-600">Check browser console (F12) for connection logs</div>
+                </div>
+              </div>
+              <p className="text-xs mt-2 text-black/70">💡 Automatically triggers when users pick 7+ flowers</p>
             </div>
           </div>
         )}

@@ -1,6 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import FlowerCelebration from "./flower-celebration" // Import FlowerCelebration component
+import { GardenLegendCelebration } from "./garden-legend-celebration" // Import the new Garden Legend celebration component
+import { BeeParadeCelebration } from "./bee-parade-celebration" // Import the new Bee Parade celebration component
 
 interface Flower {
   id: string
@@ -62,6 +65,20 @@ const wildflowerImages = [
   "/garden/flowers/lilac.webp",
 ]
 
+const flowerRarity = {
+  // Common flowers (60% total probability)
+  daisy: 25,
+  wildflower: 20,
+  lily: 15,
+
+  // Medium rarity (30% total probability)
+  tulip: 30,
+
+  // Rare tall flowers (10% total probability)
+  sunflower: 5,
+  rose: 5,
+}
+
 export function CommunityGarden({ isVisible, onConnectionChange, onHide }: CommunityGardenProps) {
   const [flowers, setFlowers] = useState<Flower[]>([])
   const [gardenStats, setGardenStats] = useState({
@@ -74,7 +91,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [bunnyActive, setBunnyActive] = useState(false)
   const [bunnyPhase, setBunnyPhase] = useState<"arriving" | "exploring" | "eating" | "playing" | "leaving">("arriving")
   const [bunnyOpacity, setBunnyOpacity] = useState(0)
-  const [lastBunnyVisit, setLastBunnyVisit] = useState(Date.now() - 19 * 60 * 1000) // Start 19 minutes ago so bunny can appear in 1 minute
+  const [lastBunnyVisit, setLastBunnyVisit] = useState(Date.now() - 5 * 60 * 1000) // Start 5 minutes ago so bunny can appear immediately
   const [bunnyEatenCount, setBunnyEatenCount] = useState(0)
   const [bunnyPosition, setBunnyPosition] = useState(50)
   const [bunnyStartTime, setBunnyStartTime] = useState<number | null>(null) // Track when bunny visit started
@@ -87,6 +104,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [userFlowerCounts, setUserFlowerCounts] = useState<{ [username: string]: number }>({}) // New state for user flower totals
   const [userPickedTotals, setUserPickedTotals] = useState<{ [username: string]: number }>({}) // New state for lifetime picked totals
   const [gardenSaturation, setGardenSaturation] = useState(100) // Start at 100% saturation
+  const [showFlowerCelebration, setShowFlowerCelebration] = useState(false) // Add flower celebration tracking state
+  const [celebrationUsername, setCelebrationUsername] = useState("") // Add flower celebration tracking state
+  const [showGardenLegendCelebration, setShowGardenLegendCelebration] = useState(false) // Add state for Garden Legend celebration
+  const [legendCelebrationUsername, setLegendCelebrationUsername] = useState("") // Add state for Garden Legend celebration
+  const [showBeeParadeCelebration, setShowBeeParadeCelebration] = useState(false) // Add state for Bee Parade celebration
+  const [beeParadeUsername, setBeeParadeUsername] = useState("") // Add state for Bee Parade celebration
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -129,10 +152,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const triggerBunnyVisit = (matureFlowers: Flower[], isManualTest = false) => {
     const now = Date.now()
 
-    // Skip timing checks for manual tests
     if (!isManualTest) {
-      if (now - lastBunnyVisit < 19 * 60 * 1000) {
-        const timeSince = Math.floor((now - lastBunnyVisit) / 1000)
+      if (now - lastBunnyVisit < 20 * 60 * 1000) {
         return
       }
     }
@@ -141,13 +162,43 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       return
     }
 
+    addActivity("🐰 A WILD BUNNY APPEARS IN THE GARDEN!", 4000)
+
+    // Calculate how many flowers to eat
     const maxToEat = Math.min(5, Math.ceil(matureFlowers.length / 2))
     const flowersToEat = Math.floor(Math.random() * maxToEat) + 1
     setBunnyEatenCount(flowersToEat)
 
+    // Pick random position
     const bunnyX = Math.random() * 67 + 18
     setBunnyPosition(bunnyX)
 
+    // Start the bunny visit
+    setBunnyActive(true)
+    setBunnyPhase("arriving")
+    setBunnyOpacity(0)
+    setBunnyStartTime(now)
+    setLastBunnyVisit(now)
+  }
+
+  const triggerBunnyVisitForWeeds = () => {
+    const now = Date.now()
+
+    if (bunnyActive) {
+      return
+    }
+
+    addActivity("🐰 A WILD BUNNY APPEARS IN THE GARDEN!", 4000)
+    addActivity("🌱 NO MATURE FLOWERS AVAILABLE - BUNNY WILL EAT WEEDS INSTEAD!", 4000)
+
+    // Set bunny to eat 0 flowers since there are no mature ones
+    setBunnyEatenCount(0)
+
+    // Pick random position
+    const bunnyX = Math.random() * 67 + 18
+    setBunnyPosition(bunnyX)
+
+    // Start the bunny visit
     setBunnyActive(true)
     setBunnyPhase("arriving")
     setBunnyOpacity(0)
@@ -158,52 +209,47 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   useEffect(() => {
     if (!bunnyActive || !bunnyStartTime) return
 
-    const checkBunnyPhase = () => {
+    const interval = setInterval(() => {
       const elapsed = Date.now() - bunnyStartTime
+      const phase1Duration = 10000 // arriving - changed from 5000 to 10000
+      const phase2Duration = 5000 // eating/exploring - changed from 10000 to 5000
+      const phase3Duration = 10000 // playing/leaving - changed from 5000 to 10000
 
-      if (elapsed >= 27500) {
-        if (bunnyPhase !== "leaving") {
-          setBunnyPhase("leaving")
-          setBunnyOpacity(0)
-
-          setTimeout(() => {
-            setBunnyActive(false)
-            setBunnyStartTime(null)
-            setBunnyPhase("arriving")
-            setBunnyOpacity(0)
-          }, 2000)
-        }
-      } else if (elapsed >= 19500) {
-        if (bunnyPhase !== "playing") {
-          setBunnyPhase("playing")
-        }
-      } else if (elapsed >= 12500) {
+      if (elapsed < phase1Duration) {
+        setBunnyPhase("arriving")
+        setBunnyOpacity(Math.min(1, elapsed / 1000))
+      } else if (elapsed < phase1Duration + phase2Duration) {
         if (bunnyPhase !== "eating") {
           setBunnyPhase("eating")
-
-          setFlowers((prev) => {
-            const mature = prev.filter((f) => f.stage === "fully-mature")
-            const toKeep = prev.filter((f) => f.stage !== "fully-mature")
-            const shuffled = [...mature].sort(() => Math.random() - 0.5)
-            const toRemove = shuffled.slice(0, bunnyEatenCount)
-            const remaining = shuffled.slice(bunnyEatenCount)
-
-            return [...toKeep, ...remaining]
-          })
-        }
-      } else if (elapsed >= 500) {
-        if (bunnyPhase !== "exploring") {
-          setBunnyPhase("exploring")
           setBunnyOpacity(1)
+
+          if (bunnyEatenCount > 0) {
+            addActivity(`🐰 THE BUNNY IS MUNCHING ON ${bunnyEatenCount} DELICIOUS FLOWERS!`, 4000)
+
+            // Remove flowers from garden
+            setFlowers((currentFlowers) => {
+              const matureFlowers = currentFlowers.filter((f) => f.stage === "fully-mature")
+              const flowersToRemove = matureFlowers.slice(0, bunnyEatenCount)
+              const remainingFlowers = currentFlowers.filter((f) => !flowersToRemove.includes(f))
+              return remainingFlowers
+            })
+          } else {
+            addActivity("🐰 THE BUNNY IS HAPPILY MUNCHING ON GARDEN WEEDS!", 4000)
+          }
         }
+      } else if (elapsed < phase1Duration + phase2Duration + phase3Duration) {
+        setBunnyPhase("playing")
+      } else {
+        // Bunny visit complete
+        setBunnyActive(false)
+        setBunnyPhase("arriving")
+        setBunnyOpacity(0)
+        setBunnyStartTime(null)
+        clearInterval(interval)
       }
-    }
+    }, 100)
 
-    const phaseInterval = setInterval(checkBunnyPhase, 500)
-
-    return () => {
-      clearInterval(phaseInterval)
-    }
+    return () => clearInterval(interval)
   }, [bunnyActive, bunnyStartTime, bunnyPhase, bunnyEatenCount])
 
   useEffect(() => {
@@ -218,12 +264,17 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           const oldStage = flower.stage
 
           let newStage: Flower["stage"] = "sprout"
-          if (timeSincePlanted > 150000) newStage = "fully-mature"
-          else if (timeSincePlanted > 90000) newStage = "medium"
-          else if (timeSincePlanted > 60000) newStage = "small"
-          else if (timeSincePlanted > 45000) newStage = "blooming"
-          else newStage = "sprout"
+          if (timeSincePlanted > 150000)
+            newStage = "fully-mature" // 2.5+ minutes
+          else if (timeSincePlanted > 90000)
+            newStage = "medium" // 1.5-2.5 minutes
+          else if (timeSincePlanted > 60000)
+            newStage = "small" // 1-1.5 minutes
+          else if (timeSincePlanted > 45000)
+            newStage = "blooming" // 45s-1 minute
+          else newStage = "sprout" // 0-45s
 
+          // Trigger reveal when flower reaches small stage (after sparkle)
           if (oldStage === "blooming" && newStage === "small") {
             const flowerName = flowerTypes[flower.type].name.toUpperCase()
 
@@ -236,6 +287,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
               },
             }))
 
+            // Remove reveal after 3 seconds
             setTimeout(() => {
               setFlowerReveals((prev) => {
                 const newReveals = { ...prev }
@@ -248,7 +300,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           return { ...flower, stage: newStage }
         })
       })
-    }, 5000)
+    }, 5000) // Check every 5 seconds
 
     return () => {
       if (growthIntervalRef.current) clearInterval(growthIntervalRef.current)
@@ -259,59 +311,87 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     if (!isVisible) return
 
     const bunnyCheckInterval = setInterval(() => {
-      if (bunnyActive) return
+      // Only check if bunny is not already active
+      if (bunnyActive) {
+        return
+      }
 
       const now = Date.now()
       const timeSinceLastBunny = now - lastBunnyVisit
-      const twentyMinutes = 20 * 60 * 1000
+      const twentyMinutes = 20 * 60 * 1000 // 20 minutes
 
       if (timeSinceLastBunny > twentyMinutes) {
-        const matureFlowers = flowers.filter((f) => f.stage === "fully-mature")
+        setFlowers((currentFlowers) => {
+          const matureFlowers = currentFlowers.filter((f) => f.stage === "fully-mature")
 
-        if (matureFlowers.length > 0) {
-          triggerBunnyVisit(matureFlowers)
-        }
+          if (matureFlowers.length > 0) {
+            triggerBunnyVisit(matureFlowers)
+          } else {
+            triggerBunnyVisitForWeeds()
+          }
+
+          return currentFlowers // Return unchanged flowers
+        })
       }
-    }, 30000)
+    }, 10000) // Reduced from 30 seconds to 10 seconds for more frequent checks during testing
 
     return () => {
       clearInterval(bunnyCheckInterval)
     }
-  }, [isVisible, bunnyActive, lastBunnyVisit, flowers])
+  }, [isVisible, bunnyActive, lastBunnyVisit])
 
+  // Gradually reduce saturation over time
   useEffect(() => {
     if (!isVisible) return
 
     const saturationInterval = setInterval(() => {
       const now = Date.now()
       const timeSinceWater = now - lastWaterTime
-      const graceTime = 5 * 60 * 1000
-      const fadeTime = 5 * 60 * 1000
+      const graceTime = 5 * 60 * 1000 // 5 minutes of full saturation
+      const fadeTime = 5 * 60 * 1000 // 5 minutes to fade from 100% to 20%
 
       if (timeSinceWater <= graceTime) {
+        // Keep at 100% for first 5 minutes
         setGardenSaturation(100)
       } else {
+        // After 5 minutes, fade from 100% to 20% over next 5 minutes
         const fadeProgress = (timeSinceWater - graceTime) / fadeTime
         const saturationPercent = Math.max(20, 100 - fadeProgress * 80)
         setGardenSaturation(saturationPercent)
       }
-    }, 30000)
+    }, 30000) // Check every 30 seconds
 
     return () => clearInterval(saturationInterval)
   }, [isVisible, lastWaterTime])
 
+  // Chat command handlers
   useEffect(() => {
-    if (!isVisible) return
-
     const handlePlantFlower = (event: CustomEvent) => {
       const { username } = event.detail
 
-      const flowerTypeKeys = Object.keys(flowerTypes) as Array<keyof typeof flowerTypes>
-      const randomFlowerType = flowerTypeKeys[Math.floor(Math.random() * flowerTypeKeys.length)]
+      const getRandomFlowerType = () => {
+        const totalWeight = Object.values(flowerRarity).reduce((sum, weight) => sum + weight, 0)
+        let random = Math.random() * totalWeight
 
-      const now = Date.now()
-      const userFlowers = flowers.filter((f) => f.plantedBy === username && now - f.plantedAt < 300000)
+        for (const [flowerType, weight] of Object.entries(flowerRarity)) {
+          random -= weight
+          if (random <= 0) {
+            return flowerType as keyof typeof flowerTypes
+          }
+        }
+
+        // Fallback to daisy if something goes wrong
+        return "daisy" as keyof typeof flowerTypes
+      }
+
+      const randomFlowerType = getRandomFlowerType()
+
+      console.log(`Community Garden: ${username} planting ${randomFlowerType}`)
+
+      // Check if user has planted 2 flowers recently (allow 2 flowers per user per 5-minute window)
+      const userFlowers = flowers.filter((f) => f.plantedBy === username && Date.now() - f.plantedAt < 300000)
       if (userFlowers.length >= 2) {
+        console.log("Community Garden: User has reached flower limit")
         addActivity(
           `🌸 ${username.toUpperCase()}, YOU'VE USED YOUR 2-FLOWER ALLOWANCE! WAIT 5 MINUTES FOR A FRESH START!`,
           7000,
@@ -319,20 +399,38 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         return
       }
 
+      // Check if garden is full
       if (flowers.length >= 20) {
+        console.log("Community Garden: Garden is full")
         addActivity(`🌸 GARDEN IS FULL! TRY HARVESTING SOME FLOWERS FIRST.`, 7000)
+
+        // Trigger bee parade celebration if not already shown recently
+        const now = Date.now()
+        const lastBeeParade = localStorage.getItem("lastBeeParade")
+        const timeSinceLastParade = lastBeeParade ? now - Number.parseInt(lastBeeParade) : Number.POSITIVE_INFINITY
+
+        if (timeSinceLastParade > 300000) {
+          // 5 minutes cooldown
+          console.log("Community Garden: Triggering bee parade for full garden")
+          localStorage.setItem("lastBeeParade", now.toString())
+          window.dispatchEvent(new CustomEvent("showBeeParade"))
+        }
+
         return
       }
 
+      // Find available position - avoid logo area and right edge
       const usedPositions = flowers.map((f) => f.x)
-      let newX = Math.random() * 67 + 18
+      let newX = Math.random() * 67 + 18 // 18% to 85% to avoid logo area and right edge overflow
 
+      // Try to avoid overlapping
       let attempts = 0
       while (attempts < 10 && usedPositions.some((pos) => Math.abs(pos - newX) < 8)) {
         newX = Math.random() * 67 + 18
         attempts++
       }
 
+      // Determine specific flower type for tulips
       let specificType = ""
       if (randomFlowerType === "tulip") {
         const tulipColors = ["red", "orange", "pink", "white"]
@@ -340,25 +438,26 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }
 
       const newFlower: Flower = {
-        id: `${username}-${now}`,
+        id: `${username}-${Date.now()}`,
         type: randomFlowerType,
         color: "mixed",
         x: newX,
         plantedBy: username,
-        plantedAt: now,
+        plantedAt: Date.now(),
         stage: "sprout",
-        lastWatered: now,
+        lastWatered: Date.now(),
         specificType,
       }
 
       setFlowers((prev) => [...prev, newFlower])
 
+      // Update user's session flower count (this will reset to 0 when they pick)
       setUserFlowerCounts((prev) => ({
         ...prev,
         [username]: (prev[username] || 0) + 1,
       }))
 
-      const userFlowerCount = (userFlowerCounts[username] || 0) + 1
+      const userFlowerCount = (userFlowerCounts[username] || 0) + 1 // +1 for the flower they just planted
 
       setGardenStats((prev) => ({
         ...prev,
@@ -366,6 +465,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         lastActivity: `${username} planted a ${flowerTypes[newFlower.type].name}!`,
       }))
 
+      // Clean session-based messaging
       if (userFlowerCount === 1) {
         addActivity(`🌱 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLANT 1 MORE!`, 5000)
       } else {
@@ -375,26 +475,16 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     const handleWaterGarden = (event: CustomEvent) => {
       const { username } = event.detail
+      console.log(
+        `Community Garden: ${username} watering the garden - showRainEffect currently:`,
+        rainTimeoutRef.current,
+      )
 
       const now = Date.now()
-      const waterCooldown = 2 * 60 * 1000
-
-      if (now - lastWaterTime < waterCooldown) {
-        const remainingTime = Math.ceil((waterCooldown - (now - lastWaterTime)) / 1000)
-        const minutes = Math.floor(remainingTime / 60)
-        const seconds = remainingTime % 60
-        const timeString = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
-
-        addActivity(
-          `💧 ${username.toUpperCase()}, GARDEN WAS RECENTLY WATERED! WAIT ${timeString} TO WATER AGAIN.`,
-          7000,
-        )
-        return
-      }
-
       setLastWaterTime(now)
-      setGardenSaturation(100)
+      setGardenSaturation(100) // Reset saturation to 100%
 
+      // Water all flowers
       setFlowers((prev) => prev.map((flower) => ({ ...flower, lastWatered: now })))
       setGardenStats((prev) => ({
         ...prev,
@@ -403,18 +493,32 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       }))
       addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`, 5000)
 
+      console.log("Starting rain animation...")
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
 
-      rainTimeoutRef.current = setTimeout(() => {}, 5000)
+      // Set ref to a non-null value to trigger the rain visual effect
+      rainTimeoutRef.current = setTimeout(() => {
+        console.log("Rain animation timer created")
+      }, 100) // Small delay just to create the timeout
+
+      // Clear the rain effect after 5 seconds
+      setTimeout(() => {
+        console.log("Stopping rain animation...")
+        if (rainTimeoutRef.current) {
+          clearTimeout(rainTimeoutRef.current)
+          rainTimeoutRef.current = null
+        }
+      }, 5000)
     }
 
     const handlePickFlowers = (event: CustomEvent) => {
       const { username } = event.detail
+      console.log(`Community Garden: ${username} picking their own flowers`)
 
       const now = Date.now()
       const userFlowers = flowers.filter((f) => f.plantedBy === username)
       const userMatureFlowers = userFlowers.filter((f) => f.stage === "fully-mature")
-      const userPickableFlowers = userMatureFlowers.filter((f) => now - f.plantedAt >= 300000)
+      const userPickableFlowers = userMatureFlowers.filter((f) => now - f.plantedAt >= 300000) // 5+ minutes old
 
       if (userFlowers.length === 0) {
         addActivity(`🌱 ${username.toUpperCase()}, YOU HAVEN'T PLANTED ANY FLOWERS YET!`, 7000)
@@ -434,22 +538,53 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         return
       }
 
+      // Count flowers by type for inventory tracking
+      const flowerCounts = userPickableFlowers.reduce(
+        (counts, flower) => {
+          counts[flower.type] = (counts[flower.type] || 0) + 1
+          return counts
+        },
+        {} as { [key: string]: number },
+      )
+
+      // Dispatch flower picked events for each type
+      Object.entries(flowerCounts).forEach(([flowerType, amount]) => {
+        window.dispatchEvent(
+          new CustomEvent("flowerPicked", {
+            detail: { username, flowerType, amount },
+          }),
+        )
+      })
+
+      // Update lifetime picked total
       const newPickedTotal = (userPickedTotals[username] || 0) + userPickableFlowers.length
+
+      if (newPickedTotal >= 10 && (userPickedTotals[username] || 0) < 10) {
+        window.dispatchEvent(new CustomEvent("showFlowerCelebration", { detail: { username } }))
+      }
+
+      if (newPickedTotal >= 20 && (userPickedTotals[username] || 0) < 20) {
+        window.dispatchEvent(new CustomEvent("showGardenLegendCelebration", { detail: { username } }))
+      }
+
       setUserPickedTotals((prev) => ({
         ...prev,
         [username]: newPickedTotal,
       }))
 
+      // Reset user's session flower count since they picked their flowers
       setUserFlowerCounts((prev) => ({
         ...prev,
         [username]: 0,
       }))
 
+      // Show picking message with lifetime total
       addActivity(
-        `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}!`,
+        `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}! USE !FLOWERS TO CHECK INVENTORY!`,
         5000,
       )
 
+      // Remove only the user's pickable flowers
       setFlowers((prev) =>
         prev.filter((f) => !(f.plantedBy === username && f.stage === "fully-mature" && now - f.plantedAt >= 300000)),
       )
@@ -461,9 +596,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     const handlePickOldFlowers = (event: CustomEvent) => {
       const { username } = event.detail
+      console.log(`Community Garden: ${username} picking old flowers`)
 
       const now = Date.now()
-      const thirtyMinutesAgo = now - 30 * 60 * 1000
+      const thirtyMinutesAgo = now - 30 * 60 * 1000 // 30 minutes in milliseconds
       const oldFlowers = flowers.filter((f) => f.plantedAt < thirtyMinutesAgo)
 
       if (oldFlowers.length === 0) {
@@ -471,6 +607,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         return
       }
 
+      // Remove flowers older than 30 minutes
       setFlowers((prev) => prev.filter((f) => f.plantedAt >= thirtyMinutesAgo))
       setGardenStats((prev) => ({
         ...prev,
@@ -483,10 +620,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     }
 
     const handleResetGarden = (event: CustomEvent) => {
+      console.log("Community Garden: Resetting garden", event.detail)
       resetGarden()
     }
 
     const handleHideGarden = (event: CustomEvent) => {
+      console.log("Community Garden: Hiding garden", event.detail)
       onHide()
     }
 
@@ -502,37 +641,67 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
       const matureFlowers = flowers.filter((f) => f.stage === "fully-mature")
 
-      if (matureFlowers.length === 0) {
-        const now = Date.now()
-        const testMatureFlowers: Flower[] = []
-
-        const testFlowerData = [
-          { type: "rose", user: "TestUser0" },
-          { type: "sunflower", user: "TestUser1" },
-          { type: "rose", user: "TestUser2" },
-          { type: "sunflower", user: "TestUser3" },
-        ] as const
-
-        for (let i = 0; i < 4; i++) {
-          testMatureFlowers.push({
-            id: `test-mature-${now}-${i}-${testFlowerData[i].type}`,
-            type: testFlowerData[i].type,
-            color: "mixed",
-            x: 25 + i * 15,
-            plantedBy: testFlowerData[i].user,
-            plantedAt: now - 400000,
-            stage: "fully-mature",
-            lastWatered: now,
-          })
-        }
-        setFlowers((prev) => [...prev, ...testMatureFlowers])
-
-        setTimeout(() => {
-          triggerBunnyVisit(testMatureFlowers, true)
-        }, 500)
-      } else {
+      if (matureFlowers.length > 0) {
         triggerBunnyVisit(matureFlowers, true)
+      } else {
+        triggerBunnyVisitForWeeds()
       }
+    }
+
+    const handleMatureAllFlowers = (event: CustomEvent) => {
+      const { username } = event.detail
+      setFlowers((prev) => prev.map((flower) => ({ ...flower, stage: "fully-mature" as const })))
+      addActivity(`✨ ${username.toUpperCase()} USED GARDEN BLESSING - ALL FLOWERS ARE NOW MATURE!`, 5000)
+    }
+
+    const handleRainbowRain = (event: CustomEvent) => {
+      const { username } = event.detail
+      addActivity(`🌈 ${username.toUpperCase()} TRIGGERED RAINBOW RAIN!`, 5000)
+
+      // Trigger rainbow rain effect (enhanced version of regular rain)
+      if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
+
+      rainTimeoutRef.current = setTimeout(() => {
+        console.log("Rainbow rain animation timer created")
+      }, 100)
+
+      setTimeout(() => {
+        if (rainTimeoutRef.current) {
+          clearTimeout(rainTimeoutRef.current)
+          rainTimeoutRef.current = null
+        }
+      }, 8000) // Longer duration for rainbow rain
+    }
+
+    const handleShowFlowerCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showFlowerCelebration event for", username)
+      setCelebrationUsername(username)
+      setShowFlowerCelebration(true)
+    }
+
+    const handleShowGardenLegendCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showGardenLegendCelebration event for", username)
+      setLegendCelebrationUsername(username)
+      setShowGardenLegendCelebration(true)
+    }
+
+    const handleShowBeeParadeCelebration = (event: CustomEvent) => {
+      const { username } = event.detail
+      console.log("Page: Received showBeeParadeCelebration event for", username)
+      setBeeParadeUsername(username)
+      setShowBeeParadeCelebration(true)
+    }
+
+    const handleRequestLeaderboard = (event: CustomEvent) => {
+      console.log("Community Garden: Received requestLeaderboard event", event.detail)
+      // Dispatch leaderboard data to the leaderboard component
+      window.dispatchEvent(
+        new CustomEvent("showLeaderboard", {
+          detail: { userPickedTotals },
+        }),
+      )
     }
 
     window.addEventListener("plantFlower", handlePlantFlower as EventListener)
@@ -543,7 +712,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     window.addEventListener("hideGarden", handleHideGarden as EventListener)
     window.addEventListener("spawnTestFlowers", handleSpawnTestFlowers)
     window.addEventListener("testBunnyVisit", handleTestBunnyVisit)
+    window.addEventListener("matureAllFlowers", handleMatureAllFlowers as EventListener)
+    window.addEventListener("triggerRainbowRain", handleRainbowRain as EventListener)
+    window.addEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
+    window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
+    window.addEventListener("showGardenLegendCelebration", handleShowGardenLegendCelebration as EventListener) // Add event listener for Garden Legend celebration
+    window.addEventListener("showBeeParadeCelebration", handleShowBeeParadeCelebration as EventListener) // Add event listener for Bee Parade celebration
+    window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
 
+    // Set connected status
     onConnectionChange(isVisible)
 
     return () => {
@@ -555,6 +732,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("hideGarden", handleHideGarden as EventListener)
       window.removeEventListener("spawnTestFlowers", handleSpawnTestFlowers)
       window.removeEventListener("testBunnyVisit", handleTestBunnyVisit)
+      window.removeEventListener("matureAllFlowers", handleMatureAllFlowers as EventListener)
+      window.removeEventListener("triggerRainbowRain", handleRainbowRain as EventListener)
+      window.removeEventListener("showFlowerCelebration", handleShowFlowerCelebration as EventListener)
+      window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
+      window.removeEventListener("showGardenLegendCelebration", handleShowGardenLegendCelebration as EventListener) // Remove event listener for Garden Legend celebration
+      window.removeEventListener("showBeeParadeCelebration", handleShowBeeParadeCelebration as EventListener) // Remove event listener for Bee Parade celebration
+      window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
       if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
@@ -562,6 +746,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const addActivity = (activity: string, duration = 5000) => {
     setRecentActivity((prev) => [activity, ...prev.slice(0, 4)])
 
+    // Clear banner after specified duration
     setTimeout(() => {
       setRecentActivity((current) => current.filter((item) => item !== activity))
     }, duration)
@@ -577,7 +762,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           style={{
             imageRendering: "pixelated",
             animationDuration: "3s",
-            height: "80px",
+            height: "80px", // Changed from 160px to 80px (50% smaller)
             width: "auto",
           }}
         />
@@ -599,23 +784,37 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       )
     }
 
+    // Get flower-specific sizes (25% larger than original, but with natural variation)
     const getFlowerSize = (flowerType: string, stage: "small" | "medium" | "fully-mature") => {
+      // Based on the original image dimensions and natural flower heights
       const baseSizes = {
-        sunflower: { small: 180, medium: 220, mature: 280 },
-        lilac: { small: 160, medium: 200, mature: 250 },
-        allium: { small: 150, medium: 190, mature: 240 },
-        rose: { small: 140, medium: 180, mature: 220 },
-        peony: { small: 145, medium: 185, mature: 230 },
-        tulip: { small: 120, medium: 150, mature: 190 },
-        daisy: { small: 115, medium: 145, mature: 180 },
-        poppy: { small: 110, medium: 140, mature: 175 },
-        lily: { small: 100, medium: 130, mature: 160 },
-        cornflower: { small: 95, medium: 125, mature: 155 },
-        "blue-orchid": { small: 90, medium: 120, mature: 150 },
-        "azure-bluet": { small: 70, medium: 90, mature: 120 },
-        "cyan-flower": { small: 75, medium: 95, mature: 125 },
+        // Very tall flowers (naturally towering)
+        sunflower: { small: 180, medium: 220, mature: 280 }, // Sunflowers are the tallest
+
+        // Tall flowers
+        lilac: { small: 160, medium: 200, mature: 250 }, // Lilacs grow tall and bushy
+        allium: { small: 150, medium: 190, mature: 240 }, // Alliums on tall stems
+
+        // Medium-tall flowers
+        rose: { small: 140, medium: 180, mature: 220 }, // Rose bushes are substantial
+        peony: { small: 145, medium: 185, mature: 230 }, // Peonies are full and tall
+
+        // Medium height flowers
+        tulip: { small: 120, medium: 150, mature: 190 }, // Tulips are medium height
+        daisy: { small: 115, medium: 145, mature: 180 }, // Oxeye daisies are medium
+        poppy: { small: 110, medium: 140, mature: 175 }, // Poppies are delicate but medium
+
+        // Shorter flowers
+        lily: { small: 100, medium: 130, mature: 160 }, // Lily of valley is low-growing
+        cornflower: { small: 95, medium: 125, mature: 155 }, // Cornflowers are compact
+        "blue-orchid": { small: 90, medium: 120, mature: 150 }, // Orchids are elegant but shorter
+
+        // Small/ground flowers
+        "azure-bluet": { small: 70, medium: 90, mature: 120 }, // Very small wildflowers
+        "cyan-flower": { small: 75, medium: 95, mature: 125 }, // Small wildflowers
       }
 
+      // Default for wildflowers or unknown types (medium size)
       const defaultSizes = { small: 110, medium: 140, mature: 170 }
 
       return baseSizes[flower.type as keyof typeof baseSizes] || defaultSizes
@@ -628,6 +827,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
         const randomIndex = seedValue % wildflowerImages.length
         imageSrc = wildflowerImages[randomIndex]
+        // Extract flower name from path for sizing
         flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
         imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
@@ -642,8 +842,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated"
           style={{
             imageRendering: "pixelated",
-            maxHeight: "120px",
-            width: "auto",
+            maxHeight: "120px", // Fits well in container
+            width: "auto", // Let width scale naturally
           }}
         />
       )
@@ -656,6 +856,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
         const randomIndex = seedValue % wildflowerImages.length
         imageSrc = wildflowerImages[randomIndex]
+        // Extract flower name from path for sizing
         flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
         imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
@@ -670,13 +871,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated"
           style={{
             imageRendering: "pixelated",
-            maxHeight: "180px",
-            width: "auto",
+            maxHeight: "180px", // Fits well in container
+            width: "auto", // Let width scale naturally
           }}
         />
       )
     }
 
+    // Fully mature flowers - largest size, harvestable
     if (flower.stage === "fully-mature") {
       let imageSrc = ""
       let flowerKey = flower.type
@@ -684,6 +886,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         const seedValue = flower.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
         const randomIndex = seedValue % wildflowerImages.length
         imageSrc = wildflowerImages[randomIndex]
+        // Extract flower name from path for sizing
         flowerKey = imageSrc.split("/").pop()?.split(".")[0] || "wildflower"
       } else {
         imageSrc = flowerImages[flower.type] || flowerImages.wildflower[0]
@@ -696,8 +899,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           className="pixelated"
           style={{
             imageRendering: "pixelated",
-            maxHeight: "280px",
-            width: "auto",
+            maxHeight: "280px", // Fits within 320px container with room for bottom margin
+            width: "auto", // Let width scale naturally
           }}
         />
       )
@@ -708,7 +911,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const resetGarden = () => {
     setFlowers([])
     setUserPickedTotals({})
-    setLastBunnyVisit(Date.now())
+    setLastBunnyVisit(Date.now() - 6 * 60 * 1000) // Set to 6 minutes ago so bunny can spawn immediately
     setLastWaterTime(0)
     setGardenSaturation(100)
     setBunnyActive(false)
@@ -720,17 +923,42 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       waterLevel: 100,
     })
     setRecentActivity([])
+    setShowFlowerCelebration(false) // Reset celebration state
+    setCelebrationUsername("") // Reset celebration state
+    setShowGardenLegendCelebration(false) // Reset celebration state
+    setLegendCelebrationUsername("") // Reset celebration state
+    setShowBeeParadeCelebration(false) // Reset celebration state
+    setBeeParadeUsername("") // Reset celebration state
   }
 
   if (!isVisible) return null
 
   return (
     <>
+      <FlowerCelebration
+        isVisible={showFlowerCelebration}
+        username={celebrationUsername}
+        onHide={() => setShowFlowerCelebration(false)}
+      />
+
+      <GardenLegendCelebration
+        isVisible={showGardenLegendCelebration}
+        username={legendCelebrationUsername}
+        onHide={() => setShowGardenLegendCelebration(false)}
+      />
+
+      <BeeParadeCelebration
+        isVisible={showBeeParadeCelebration}
+        username={beeParadeUsername}
+        onHide={() => setShowBeeParadeCelebration(false)}
+      />
+
       <div className="fixed left-0 right-0 z-10" style={{ bottom: "72px" }}>
+        {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
             className="fixed left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "362px" }}
+            style={{ bottom: "362px" }} // Updated position
           >
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
@@ -740,6 +968,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           </div>
         )}
 
+        {/* Main Garden Area - transparent background, no soil strip */}
         <div
           className="relative"
           style={{
@@ -749,6 +978,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             transition: "filter 2s ease-in-out",
           }}
         >
+          {/* Rain Effect - scrolls across when watered */}
           {rainTimeoutRef.current && (
             <div
               className="absolute inset-0 pointer-events-none"
@@ -773,6 +1003,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             </div>
           )}
 
+          {/* Chill Bunny Animation - fades in/out at random position */}
           {bunnyActive && (
             <div
               className="absolute bottom-2 transform -translate-x-1/2 pointer-events-none transition-opacity duration-2000 ease-in-out"
@@ -792,26 +1023,27 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
                         ? "/garden/effects/bunnyhoppingbackandforth.gif"
                         : bunnyPhase === "playing"
                           ? "/garden/effects/bunnyhoppingbackandforth.gif"
-                          : "/garden/effects/bunnyhoppingbackandforth.gif"
+                          : "/garden/effects/bunnyhoppingbackandforth.gif" // leaving phase
                 }
                 alt="Garden Bunny"
                 className="pixelated"
                 style={{
                   imageRendering: "pixelated",
-                  width: "auto",
-                  height: "200px",
-                  transform: bunnyPhase === "playing" ? "scaleX(-1)" : "scaleX(1)",
-                  filter: bunnyPhase === "leaving" ? "brightness(0.7)" : "brightness(1)",
+                  width: "auto", // Let width scale naturally
+                  height: "200px", // Increased from 110px to 200px
+                  transform: bunnyPhase === "playing" ? "scaleX(-1)" : "scaleX(1)", // Flip bunny during playing phase
+                  filter: bunnyPhase === "leaving" ? "brightness(0.7)" : "brightness(1)", // Dim bunny when leaving
                 }}
               />
             </div>
           )}
 
+          {/* Flower Reveals - centered horizontally above garden */}
           {Object.keys(flowerReveals).map((flowerId) => (
             <div
               key={flowerId}
               className="fixed left-1/2 transform -translate-x-1/2 z-30 pointer-events-none"
-              style={{ bottom: "392px", left: `${flowerReveals[flowerId].x}%` }}
+              style={{ bottom: "392px", left: `${flowerReveals[flowerId].x}%` }} // Updated position
             >
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {flowerReveals[flowerId].type}
@@ -819,7 +1051,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             </div>
           ))}
 
+          {/* Flowers */}
           {flowers.map((flower) => {
+            // Calculate real-time stage for tooltip
             const now = Date.now()
             const timeSincePlanted = now - flower.plantedAt
             let currentStage: Flower["stage"] = "sprout"
@@ -837,6 +1071,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
                 title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${currentStage}) - ${Math.floor(timeSincePlanted / 1000)}s old`}
               >
                 {getFlowerDisplay(flower)}
+                {/* Show sparkles only on non-fully-mature flowers */}
                 {flower.stage !== "fully-mature" && (
                   <div className="absolute -top-2 -right-2 text-lg animate-pulse">✨</div>
                 )}
@@ -846,6 +1081,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         </div>
       </div>
 
+      {/* Global CSS for flower sizing and rain animation */}
       <style jsx global>{`
         @keyframes rainSlide {
           0% {

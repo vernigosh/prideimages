@@ -25,6 +25,10 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
       const randomIndex = Math.floor(Math.random() * totalItems)
       const finalPosition = (repetitions * totalItems + randomIndex) * itemHeight
 
+      console.log("[v0] SpinningWheel: Total tricks available:", totalItems)
+      console.log("[v0] SpinningWheel: Random index selected:", randomIndex)
+      console.log("[v0] SpinningWheel: Selected trick:", tricks[randomIndex]?.name)
+
       let startTime: number
       const duration = 8000 // Reduced from 12000 for more consistent timing
 
@@ -44,6 +48,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
           // Ensure we're exactly on the selected item
           setScrollPosition(finalPosition)
           const selectedTrick = tricks[randomIndex]
+          console.log("[v0] SpinningWheel: Final selected trick:", selectedTrick?.name)
           // Add a small delay to ensure the final position is visible
           setTimeout(() => {
             onSpinComplete(selectedTrick)

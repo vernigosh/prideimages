@@ -9,29 +9,28 @@ interface FlowerCelebrationProps {
 }
 
 export default function FlowerCelebration({ isVisible, username, onHide }: FlowerCelebrationProps) {
-  const [opacity, setOpacity] = useState(0)
+  const [showCelebration, setShowCelebration] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
-      let fadeInTimer: NodeJS.Timeout
-      let hideTimer: NodeJS.Timeout
-      let fadeOutTimer: NodeJS.Timeout
+      console.log("[v0] Flower celebration starting")
+      setShowCelebration(true)
 
-      // Fade in
-      fadeInTimer = setTimeout(() => setOpacity(1), 100)
+      // Hide after 35 seconds
+      const hideTimer = setTimeout(() => {
+        console.log("[v0] Flower celebration ending")
+        setShowCelebration(false)
 
-      hideTimer = setTimeout(() => {
-        setOpacity(0)
-        fadeOutTimer = setTimeout(onHide, 500) // Wait for fade out
-      }, 35000) // 35 seconds
+        // Wait for fade out animation
+        setTimeout(() => {
+          console.log("[v0] Flower celebration calling onHide")
+          onHide()
+        }, 1000)
+      }, 35000)
 
       return () => {
-        clearTimeout(fadeInTimer)
         clearTimeout(hideTimer)
-        clearTimeout(fadeOutTimer)
       }
-    } else {
-      setOpacity(0)
     }
   }, [isVisible, onHide])
 
@@ -39,8 +38,9 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-500"
-      style={{ opacity }}
+      className={`fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-1000 ${
+        showCelebration ? "opacity-100" : "opacity-0"
+      }`}
     >
       <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #ffb8ad30, #84cc1630)` }} />
 
@@ -49,7 +49,7 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
         {/* Rainbow pixel art */}
         <div className="mb-8 flex justify-center">
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pixelrainbow-4ucgyXfdkugOukHCEUKaGrrTTxfv8O.gif"
+            src="/images/pixelrainbow.gif"
             alt="Rainbow celebration"
             className="pixelated animate-pulse"
             style={{

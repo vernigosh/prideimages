@@ -9,59 +9,32 @@ interface GardenLegendCelebrationProps {
 }
 
 export default function GardenLegendCelebration({ isVisible, username, onHide }: GardenLegendCelebrationProps) {
-  const [opacity, setOpacity] = useState(0)
-  const [shouldRender, setShouldRender] = useState(false)
+  const [showCelebration, setShowCelebration] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
       console.log("[v0] Garden Legend celebration started for", username)
-      setShouldRender(true)
-
-      // Fade in
-      const fadeInTimer = setTimeout(() => setOpacity(1), 100)
-
-      let fadeOutTimer: NodeJS.Timeout | null = null
+      setShowCelebration(true)
 
       const hideTimer = setTimeout(() => {
-        console.log("[v0] Garden Legend celebration timeout reached, starting fade out")
-        setOpacity(0)
-
-        // Wait for fade out animation then call onHide
-        fadeOutTimer = setTimeout(() => {
-          console.log("[v0] Garden Legend celebration calling onHide")
-          setShouldRender(false)
-          if (onHide) {
-            onHide()
-          }
-        }, 500) // Wait for fade out
+        console.log("[v0] Garden Legend celebration timeout reached, hiding")
+        setShowCelebration(false)
+        onHide()
       }, 45000) // 45 seconds for Garden Legend
 
       return () => {
         console.log("[v0] Garden Legend celebration cleanup")
-        clearTimeout(fadeInTimer)
         clearTimeout(hideTimer)
-        if (fadeOutTimer) {
-          clearTimeout(fadeOutTimer)
-        }
       }
     } else {
-      console.log("[v0] Garden Legend celebration forced to hide immediately")
-      setOpacity(0)
-      setShouldRender(false)
-      // Call onHide immediately to ensure parent state is updated
-      if (onHide) {
-        onHide()
-      }
+      setShowCelebration(false)
     }
-  }, [isVisible, username, onHide])
+  }, [isVisible, username])
 
-  if (!shouldRender) return null
+  if (!showCelebration) return null
 
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-500"
-      style={{ opacity }}
-    >
+    <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-500 opacity-100">
       <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #ffd70030, #ffb50030)` }} />
 
       {/* Main celebration content */}
@@ -69,12 +42,12 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
         {/* Rainbow pixel art - larger for Garden Legend */}
         <div className="mb-8 flex justify-center">
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pixelrainbow-4ucgyXfdkugOukHCEUKaGrrTTxfv8O.gif"
+            src="/images/pixelrainbow.gif"
             alt="Rainbow celebration"
             className="pixelated animate-pulse"
             style={{
               imageRendering: "pixelated",
-              width: "300px", // Larger than Garden Champion (200px)
+              width: "300px",
               height: "auto",
             }}
           />

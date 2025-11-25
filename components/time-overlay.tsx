@@ -111,7 +111,7 @@ export function TimeOverlay({
           style={{
             fontSize: `${fontSize}px`,
             color: textColor,
-            textShadow: shadowSize > 0 ? `${shadowSize}px ${shadowSize}px ${shadowSize * 2}px ${shadowColor}` : "none",
+            textShadow: `${shadowSize}px ${shadowSize}px ${shadowSize * 2}px ${shadowColor}`,
           }}
         >
           {formatTime(currentTime)} {getCityName(timeZone)}

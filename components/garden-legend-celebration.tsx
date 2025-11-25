@@ -19,17 +19,31 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
       const hideTimer = setTimeout(() => {
         console.log("[v0] Garden Legend celebration timeout reached, hiding")
         setShowCelebration(false)
-        onHide()
+        setTimeout(() => {
+          console.log("[v0] Garden Legend celebration calling onHide after transition")
+          onHide()
+        }, 100)
       }, 45000) // 45 seconds for Garden Legend
 
       return () => {
-        console.log("[v0] Garden Legend celebration cleanup")
+        console.log("[v0] Garden Legend celebration cleanup - clearing timer")
         clearTimeout(hideTimer)
       }
     } else {
-      setShowCelebration(false)
+      if (showCelebration) {
+        console.log("[v0] Garden Legend celebration force hidden by parent")
+        setShowCelebration(false)
+        setTimeout(() => {
+          console.log("[v0] Garden Legend celebration calling onHide after force hide")
+          onHide()
+        }, 100)
+      }
     }
-  }, [isVisible, username])
+  }, [isVisible, username, onHide, showCelebration])
+
+  useEffect(() => {
+    console.log("[v0] Garden Legend render state - showCelebration:", showCelebration, "isVisible:", isVisible)
+  }, [showCelebration, isVisible])
 
   if (!showCelebration) return null
 

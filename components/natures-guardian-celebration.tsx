@@ -33,7 +33,7 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
     return () => {
       clearTimeout(hideTimer)
     }
-  }, [isVisible, username])
+  }, [isVisible]) // Removed username from dependencies to prevent restart loop
 
   if (!isVisible) return null
 

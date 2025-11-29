@@ -13,47 +13,36 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
 
   useEffect(() => {
     if (isVisible) {
-      console.log("[v0] Garden Legend celebration started for", username)
+      console.log("[v0] Garden Legend celebration starting")
       setShowCelebration(true)
 
       const hideTimer = setTimeout(() => {
-        console.log("[v0] Garden Legend celebration timeout reached, hiding")
+        console.log("[v0] Garden Legend celebration ending")
         setShowCelebration(false)
+
         setTimeout(() => {
-          console.log("[v0] Garden Legend celebration calling onHide after transition")
+          console.log("[v0] Garden Legend celebration calling onHide")
           onHide()
-        }, 100)
+        }, 1000)
       }, 45000) // 45 seconds for Garden Legend
 
       return () => {
-        console.log("[v0] Garden Legend celebration cleanup - clearing timer")
         clearTimeout(hideTimer)
       }
-    } else {
-      if (showCelebration) {
-        console.log("[v0] Garden Legend celebration force hidden by parent")
-        setShowCelebration(false)
-        setTimeout(() => {
-          console.log("[v0] Garden Legend celebration calling onHide after force hide")
-          onHide()
-        }, 100)
-      }
     }
-  }, [isVisible, username, onHide, showCelebration])
+  }, [isVisible])
 
-  useEffect(() => {
-    console.log("[v0] Garden Legend render state - showCelebration:", showCelebration, "isVisible:", isVisible)
-  }, [showCelebration, isVisible])
-
-  if (!showCelebration) return null
+  if (!isVisible) return null
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-500 opacity-100">
+    <div
+      className={`fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-1000 ${
+        showCelebration ? "opacity-100" : "opacity-0"
+      }`}
+    >
       <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #ffd70030, #ffb50030)` }} />
 
-      {/* Main celebration content */}
       <div className="relative text-center">
-        {/* Rainbow pixel art - larger for Garden Legend */}
         <div className="mb-8 flex justify-center">
           <img
             src="/images/pixelrainbow.gif"

@@ -33,7 +33,7 @@ export function MasterGardenerCelebration({ isVisible, username, onHide }: Maste
     return () => {
       clearTimeout(hideTimer)
     }
-  }, [isVisible, username])
+  }, [isVisible]) // Removed username from dependencies to prevent restart loop
 
   if (!isVisible) return null
 

@@ -62,6 +62,12 @@ const initialTricks = [
   { name: "Tease New Song", definition: "Tease a vocal, synth, or beat from next track" },
   { name: "Beat Jump Trick", definition: "Use beat jumps to shift phrasing or stutter tracks" },
 
+  // 3-CDJ Specific Techniques
+  { name: "Triangle Mix", definition: "Cycle between three tracks in rotation for continuous flow" },
+  { name: "Echo Chain Cascade", definition: "Chain echo effects across all three decks for cascading delay patterns" },
+  { name: "ABC Rotation Blend", definition: "Seamlessly transition A→B→C→A in a continuous circle" },
+  { name: "3rd Deck Texture", definition: "Keep a loop running on deck 3 while mixing normally on decks 1 & 2" },
+
   // V10 Mixer Specific
   { name: "Send FX", definition: "Use send effects without altering dry signal" },
   { name: "Use Big Knobs", definition: "Perform using V10's big parameter knobs" },

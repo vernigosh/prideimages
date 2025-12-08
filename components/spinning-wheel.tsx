@@ -63,7 +63,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
   const extendedTricks = Array(20).fill(tricks).flat()
 
   return (
-    <div className="absolute left-8 top-8">
+    <div className="absolute left-8 top-1/2 -translate-y-1/2">
       <div
         className="rounded-3xl p-4 shadow-2xl border-2 border-black"
         style={{

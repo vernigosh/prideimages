@@ -19,6 +19,7 @@ import BeeParadeCelebration from "@/components/bee-parade-celebration" // Import
 import { GardenLegendCelebration } from "@/components/garden-legend-celebration" // Import GardenLegendCelebration component
 import { MasterGardenerCelebration } from "@/components/master-gardener-celebration" // Import MasterGardenerCelebration component
 import { NaturesGuardianCelebration } from "@/components/natures-guardian-celebration" // Import NaturesGuardianCelebration component
+import { GardenEliteCelebration } from "@/components/garden-elite-celebration" // Import GardenEliteCelebration component
 
 interface Blurb {
   id: string
@@ -182,6 +183,10 @@ export default function DJRandomizer() {
   const [showNaturesGuardianCelebration, setShowNaturesGuardianCelebration] = useState(false)
   const [naturesGuardianUsername, setNaturesGuardianUsername] = useState("")
 
+  // Garden Elite Celebration settings
+  const [showGardenEliteCelebration, setShowGardenEliteCelebration] = useState(false)
+  const [gardenEliteUsername, setGardenEliteUsername] = useState("")
+
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = (event: CustomEvent) => {
@@ -340,6 +345,13 @@ export default function DJRandomizer() {
       setShowNaturesGuardianCelebration(true)
     }
 
+    const handleShowGardenElite = (event: Event) => {
+      const customEvent = event as CustomEvent
+      console.log("[v0] Page: Received showGardenElite event", customEvent.detail)
+      setGardenEliteUsername(customEvent.detail.username)
+      setShowGardenEliteCelebration(true)
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -360,6 +372,7 @@ export default function DJRandomizer() {
     window.addEventListener("hideGardenLegend", handleHideGardenLegend as EventListener)
     window.addEventListener("showMasterGardener", handleShowMasterGardener as EventListener)
     window.addEventListener("showNaturesGuardian", handleShowNaturesGuardian as EventListener)
+    window.addEventListener("showGardenElite", handleShowGardenElite as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -382,6 +395,7 @@ export default function DJRandomizer() {
       window.removeEventListener("hideGardenLegend", handleHideGardenLegend as EventListener)
       window.removeEventListener("showMasterGardener", handleShowMasterGardener as EventListener)
       window.removeEventListener("showNaturesGuardian", handleShowNaturesGuardian as EventListener)
+      window.removeEventListener("showGardenElite", handleShowGardenElite as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
@@ -416,6 +430,7 @@ export default function DJRandomizer() {
     if (showGardenLegendCelebration) setShowGardenLegendCelebration(false)
     if (showMasterGardenerCelebration) setShowMasterGardenerCelebration(false)
     if (showNaturesGuardianCelebration) setShowNaturesGuardianCelebration(false)
+    if (showGardenEliteCelebration) setShowGardenEliteCelebration(false)
 
     setIsVisible(true)
     setIsSpinning(true)
@@ -453,6 +468,8 @@ export default function DJRandomizer() {
       setShowMasterGardenerCelebration(true)
     } else if (showNaturesGuardianCelebration) {
       setShowNaturesGuardianCelebration(true)
+    } else if (showGardenEliteCelebration) {
+      setShowGardenEliteCelebration(true)
     }
   }
 
@@ -684,6 +701,19 @@ export default function DJRandomizer() {
           />
         )}
 
+        {/* Garden Elite Celebration - Always at bottom when visible */}
+        {showGardenEliteCelebration && (
+          <GardenEliteCelebration
+            isVisible={showGardenEliteCelebration}
+            username={gardenEliteUsername}
+            onHide={() => {
+              console.log("[v0] Page: Garden Elite onHide callback triggered")
+              setShowGardenEliteCelebration(false)
+              setGardenEliteUsername("")
+            }}
+          />
+        )}
+
         {showLeaderboard && <FlowerLeaderboard isVisible={showLeaderboard} onHide={() => setShowLeaderboard(false)} />}
       </div>
 
@@ -769,6 +799,13 @@ export default function DJRandomizer() {
             <h3 className="text-xl font-bold text-black mb-2">🌿 Nature's Guardian Celebration</h3>
             <p className="text-black/70">
               {showNaturesGuardianCelebration ? `Celebrating ${naturesGuardianUsername}!` : "Hidden"}
+            </p>
+          </div>
+          {/* Add garden elite celebration status */}
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-black mb-2">🏅 Garden Elite Celebration</h3>
+            <p className="text-black/70">
+              {showGardenEliteCelebration ? `Celebrating ${gardenEliteUsername}!` : "Hidden"}
             </p>
           </div>
         </div>

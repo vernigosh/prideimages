@@ -15,18 +15,17 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
 
   useEffect(() => {
     const handleStartSocialTimer = (event: CustomEvent) => {
-      console.log("[v0] Social Timer: Received start command from", event.detail.username)
-      console.log("[v0] Social Timer: Current state before start:", { isVisible, timeLeft, isRunning })
+      console.log("Social Timer: Received start command from", event.detail.username)
       startSocialTimer() // This will automatically start the countdown
     }
 
     const handleHideSocialTimer = (event: CustomEvent) => {
-      console.log("[v0] Social Timer: Received hide command from", event.detail.username)
+      console.log("Social Timer: Received hide command from", event.detail.username)
       hideSocialTimer()
     }
 
     const handleResetSocialTimer = (event: CustomEvent) => {
-      console.log("[v0] Social Timer: Received reset command from", event.detail.username)
+      console.log("Social Timer: Received reset command from", event.detail.username)
       resetSocialTimer()
     }
 
@@ -42,7 +41,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
       window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
       window.removeEventListener("resetSocialTimer", handleResetSocialTimer as EventListener)
     }
-  }, [isVisible, onConnectionChange]) // Removed dependency on isVisible for event listeners
+  }, [isVisible, onConnectionChange])
 
   useEffect(() => {
     console.log("Social Timer: isRunning changed to:", isRunning)
@@ -82,31 +81,29 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
   // Auto-start timer when it becomes visible from a command
   useEffect(() => {
     if (isVisible && timeLeft === 2 * 60 && !isRunning) {
-      console.log("[v0] Social Timer: Auto-starting because timer just became visible")
-      console.log("[v0] Social timer visibility changed, current state:", { isVisible, timeLeft, isRunning })
+      console.log("Social Timer: Auto-starting because timer just became visible")
       setTimeout(() => {
         setIsRunning(true)
-        console.log("[v0] Social timer started via auto-start")
       }, 200)
     }
   }, [isVisible, timeLeft, isRunning])
 
   const startSocialTimer = () => {
-    console.log("[v0] Social Timer: startSocialTimer called - resetting and starting")
+    console.log("Social Timer: startSocialTimer called - resetting and starting")
     setTimeLeft(2 * 60)
     // Use setTimeout to ensure state updates are processed
     setTimeout(() => {
       setIsRunning(true)
-      console.log("[v0] Social Timer: isRunning set to true via setTimeout")
+      console.log("Social Timer: isRunning set to true via setTimeout")
     }, 100)
   }
 
   const resetSocialTimer = () => {
-    console.log("[v0] Social Timer: resetSocialTimer called - resetting and restarting")
+    console.log("Social Timer: resetSocialTimer called - resetting and restarting")
     setTimeLeft(2 * 60)
     setTimeout(() => {
       setIsRunning(true)
-      console.log("[v0] Social Timer: isRunning set to true via reset")
+      console.log("Social Timer: isRunning set to true via reset")
     }, 100)
   }
 

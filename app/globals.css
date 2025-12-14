@@ -8,6 +8,10 @@
   }
 }
 
+@theme inline {
+  --font-sans: var(--font-roboto);
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

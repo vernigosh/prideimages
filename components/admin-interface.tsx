@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Trash2, Edit, Plus, Save, X } from "lucide-react"
 
 interface Trick {
@@ -21,6 +21,21 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editName, setEditName] = useState("")
   const [editDefinition, setEditDefinition] = useState("")
+  const [seConfigured, setSeConfigured] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    fetch("/api/post-trick", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trick: { name: "test", definition: "test" } }),
+    })
+      .then((res) => {
+        setSeConfigured(res.status !== 500)
+      })
+      .catch(() => {
+        setSeConfigured(false)
+      })
+  }, [])
 
   const handleAddTrick = () => {
     if (newTrickName.trim() && newTrickDefinition.trim()) {
@@ -55,6 +70,71 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
     <div className="p-8 bg-white">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-black mb-8">DJ Trick Manager</h1>
+
+        {/* StreamElements Integration Status */}
+        <div className="mb-8 bg-gray-100 border-2 border-black rounded-lg">
+          <div className="p-4" style={{ backgroundColor: seConfigured ? "#32cd32" : "#ffb8ad" }}>
+            <h2 className="text-black flex items-center gap-2 font-bold text-xl">
+              {seConfigured === null ? "⏳" : seConfigured ? "✅" : "⚙️"} StreamElements Chat Integration
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            {seConfigured === null ? (
+              <div className="text-gray-700">Checking configuration...</div>
+            ) : seConfigured ? (
+              <div className="text-green-700 font-semibold">
+                StreamElements is configured! When the spinner lands on a trick, it will automatically post to your
+                Twitch chat.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="text-orange-700 font-semibold">
+                  StreamElements is not configured. The spinner works, but tricks won't be posted to chat automatically.
+                </div>
+                <div className="bg-white border-2 border-black p-4 rounded space-y-3 text-sm">
+                  <h3 className="font-bold text-black mb-2">Setup Instructions:</h3>
+                  <ol className="list-decimal list-inside space-y-2 text-black">
+                    <li>
+                      Go to{" "}
+                      <a
+                        href="https://streamelements.com/dashboard/account/channels"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        StreamElements Dashboard → Account → Channels
+                      </a>
+                    </li>
+                    <li>Copy your Channel ID (looks like: 5f9b1c2d3e4f5a6b7c8d9e0f)</li>
+                    <li>
+                      Go to{" "}
+                      <a
+                        href="https://streamelements.com/dashboard/account/channels"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        Channel Settings → Show Secrets
+                      </a>
+                    </li>
+                    <li>Copy your JWT Token</li>
+                    <li>
+                      Add these environment variables to your Vercel project (in the Vars section of the sidebar):
+                    </li>
+                  </ol>
+                  <div className="bg-gray-100 p-3 rounded font-mono text-xs">
+                    <div>STREAMELEMENTS_CHANNEL_ID=your_channel_id_here</div>
+                    <div>STREAMELEMENTS_JWT_TOKEN=your_jwt_token_here</div>
+                  </div>
+                  <p className="text-gray-600 italic">
+                    Note: These are server-only variables (no NEXT_PUBLIC_ prefix) for security. After adding them,
+                    redeploy your app.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Add New Trick */}
         <div className="mb-8 bg-gray-100 border-2 border-black rounded-lg">

@@ -25,8 +25,12 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
       const randomIndex = Math.floor(Math.random() * totalItems)
       const finalPosition = (repetitions * totalItems + randomIndex) * itemHeight
 
+      console.log("[v0] SpinningWheel: Total tricks available:", totalItems)
+      console.log("[v0] SpinningWheel: Random index selected:", randomIndex)
+      console.log("[v0] SpinningWheel: Selected trick:", tricks[randomIndex]?.name)
+
       let startTime: number
-      const duration = 8000 // Reduced from 12000 for more consistent timing
+      const duration = 8000
 
       const animate = (currentTime: number) => {
         if (!startTime) startTime = currentTime
@@ -41,10 +45,9 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
         if (progress < 1) {
           requestAnimationFrame(animate)
         } else {
-          // Ensure we're exactly on the selected item
           setScrollPosition(finalPosition)
           const selectedTrick = tricks[randomIndex]
-          // Add a small delay to ensure the final position is visible
+          console.log("[v0] SpinningWheel: Final selected trick:", selectedTrick?.name)
           setTimeout(() => {
             onSpinComplete(selectedTrick)
           }, 500)
@@ -58,7 +61,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
   const extendedTricks = Array(20).fill(tricks).flat()
 
   return (
-    <div className="absolute left-8 top-8">
+    <div className="fixed left-4 top-1/2 -translate-y-1/2 z-50">
       <div
         className="rounded-3xl p-4 shadow-2xl border-2 border-black"
         style={{

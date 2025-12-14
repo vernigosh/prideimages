@@ -517,7 +517,7 @@ export default function DJRandomizer() {
   const getUpperLeftElement = () => {
     if (isVisible) {
       return (
-        <div className="absolute left-8 top-6">
+        <div className="absolute left-8 top-1/2 -translate-y-1/2">
           {/* Flip Container */}
           <div
             className="relative transition-transform duration-700 ease-in-out"

@@ -88,6 +88,20 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
       console.log("TMI client created, setting up event handlers...")
 
+      client.on("redeem", (channel, username, rewardType, tags, message) => {
+        console.log("[v0] Channel point redemption detected via redeem event")
+        console.log("[v0] Username:", username)
+        console.log("[v0] Reward type:", rewardType)
+        console.log("[v0] Message:", message)
+        console.log("[v0] Tags:", tags)
+
+        if (rewardType === "DJ Technique Challenge" || message?.includes("DJ Technique Challenge")) {
+          console.log("[v0] Auto-triggering spinner for DJ Technique Challenge redemption")
+          onSpin(username)
+          addRecentCommand(`Channel point redemption by ${username}`)
+        }
+      })
+
       client.on("message", (channel, tags, message, self) => {
         console.log("=== CHAT MESSAGE RECEIVED ===")
         console.log("Channel:", channel)
@@ -95,6 +109,13 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         console.log("Username:", tags["display-name"] || tags.username)
         console.log("Self:", self)
         console.log("Raw tags:", tags)
+
+        console.log("[v0] Message type (msg-id):", tags["msg-id"])
+        console.log("[v0] Custom reward ID:", tags["custom-reward-id"])
+
+        if (tags["msg-id"] === "highlighted-message" || tags["custom-reward-id"]) {
+          console.log("[v0] Potential channel point redemption detected via tags")
+        }
 
         // Add this new logging
         console.log("allowedUsers setting:", allowedUsers)
@@ -116,6 +137,25 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
         const command = message.toLowerCase().trim()
         console.log("Processing command:", command)
+
+        if (
+          message.includes("redeemed DJ Technique Challenge") ||
+          message.includes("DJ Technique Challenge") ||
+          tags["custom-reward-id"]
+        ) {
+          console.log("[v0] DJ Technique Challenge redemption detected - auto-triggering spinner")
+          console.log("[v0] Detection method:", tags["custom-reward-id"] ? "custom-reward-id tag" : "message text")
+          onSpin(username)
+          addRecentCommand(`Channel point redemption by ${username}`)
+          return
+        }
+
+        if (message.includes("redeemed DJ Technique Challenge")) {
+          console.log("DJ Technique Challenge redemption detected - auto-triggering spinner")
+          onSpin(username)
+          addRecentCommand(`Channel point redemption by ${username}`)
+          return
+        }
 
         // Check permissions for restricted commands only
         const isRestrictedCommand =

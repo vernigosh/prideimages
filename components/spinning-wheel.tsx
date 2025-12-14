@@ -16,6 +16,19 @@ interface SpinningWheelProps {
 export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWheelProps) {
   const [scrollPosition, setScrollPosition] = useState(0)
   const listRef = useRef<HTMLUListElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      console.log("[v0] SpinningWheel position:", {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+      })
+    }
+  }, [])
 
   useEffect(() => {
     if (isSpinning && listRef.current) {
@@ -61,7 +74,16 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
   const extendedTricks = Array(20).fill(tricks).flat()
 
   return (
-    <div className="fixed left-4 top-1/2 -translate-y-1/2 z-50">
+    <div
+      ref={containerRef}
+      className="z-50"
+      style={{
+        position: "fixed",
+        left: "2rem",
+        top: "50%",
+        transform: "translateY(-50%)",
+      }}
+    >
       <div
         className="rounded-3xl p-4 shadow-2xl border-2 border-black"
         style={{

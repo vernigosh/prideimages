@@ -66,7 +66,7 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
             <img
               src="/images/8-20bit-20pixel-20art-20sticker.gif"
               alt="Pixel bee"
-              className="w-24 h-24 pixelated"
+              className="w-32 h-32 pixelated"
               style={{ imageRendering: "pixelated" }}
             />
           </div>
@@ -82,7 +82,7 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
             <img
               src="/images/8-20bit-20pixel-20art-20sticker.gif"
               alt="Pixel bee"
-              className="w-24 h-24 pixelated scale-x-[-1]"
+              className="w-32 h-32 pixelated scale-x-[-1]"
               style={{ imageRendering: "pixelated" }}
             />
           </div>
@@ -98,7 +98,7 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
             <img
               src="/images/8-20bit-20pixel-20art-20sticker.gif"
               alt="Pixel bee"
-              className="w-24 h-24 pixelated"
+              className="w-32 h-32 pixelated"
               style={{ imageRendering: "pixelated" }}
             />
           </div>

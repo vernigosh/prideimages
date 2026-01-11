@@ -53,6 +53,7 @@ export function GardenEliteCelebration({ username, isVisible, onHide }: GardenEl
           className="absolute text-4xl animate-float"
           style={{
             left: `${flower.startX}%`,
+            top: "-10%",
             animationDelay: `${flower.delay}s`,
             animationDuration: `${flower.duration}s`,
           }}
@@ -61,7 +62,7 @@ export function GardenEliteCelebration({ username, isVisible, onHide }: GardenEl
         </div>
       ))}
 
-      <div className="text-center px-4 relative z-10">
+      <div className="text-center px-4 relative z-10 -mt-48">
         <img
           src="/images/pixelrainbow.gif"
           alt="Rainbow"

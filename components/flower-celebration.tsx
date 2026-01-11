@@ -45,7 +45,7 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
       <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #ffb8ad30, #84cc1630)` }} />
 
       {/* Main celebration content */}
-      <div className="relative text-center">
+      <div className="relative text-center -mt-48">
         {/* Rainbow pixel art */}
         <div className="mb-8 flex justify-center">
           <img

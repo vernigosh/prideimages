@@ -139,7 +139,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         id: `test-${now}-${i}`,
         type: flowerType,
         color: "mixed",
-        x: 18 + (67 / 19) * i, // Evenly distribute across available space (18% to 85%)
+        x: 5 + (90 / 19) * i, // Evenly distribute across available space (5% to 95%)
         plantedBy: `TestUser${i}`,
         plantedAt: now - Math.random() * 300000, // Random age up to 5 minutes
         stage: randomStage,
@@ -178,8 +178,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     const flowersToEat = Math.floor(Math.random() * maxToEat) + 1
     setBunnyEatenCount(flowersToEat)
 
-    // Pick random position
-    const bunnyX = Math.random() * 67 + 18
+    const bunnyX = Math.random() * 90 + 5
     setBunnyPosition(bunnyX)
 
     // Start the bunny visit
@@ -203,8 +202,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
     // Set bunny to eat 0 flowers since there are no mature ones
     setBunnyEatenCount(0)
 
-    // Pick random position
-    const bunnyX = Math.random() * 67 + 18
+    const bunnyX = Math.random() * 90 + 5
     setBunnyPosition(bunnyX)
 
     // Start the bunny visit
@@ -428,14 +426,32 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         return
       }
 
-      // Find available position - avoid logo area and right edge
       const usedPositions = flowers.map((f) => f.x)
-      let newX = Math.random() * 67 + 18 // 18% to 85% to avoid logo area and right edge overflow
+      let newX: number
+
+      // Tall flowers (rose, sunflower) should only appear on outer edges (5-25% or 75-95%)
+      const isTallFlower = randomFlowerType === "rose" || randomFlowerType === "sunflower"
+
+      if (isTallFlower) {
+        // Place on left edge (5-25%) or right edge (75-95%)
+        const useLeftEdge = Math.random() < 0.5
+        newX = useLeftEdge
+          ? Math.random() * 20 + 5 // 5% to 25%
+          : Math.random() * 20 + 75 // 75% to 95%
+      } else {
+        // Other flowers can appear anywhere (5% to 95%)
+        newX = Math.random() * 90 + 5
+      }
 
       // Try to avoid overlapping
       let attempts = 0
       while (attempts < 10 && usedPositions.some((pos) => Math.abs(pos - newX) < 8)) {
-        newX = Math.random() * 67 + 18
+        if (isTallFlower) {
+          const useLeftEdge = Math.random() < 0.5
+          newX = useLeftEdge ? Math.random() * 20 + 5 : Math.random() * 20 + 75
+        } else {
+          newX = Math.random() * 90 + 5
+        }
         attempts++
       }
 
@@ -837,29 +853,24 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       // Based on the original image dimensions and natural flower heights
       const baseSizes = {
         // Very tall flowers (naturally towering)
-        sunflower: { small: 180, medium: 220, mature: 280 }, // Sunflowers are the tallest
-
-        // Tall flowers
-        lilac: { small: 160, medium: 200, mature: 250 }, // Lilacs grow tall and bushy
-        allium: { small: 150, medium: 190, mature: 240 }, // Alliums on tall stems
-
-        // Medium-tall flowers
-        rose: { small: 140, medium: 180, mature: 220 }, // Rose bushes are substantial
-        peony: { small: 145, medium: 185, mature: 230 }, // Peonies are full and tall
+        sunflower: { small: 225, medium: 285, mature: 375 }, // Sunflowers tower over everything
+        rose: { small: 210, medium: 270, mature: 360 }, // Rose bushes are tall and dense
 
         // Medium height flowers
-        tulip: { small: 120, medium: 150, mature: 190 }, // Tulips are medium height
-        daisy: { small: 115, medium: 145, mature: 180 }, // Oxeye daisies are medium
-        poppy: { small: 110, medium: 140, mature: 175 }, // Poppies are delicate but medium
+        tulip: { small: 180, medium: 225, mature: 285 }, // Tulips are medium height
+        daisy: { small: 172, medium: 217, mature: 270 }, // Oxeye daisies are medium
+        poppy: { small: 165, medium: 210, mature: 262 }, // Poppies are delicate but medium
 
-        // Shorter flowers
-        lily: { small: 100, medium: 130, mature: 160 }, // Lily of valley is low-growing
-        cornflower: { small: 95, medium: 125, mature: 155 }, // Cornflowers are compact
-        "blue-orchid": { small: 90, medium: 120, mature: 150 }, // Orchids are elegant but shorter
-
-        // Small/ground flowers
-        "azure-bluet": { small: 70, medium: 90, mature: 120 }, // Very small wildflowers
-        "cyan-flower": { small: 75, medium: 95, mature: 125 }, // Small wildflowers
+        // Shorter flowers (natural groundcover)
+        lily: { small: 150, medium: 195, mature: 240 }, // Lily of the valley are short
+        azure_bluet: { small: 135, medium: 180, mature: 225 }, // Azure bluets are tiny
+        cornflower: { small: 142, medium: 187, mature: 232 }, // Cornflowers slightly taller
+        allium: { small: 165, medium: 210, mature: 255 }, // Alliums medium-short
+        blue_orchid: { small: 150, medium: 195, mature: 240 }, // Blue orchids medium-short
+        cyan_flower: { small: 135, medium: 180, mature: 225 }, // Cyan flowers short
+        peony: { small: 165, medium: 210, mature: 255 }, // Peonies medium-short
+        lilac: { small: 165, medium: 210, mature: 255 }, // Lilacs medium-short
+        wildflower: { small: 150, medium: 195, mature: 240 }, // Default wildflower
       }
 
       // Default for wildflowers or unknown types (medium size)
@@ -1044,7 +1055,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         <div
           className="relative"
           style={{
-            height: "320px",
+            height: "320px", // Reverted to original 320px height
             overflow: "visible",
             filter: `saturate(${gardenSaturation}%)`,
             transition: "filter 2s ease-in-out",

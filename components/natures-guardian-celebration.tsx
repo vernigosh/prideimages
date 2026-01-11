@@ -43,7 +43,7 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
         showCelebration ? "opacity-100" : "opacity-0"
       }`}
     >
-      <div className="relative text-center">
+      <div className="relative text-center -mt-48">
         <div className="relative mb-8">
           <Image
             src="/images/pixelrainbow.gif"

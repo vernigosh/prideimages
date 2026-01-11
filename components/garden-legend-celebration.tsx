@@ -42,7 +42,7 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
     >
       <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #ffd70030, #ffb50030)` }} />
 
-      <div className="relative text-center">
+      <div className="relative text-center -mt-48">
         <div className="mb-8 flex justify-center">
           <img
             src="/images/pixelrainbow.gif"

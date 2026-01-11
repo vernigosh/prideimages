@@ -78,11 +78,11 @@ export function TimeOverlay({
   const getPositionClasses = () => {
     switch (position) {
       case "top-left":
-        return "top-8 left-16"
+        return "top-8 left-8"
       case "top-right":
-        return "top-8 right-8"
+        return "top-8 right-32"
       case "bottom-left":
-        return "bottom-8 left-16"
+        return "bottom-8 left-8"
       case "bottom-right":
         return "bottom-8 right-8"
       default:

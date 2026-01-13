@@ -70,22 +70,22 @@ export function FlowerLeaderboard({ isVisible, onHide }: FlowerLeaderboardProps)
 
   return (
     <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
-      <div className="bg-black/70 backdrop-blur-sm rounded-lg p-6 border border-white/30 shadow-2xl w-96">
-        <div className="text-center mb-4">
+      <div className="bg-black/70 backdrop-blur-sm rounded-lg p-8 border border-white/30 shadow-2xl w-[480px]">
+        <div className="text-center mb-6">
           <h2 className="text-3xl font-black text-white font-sans uppercase tracking-wider">TODAY'S TOP PICKERS</h2>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {leaderboardData.length === 0 ? (
             <div className="text-center text-2xl font-black text-white font-sans uppercase">NO FLOWERS PICKED YET!</div>
           ) : (
             leaderboardData.map((user, index) => (
               <div key={user.username} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-4">
                   <span className="text-3xl font-black text-white font-sans">{index + 1}.</span>
                   <span className="text-3xl font-black text-white font-sans uppercase">{user.username}</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <span className="text-2xl">🌸</span>
                   <span className="text-3xl font-black text-white font-sans">{user.count}</span>
                 </div>
@@ -95,10 +95,10 @@ export function FlowerLeaderboard({ isVisible, onHide }: FlowerLeaderboardProps)
         </div>
 
         {leaderboardData.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-white/30">
+          <div className="mt-6 pt-6 border-t border-white/30">
             <div className="flex items-center justify-between">
               <span className="text-2xl font-black text-white/80 font-sans uppercase">Total Today:</span>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
                 <span className="text-2xl">🌸</span>
                 <span className="text-3xl font-black text-white font-sans">{totalFlowersPicked}</span>
               </div>

@@ -426,11 +426,23 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         return
       }
 
+      let specificType = ""
+      let wildflowerVariant = ""
+      if (randomFlowerType === "tulip") {
+        const tulipColors = ["red", "orange", "pink", "white"]
+        specificType = tulipColors[Math.floor(Math.random() * tulipColors.length)]
+      } else if (randomFlowerType === "wildflower") {
+        // Select a random wildflower variant
+        const randomIndex = Math.floor(Math.random() * wildflowerImages.length)
+        wildflowerVariant = wildflowerImages[randomIndex]
+        specificType = wildflowerVariant // Store the image path as specificType
+      }
+
       const usedPositions = flowers.map((f) => f.x)
       let newX: number
 
-      // Tall flowers (rose, sunflower) should only appear on outer edges (5-25% or 75-95%)
-      const isTallFlower = randomFlowerType === "rose" || randomFlowerType === "sunflower"
+      const isPeony = randomFlowerType === "wildflower" && wildflowerVariant.includes("peony")
+      const isTallFlower = randomFlowerType === "rose" || randomFlowerType === "sunflower" || isPeony
 
       if (isTallFlower) {
         // Place on left edge (5-25%) or right edge (75-95%)
@@ -453,13 +465,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           newX = Math.random() * 90 + 5
         }
         attempts++
-      }
-
-      // Determine specific flower type for tulips
-      let specificType = ""
-      if (randomFlowerType === "tulip") {
-        const tulipColors = ["red", "orange", "pink", "white"]
-        specificType = tulipColors[Math.floor(Math.random() * tulipColors.length)]
       }
 
       const newFlower: Flower = {

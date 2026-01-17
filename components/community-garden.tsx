@@ -99,7 +99,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [bunnyPosition, setBunnyPosition] = useState(50)
   const [bunnyStartTime, setBunnyStartTime] = useState<number | null>(null) // Track when bunny visit started
   const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const rainTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [rainTimeoutRef, setRainTimeoutRef] = useState<NodeJS.Timeout | null>(null) // Use state for rain timeout
   const [flowerReveals, setFlowerReveals] = useState<{ [key: string]: { type: string; x: number; timestamp: number } }>(
     {},
   )
@@ -505,10 +505,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
     const handleWaterGarden = (event: CustomEvent) => {
       const { username } = event.detail
-      console.log(
-        `Community Garden: ${username} watering the garden - showRainEffect currently:`,
-        rainTimeoutRef.current,
-      )
+      console.log(`Community Garden: ${username} watering the garden - rainTimeoutRef.current is:`, rainTimeoutRef)
 
       const now = Date.now()
       setLastWaterTime(now)
@@ -524,19 +521,23 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`, 5000)
 
       console.log("Starting rain animation...")
-      if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
+      // Clear any existing rain timeout before setting a new one
+      if (rainTimeoutRef) {
+        clearTimeout(rainTimeoutRef)
+      }
 
-      // Set ref to a non-null value to trigger the rain visual effect
-      rainTimeoutRef.current = setTimeout(() => {
+      // Set rainTimeoutRef to a non-null value to trigger the rain visual effect
+      const newTimeout = setTimeout(() => {
         console.log("Rain animation timer created")
       }, 100) // Small delay just to create the timeout
+      setRainTimeoutRef(newTimeout)
 
       // Clear the rain effect after 5 seconds
       setTimeout(() => {
         console.log("Stopping rain animation...")
-        if (rainTimeoutRef.current) {
-          clearTimeout(rainTimeoutRef.current)
-          rainTimeoutRef.current = null
+        if (rainTimeoutRef) {
+          clearTimeout(rainTimeoutRef)
+          setRainTimeoutRef(null) // Set to null when cleared
         }
       }, 5000)
     }
@@ -701,16 +702,19 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       addActivity(`🌈 ${username.toUpperCase()} TRIGGERED RAINBOW RAIN!`, 5000)
 
       // Trigger rainbow rain effect (enhanced version of regular rain)
-      if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
+      if (rainTimeoutRef) {
+        clearTimeout(rainTimeoutRef)
+      }
 
-      rainTimeoutRef.current = setTimeout(() => {
+      const newTimeout = setTimeout(() => {
         console.log("Rainbow rain animation timer created")
       }, 100)
+      setRainTimeoutRef(newTimeout)
 
       setTimeout(() => {
-        if (rainTimeoutRef.current) {
-          clearTimeout(rainTimeoutRef.current)
-          rainTimeoutRef.current = null
+        if (rainTimeoutRef) {
+          clearTimeout(rainTimeoutRef)
+          setRainTimeoutRef(null)
         }
       }, 8000) // Longer duration for rainbow rain
     }
@@ -808,7 +812,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       window.removeEventListener("showNaturesGuardian", handleShowNaturesGuardianCelebration as EventListener) // Remove event listener for Nature's Guardian celebration
       window.removeEventListener("showGardenElite", handleShowGardenEliteCelebration as EventListener) // Remove event listener for Garden Elite celebration
       window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
-      if (rainTimeoutRef.current) clearTimeout(rainTimeoutRef.current)
+      if (rainTimeoutRef) clearTimeout(rainTimeoutRef)
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
 
@@ -881,7 +885,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
       // Default for wildflowers or unknown types (medium size)
       const defaultSizes = { small: 110, medium: 140, mature: 170 }
 
-      return baseSizes[flower.type as keyof typeof baseSizes] || defaultSizes
+      // Handle cases where flower.type might not be in baseSizes directly (e.g., specific wildflower images)
+      const typeKey =
+        Object.keys(baseSizes).find((key) => flowerType.toLowerCase().includes(key)) || flowerType.toLowerCase()
+
+      if (baseSizes[typeKey as keyof typeof baseSizes]) {
+        return baseSizes[typeKey as keyof typeof baseSizes]
+      }
+      return defaultSizes
     }
 
     if (flower.stage === "small") {
@@ -1041,12 +1052,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         onHide={() => setShowGardenEliteCelebration(false)}
       />
 
-      <div className="fixed left-0 right-0 z-10" style={{ bottom: "53px" }}>
+      <div className="fixed left-0 right-0 z-10" style={{ bottom: "43px" }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
             className="fixed left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "343px" }} // Moved down 19 pixels (362px -> 343px)
+            style={{ bottom: "333px" }}
           >
             <div className="text-center">
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
@@ -1067,7 +1078,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
           }}
         >
           {/* Rain Effect - scrolls across when watered */}
-          {rainTimeoutRef.current && (
+          {rainTimeoutRef && (
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -1131,7 +1142,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
             <div
               key={flowerId}
               className="fixed left-1/2 transform -translate-x-1/2 z-30 pointer-events-none"
-              style={{ bottom: "373px", left: `${flowerReveals[flowerId].x}%` }} // Moved down 19 pixels (392px -> 373px)
+              style={{ bottom: "363px", left: `${flowerReveals[flowerId].x}%` }}
             >
               <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
                 {flowerReveals[flowerId].type}

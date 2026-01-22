@@ -20,6 +20,7 @@ import { GardenLegendCelebration } from "@/components/garden-legend-celebration"
 import { MasterGardenerCelebration } from "@/components/master-gardener-celebration" // Import MasterGardenerCelebration component
 import { NaturesGuardianCelebration } from "@/components/natures-guardian-celebration" // Import NaturesGuardianCelebration component
 import { GardenEliteCelebration } from "@/components/garden-elite-celebration" // Import GardenEliteCelebration component
+import { EasterEggCelebration } from "@/components/easter-egg-celebration" // Import EasterEggCelebration component
 
 interface Trick {
   name: string
@@ -69,10 +70,16 @@ const initialTricks: Trick[] = [
   { name: "Beat Jump Trick", definition: "Use beat jumps to shift phrasing or stutter tracks" },
 
   // 3-CDJ Specific Techniques
-  { name: "Triangle Mix", definition: "Cycle between three tracks in rotation for continuous flow" },
-  { name: "Echo Chain Cascade", definition: "Chain echo effects across all three decks for cascading delay patterns" },
-  { name: "ABC Rotation Blend", definition: "Seamlessly transition A→B→C→A in a continuous circle" },
-  { name: "3rd Deck Texture", definition: "Keep a loop running on deck 3 while mixing normally on decks 1 & 2" },
+  { name: "3-Deck Mix", definition: "Use all three decks for this transition" },
+  { name: "Triple Deck Blend", definition: "Blend using all three CDJs" },
+  { name: "Full Setup Mix", definition: "Incorporate all three decks into the mix" },
+  { name: "3-Way Transition", definition: "Transition using all three players" },
+  { name: "Three Deck Challenge", definition: "Mix with all three decks active" },
+  { name: "All Decks Active", definition: "Get all three CDJs involved in the mix" },
+  { name: "Triple Player Mix", definition: "Use your full 3-deck setup for this one" },
+  { name: "3-CDJ Workout", definition: "Time to use all three players" },
+  { name: "Tri-Deck Transition", definition: "Bring in all three decks for the transition" },
+  { name: "Max Deck Mode", definition: "Utilize all three CDJs simultaneously" },
 
   // V10 Mixer Specific
   { name: "Send FX", definition: "Use send effects without altering dry signal" },
@@ -160,7 +167,7 @@ export default function DJRandomizer() {
   const [socialTimerConnected, setSocialTimerConnected] = useState(false)
 
   // Garden settings
-  const [showGarden, setShowGarden] = useState(false)
+  const [showGarden, setShowGarden] = useState(true)
   const [gardenConnected, setGardenConnected] = useState(false)
 
   // Flower Shop settings
@@ -191,6 +198,10 @@ export default function DJRandomizer() {
   // Garden Elite Celebration settings
   const [showGardenEliteCelebration, setShowGardenEliteCelebration] = useState(false)
   const [gardenEliteUsername, setGardenEliteUsername] = useState("")
+
+  // Easter Egg Celebration settings (60 flowers)
+  const [showEasterEgg, setShowEasterEgg] = useState(false)
+  const [easterEggUsername, setEasterEggUsername] = useState("")
 
   // Add event listeners for timer commands
   useEffect(() => {
@@ -357,6 +368,12 @@ export default function DJRandomizer() {
       setShowGardenEliteCelebration(true)
     }
 
+    const handleShowEasterEgg = (event: Event) => {
+      const customEvent = event as CustomEvent
+      setEasterEggUsername(customEvent.detail.username)
+      setShowEasterEgg(true)
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -378,6 +395,7 @@ export default function DJRandomizer() {
     window.addEventListener("showMasterGardener", handleShowMasterGardener as EventListener)
     window.addEventListener("showNaturesGuardian", handleShowNaturesGuardian as EventListener)
     window.addEventListener("showGardenElite", handleShowGardenElite as EventListener)
+    window.addEventListener("showEasterEgg", handleShowEasterEgg as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -401,6 +419,7 @@ export default function DJRandomizer() {
       window.removeEventListener("showMasterGardener", handleShowMasterGardener as EventListener)
       window.removeEventListener("showNaturesGuardian", handleShowNaturesGuardian as EventListener)
       window.removeEventListener("showGardenElite", handleShowGardenElite as EventListener)
+      window.removeEventListener("showEasterEgg", handleShowEasterEgg as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
@@ -743,6 +762,18 @@ export default function DJRandomizer() {
         )}
 
         {showLeaderboard && <FlowerLeaderboard isVisible={showLeaderboard} onHide={() => setShowLeaderboard(false)} />}
+
+        {/* Easter Egg Celebration - 60 flowers */}
+        {showEasterEgg && (
+          <EasterEggCelebration
+            isVisible={showEasterEgg}
+            username={easterEggUsername}
+            onHide={() => {
+              setShowEasterEgg(false)
+              setEasterEggUsername("")
+            }}
+          />
+        )}
       </div>
 
       {/* Separator Line */}

@@ -8,7 +8,7 @@ interface GardenLegendCelebrationProps {
   onHide: () => void
 }
 
-export default function GardenLegendCelebration({ isVisible, username, onHide }: GardenLegendCelebrationProps) {
+export function GardenLegendCelebration({ isVisible, username, onHide }: GardenLegendCelebrationProps) {
   const [showCelebration, setShowCelebration] = useState(false)
 
   useEffect(() => {
@@ -58,13 +58,13 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
 
         <div className="space-y-4">
           <h1 className="text-7xl font-black text-white font-sans uppercase animate-bounce drop-shadow-lg">
-            👑 GARDEN LEGEND! 👑
+            FLOWER SPECIALIST!
           </h1>
-          <h2 className="text-5xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#ffd700" }}>
+          <h2 className="text-5xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#84cc16" }}>
             {username.toUpperCase()} PICKED 20 FLOWERS!
           </h2>
           <p className="text-3xl font-bold text-white font-sans uppercase animate-pulse drop-shadow-lg">
-            LEGENDARY STATUS ACHIEVED!
+            FLOWER SPECIALIST UNLOCKED!
           </p>
         </div>
 
@@ -88,5 +88,3 @@ export default function GardenLegendCelebration({ isVisible, username, onHide }:
     </div>
   )
 }
-
-export { GardenLegendCelebration }

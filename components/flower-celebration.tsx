@@ -8,7 +8,7 @@ interface FlowerCelebrationProps {
   onHide: () => void
 }
 
-export default function FlowerCelebration({ isVisible, username, onHide }: FlowerCelebrationProps) {
+export function FlowerCelebration({ isVisible, username, onHide }: FlowerCelebrationProps) {
   const [showCelebration, setShowCelebration] = useState(false)
 
   useEffect(() => {
@@ -62,13 +62,13 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
 
         <div className="space-y-4">
           <h1 className="text-6xl font-black text-white font-sans uppercase animate-bounce drop-shadow-lg">
-            🌸 FLOWER MASTER! 🌸
+            GOLDEN GREENTHUMB!
           </h1>
-          <h2 className="text-4xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#ffb8ad" }}>
+          <h2 className="text-4xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#ffd700" }}>
             {username.toUpperCase()} PICKED 10 FLOWERS!
           </h2>
           <p className="text-2xl font-bold text-white font-sans uppercase animate-pulse drop-shadow-lg">
-            GARDEN CHAMPION ACHIEVEMENT UNLOCKED!
+            GOLDEN GREENTHUMB UNLOCKED!
           </p>
         </div>
 
@@ -94,4 +94,4 @@ export default function FlowerCelebration({ isVisible, username, onHide }: Flowe
   )
 }
 
-export { FlowerCelebration }
+export default FlowerCelebration

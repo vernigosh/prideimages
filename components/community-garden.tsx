@@ -610,6 +610,10 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
         window.dispatchEvent(new CustomEvent("showNaturesGuardian", { detail: { username } }))
       }
 
+      if (newPickedTotal >= 60 && (userPickedTotals[username] || 0) < 60) {
+        window.dispatchEvent(new CustomEvent("showEasterEgg", { detail: { username } }))
+      }
+
       setUserPickedTotals((prev) => ({
         ...prev,
         [username]: newPickedTotal,

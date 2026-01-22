@@ -286,7 +286,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Reset garden command detected")
           window.dispatchEvent(new CustomEvent("resetGarden", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!hidegarden" && (isMod || isBroadcaster || isVip)) {
+        } else if ((command === "!hidegarden" || command === "!gardenoff") && (isMod || isBroadcaster || isVip)) {
           console.log("Hide garden command detected")
           window.dispatchEvent(new CustomEvent("hideGarden", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
@@ -540,6 +540,21 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             >
               <Play className="w-4 h-4" />
               Test Bee Parade
+            </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Triggering easter egg")
+                window.dispatchEvent(
+                  new CustomEvent("showEasterEgg", {
+                    detail: { username: "Manual Test" },
+                  }),
+                )
+                addRecentCommand("Easter egg by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-purple-400 hover:bg-purple-500 text-white"
+            >
+              <Play className="w-4 h-4" />
+              Test Easter Egg
             </button>
             <button
               onClick={() => {

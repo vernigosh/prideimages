@@ -44,13 +44,29 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
       }`}
     >
       <div className="relative text-center -mt-48">
-        <div className="relative mb-8">
+        <div className="relative mb-8 flex items-center justify-center gap-8">
+          <Image
+            src="/images/pixel-knight.gif"
+            alt="Pixel Knight Guardian"
+            width={200}
+            height={200}
+            className="drop-shadow-2xl"
+            style={{ imageRendering: "pixelated" }}
+          />
           <Image
             src="/images/pixelrainbow.gif"
             alt="Rainbow celebration"
             width={400}
             height={400}
-            className="mx-auto drop-shadow-2xl"
+            className="drop-shadow-2xl"
+          />
+          <Image
+            src="/images/pixel-knight.gif"
+            alt="Pixel Knight Guardian"
+            width={200}
+            height={200}
+            className="drop-shadow-2xl scale-x-[-1]"
+            style={{ imageRendering: "pixelated" }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
             {[...Array(25)].map((_, i) => (

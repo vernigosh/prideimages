@@ -93,7 +93,7 @@ export function MasterGardenerCelebration({ isVisible, username, onHide }: Maste
               backgroundClip: "text",
             }}
           >
-            MASTER GARDENER TITLE EARNED!
+            GARDEN CHAMPION!
           </h2>
         </div>
       </div>

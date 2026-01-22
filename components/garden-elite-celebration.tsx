@@ -77,7 +77,7 @@ export function GardenEliteCelebration({ username, isVisible, onHide }: GardenEl
         <h2 className="text-6xl md:text-7xl font-black mb-4 text-white drop-shadow-lg font-sans">PICKED 40 FLOWERS!</h2>
 
         <h3 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg font-sans">
-          GARDEN ELITE TITLE EARNED!
+          GARDEN LEGEND!
         </h3>
       </div>
     </div>

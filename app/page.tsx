@@ -470,30 +470,15 @@ export default function DJRandomizer() {
     setSelectedTrick(null)
     setLastCommand(`!hidespin by ${username}`)
 
+    // Restore garden by default (it's on by default now)
+    setShowGarden(true)
+
     if (darkTimerConnected) {
       setShowDarkTimer(true)
     } else if (socialTimerConnected) {
       setShowSocialTimer(true)
     } else if (workTimerConnected) {
       setShowWorkTimer(true)
-    } else if (gardenConnected) {
-      setShowGarden(true)
-    } else if (showFlowerShop) {
-      setShowFlowerShop(true)
-    } else if (showFlowerCelebration) {
-      setShowFlowerCelebration(true)
-    } else if (showLeaderboard) {
-      setShowLeaderboard(true)
-    } else if (showBeeParadeCelebration) {
-      setShowBeeParadeCelebration(true)
-    } else if (showGardenLegendCelebration) {
-      setShowGardenLegendCelebration(true)
-    } else if (showMasterGardenerCelebration) {
-      setShowMasterGardenerCelebration(true)
-    } else if (showNaturesGuardianCelebration) {
-      setShowNaturesGuardianCelebration(true)
-    } else if (showGardenEliteCelebration) {
-      setShowGardenEliteCelebration(true)
     }
   }
 

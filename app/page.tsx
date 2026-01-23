@@ -443,10 +443,10 @@ export default function DJRandomizer() {
   const handleSpin = (username: string) => {
     if (isSpinning) return
 
+    // Hide timers and celebrations but keep garden visible
     if (showDarkTimer) setShowDarkTimer(false)
     if (showWorkTimer) setShowWorkTimer(false)
     if (showSocialTimer) setShowSocialTimer(false)
-    if (showGarden) setShowGarden(false)
     if (showFlowerShop) setShowFlowerShop(false)
     if (showFlowerCelebration) setShowFlowerCelebration(false)
     if (showLeaderboard) setShowLeaderboard(false)

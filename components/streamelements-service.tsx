@@ -14,13 +14,28 @@ interface StreamElementsEvent {
         username?: string
         amount?: string
         message?: string
+        displayName?: string
+        viewers?: number
       }
     }
   }
 }
 
+export interface StreamCredits {
+  followers: string[]
+  tippers: Array<{ name: string; amount: number }>
+  cheerers: Array<{ name: string; bits: number }>
+  raiders: Array<{ name: string; viewers: number }>
+}
+
 export function useStreamElements() {
   const [recentTippers, setRecentTippers] = useState<Array<{ name: string; amount: number }>>([])
+  const [streamCredits, setStreamCredits] = useState<StreamCredits>({
+    followers: [],
+    tippers: [],
+    cheerers: [],
+    raiders: [],
+  })
   const [isConnected, setIsConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
 
@@ -76,22 +91,52 @@ export function useStreamElements() {
               console.log("[v0] Successfully subscribed to:", message.data.topic)
             }
 
-            // Handle tip events from activities - only for celebration, not goal tracking
-            if (message.type === "event" && message.data?.activity?.type === "tip") {
-              const tipData = message.data.activity.data
-              if (tipData.username && tipData.amount) {
-                const tipAmount = Number.parseFloat(tipData.amount)
+            // Handle various activity events
+            if (message.type === "event" && message.data?.activity) {
+              const activityType = message.data.activity.type
+              const activityData = message.data.activity.data
 
+              // Handle tip events
+              if (activityType === "tip" && activityData.username && activityData.amount) {
+                const tipAmount = Number.parseFloat(activityData.amount)
                 setRecentTippers((prev) => [
-                  { name: tipData.username, amount: tipAmount },
-                  ...prev.slice(0, 4), // Keep last 5 tippers
+                  { name: activityData.username, amount: tipAmount },
+                  ...prev.slice(0, 4),
                 ])
+                setStreamCredits((prev) => ({
+                  ...prev,
+                  tippers: [...prev.tippers.filter((t) => t.name !== activityData.username), { name: activityData.username, amount: tipAmount }],
+                }))
+                console.log("[v0] Tip event received:", activityData.username, tipAmount)
+              }
 
-                console.log("[v0] Tip event received:", {
-                  username: tipData.username,
-                  amount: tipData.amount,
-                  message: tipData.message,
-                })
+              // Handle follow events
+              if (activityType === "follow" && activityData.username) {
+                setStreamCredits((prev) => ({
+                  ...prev,
+                  followers: prev.followers.includes(activityData.username) ? prev.followers : [...prev.followers, activityData.username],
+                }))
+                console.log("[v0] Follow event received:", activityData.username)
+              }
+
+              // Handle cheer/bits events
+              if (activityType === "cheer" && activityData.username && activityData.amount) {
+                const bitsAmount = Number.parseInt(activityData.amount)
+                setStreamCredits((prev) => ({
+                  ...prev,
+                  cheerers: [...prev.cheerers.filter((c) => c.name !== activityData.username), { name: activityData.username, bits: bitsAmount }],
+                }))
+                console.log("[v0] Cheer event received:", activityData.username, bitsAmount)
+              }
+
+              // Handle raid events
+              if (activityType === "raid" && activityData.username) {
+                const viewers = activityData.viewers || 0
+                setStreamCredits((prev) => ({
+                  ...prev,
+                  raiders: [...prev.raiders, { name: activityData.username, viewers }],
+                }))
+                console.log("[v0] Raid event received:", activityData.username, viewers)
               }
             }
           } catch (error) {
@@ -127,6 +172,7 @@ export function useStreamElements() {
 
   return {
     recentTippers,
+    streamCredits,
     isConnected,
   }
 }

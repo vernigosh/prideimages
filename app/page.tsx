@@ -22,6 +22,8 @@ import { NaturesGuardianCelebration } from "@/components/natures-guardian-celebr
 import { GardenEliteCelebration } from "@/components/garden-elite-celebration" // Import GardenEliteCelebration component
 import { EasterEggCelebration } from "@/components/easter-egg-celebration" // Import EasterEggCelebration component
 import { BoardOfGuardians } from "@/components/board-of-guardians" // Import BoardOfGuardians component
+import { StreamCredits } from "@/components/stream-credits" // Import StreamCredits component
+import { useStreamElements } from "@/components/streamelements-service" // Import StreamElements service
 
 interface Trick {
   name: string
@@ -207,6 +209,13 @@ export default function DJRandomizer() {
   // Board of Guardians settings
   const [showBoardOfGuardians, setShowBoardOfGuardians] = useState(false)
 
+  // Stream Credits settings
+  const [showStreamCredits, setShowStreamCredits] = useState(false)
+  const [flowerLegends, setFlowerLegends] = useState<Array<{ username: string; count: number }>>([])
+
+  // StreamElements service for tracking stream events
+  const { streamCredits } = useStreamElements()
+
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = (event: CustomEvent) => {
@@ -382,6 +391,14 @@ export default function DJRandomizer() {
       setShowBoardOfGuardians(true)
     }
 
+    const handleShowCredits = () => {
+      setShowStreamCredits(true)
+    }
+
+    const handleHideCredits = () => {
+      setShowStreamCredits(false)
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -405,6 +422,8 @@ export default function DJRandomizer() {
     window.addEventListener("showGardenElite", handleShowGardenElite as EventListener)
     window.addEventListener("showEasterEgg", handleShowEasterEgg as EventListener)
     window.addEventListener("showGuardians", handleShowGuardians as EventListener)
+    window.addEventListener("showCredits", handleShowCredits as EventListener)
+    window.addEventListener("hideCredits", handleHideCredits as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -430,6 +449,8 @@ export default function DJRandomizer() {
       window.removeEventListener("showGardenElite", handleShowGardenElite as EventListener)
       window.removeEventListener("showEasterEgg", handleShowEasterEgg as EventListener)
       window.removeEventListener("showGuardians", handleShowGuardians as EventListener)
+      window.removeEventListener("showCredits", handleShowCredits as EventListener)
+      window.removeEventListener("hideCredits", handleHideCredits as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
@@ -681,6 +702,7 @@ export default function DJRandomizer() {
             isVisible={showGarden}
             onConnectionChange={setGardenConnected}
             onHide={() => setShowGarden(false)}
+            onFlowerLegendsUpdate={(legends) => setFlowerLegends(legends)}
           />
         )}
 
@@ -774,6 +796,14 @@ export default function DJRandomizer() {
         <BoardOfGuardians
           isVisible={showBoardOfGuardians}
           onHide={() => setShowBoardOfGuardians(false)}
+        />
+
+        {/* Stream Credits */}
+        <StreamCredits
+          isVisible={showStreamCredits}
+          onHide={() => setShowStreamCredits(false)}
+          streamCredits={streamCredits}
+          flowerLegends={flowerLegends}
         />
       </div>
 

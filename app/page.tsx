@@ -21,6 +21,7 @@ import { MasterGardenerCelebration } from "@/components/master-gardener-celebrat
 import { NaturesGuardianCelebration } from "@/components/natures-guardian-celebration" // Import NaturesGuardianCelebration component
 import { GardenEliteCelebration } from "@/components/garden-elite-celebration" // Import GardenEliteCelebration component
 import { EasterEggCelebration } from "@/components/easter-egg-celebration" // Import EasterEggCelebration component
+import { BoardOfGuardians } from "@/components/board-of-guardians" // Import BoardOfGuardians component
 
 interface Trick {
   name: string
@@ -203,6 +204,9 @@ export default function DJRandomizer() {
   const [showEasterEgg, setShowEasterEgg] = useState(false)
   const [easterEggUsername, setEasterEggUsername] = useState("")
 
+  // Board of Guardians settings
+  const [showBoardOfGuardians, setShowBoardOfGuardians] = useState(false)
+
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = (event: CustomEvent) => {
@@ -374,6 +378,10 @@ export default function DJRandomizer() {
       setShowEasterEgg(true)
     }
 
+    const handleShowGuardians = () => {
+      setShowBoardOfGuardians(true)
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -396,6 +404,7 @@ export default function DJRandomizer() {
     window.addEventListener("showNaturesGuardian", handleShowNaturesGuardian as EventListener)
     window.addEventListener("showGardenElite", handleShowGardenElite as EventListener)
     window.addEventListener("showEasterEgg", handleShowEasterEgg as EventListener)
+    window.addEventListener("showGuardians", handleShowGuardians as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -420,6 +429,7 @@ export default function DJRandomizer() {
       window.removeEventListener("showNaturesGuardian", handleShowNaturesGuardian as EventListener)
       window.removeEventListener("showGardenElite", handleShowGardenElite as EventListener)
       window.removeEventListener("showEasterEgg", handleShowEasterEgg as EventListener)
+      window.removeEventListener("showGuardians", handleShowGuardians as EventListener)
     }
   }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
 
@@ -759,6 +769,12 @@ export default function DJRandomizer() {
             }}
           />
         )}
+
+        {/* Board of Guardians */}
+        <BoardOfGuardians
+          isVisible={showBoardOfGuardians}
+          onHide={() => setShowBoardOfGuardians(false)}
+        />
       </div>
 
       {/* Separator Line */}

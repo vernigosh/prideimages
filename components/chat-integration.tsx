@@ -306,6 +306,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Flowerboard command detected")
           window.dispatchEvent(new CustomEvent("requestLeaderboard", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!guardians" || command === "!boardofguardians") {
+          console.log("Board of Guardians command detected")
+          window.dispatchEvent(new CustomEvent("showGuardians", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!testflowerboard" && (isMod || isBroadcaster || isVip)) {
           console.log("Test flowerboard command detected")
           window.dispatchEvent(

@@ -608,6 +608,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
       if (newPickedTotal >= 50 && (userPickedTotals[username] || 0) < 50) {
         window.dispatchEvent(new CustomEvent("showNaturesGuardian", { detail: { username } }))
+        // Save guardian to database
+        fetch("/api/guardians/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, flowerCount: newPickedTotal }),
+        }).catch((err) => console.error("Failed to save guardian:", err))
       }
 
       if (newPickedTotal >= 60 && (userPickedTotals[username] || 0) < 60) {

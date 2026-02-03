@@ -17,7 +17,7 @@ interface StreamCreditsProps {
   flowerLegends: Array<{ username: string; count: number }>
 }
 
-export function StreamCreditsOverlay({
+export function StreamCreditsComponent({
   isVisible,
   onHide,
   streamCredits,
@@ -49,7 +49,7 @@ export function StreamCreditsOverlay({
     }
 
     const interval = setInterval(() => {
-      setScrollPosition((prev) => prev + 1)
+      setScrollPosition((prev) => prev + 2)
     }, 50)
 
     return () => clearInterval(interval)
@@ -81,7 +81,7 @@ export function StreamCreditsOverlay({
       <div
         ref={containerRef}
         className="absolute inset-x-0 text-center px-4"
-        style={{ transform: `translateY(${384 - scrollPosition * 0.5}px)` }}
+        style={{ transform: `translateY(${384 - scrollPosition * 0.8}px)` }}
       >
         {/* Title */}
         <div className="mb-8">
@@ -217,5 +217,3 @@ export function StreamCreditsOverlay({
     </div>
   )
 }
-
-export { StreamCreditsOverlay as StreamCredits }

@@ -22,7 +22,7 @@ import { NaturesGuardianCelebration } from "@/components/natures-guardian-celebr
 import { GardenEliteCelebration } from "@/components/garden-elite-celebration" // Import GardenEliteCelebration component
 import { EasterEggCelebration } from "@/components/easter-egg-celebration" // Import EasterEggCelebration component
 import { BoardOfGuardians } from "@/components/board-of-guardians" // Import BoardOfGuardians component
-import { StreamCredits } from "@/components/stream-credits" // Import StreamCredits component
+import { StreamCreditsComponent as StreamCredits } from "@/components/stream-credits" // Import StreamCredits component
 import { useStreamElements } from "@/components/streamelements-service" // Import StreamElements service
 
 interface Trick {

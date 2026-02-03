@@ -60,9 +60,9 @@ export function StreamCreditsOverlay({
     if (!isVisible || !containerRef.current) return
 
     const contentHeight = containerRef.current.scrollHeight
-    const viewportHeight = window.innerHeight
+    const containerHeight = 384 // h-96 = 384px
 
-    if (scrollPosition > contentHeight + viewportHeight) {
+    if (scrollPosition > contentHeight + containerHeight) {
       onHide()
     }
   }, [scrollPosition, isVisible, onHide])
@@ -77,16 +77,16 @@ export function StreamCreditsOverlay({
   const hasGuardians = guardians.length > 0
 
   return (
-    <div className="fixed inset-0 z-[9998] bg-black/90 overflow-hidden">
+    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[9998] w-80 h-96 bg-black/50 rounded-xl overflow-hidden">
       <div
         ref={containerRef}
-        className="absolute inset-x-0 text-center"
-        style={{ transform: `translateY(${100 - scrollPosition * 0.5}vh)` }}
+        className="absolute inset-x-0 text-center px-4"
+        style={{ transform: `translateY(${384 - scrollPosition * 0.5}px)` }}
       >
         {/* Title */}
-        <div className="mb-24">
+        <div className="mb-8">
           <h1
-            className="text-7xl font-bold mb-4"
+            className="text-2xl font-bold mb-2"
             style={{
               background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
               WebkitBackgroundClip: "text",
@@ -96,16 +96,16 @@ export function StreamCreditsOverlay({
           >
             STREAM CREDITS
           </h1>
-          <p className="text-2xl text-white/60">Thank you for watching!</p>
+          <p className="text-sm text-white/60">Thank you for watching!</p>
         </div>
 
         {/* New Followers */}
         {hasFollowers && (
-          <div className="mb-20">
-            <h2 className="text-4xl font-bold text-pink-400 mb-8">New Followers</h2>
-            <div className="space-y-2">
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-pink-400 mb-3">New Followers</h2>
+            <div className="space-y-1">
               {streamCredits.followers.map((follower, i) => (
-                <p key={i} className="text-2xl text-white/90">
+                <p key={i} className="text-sm text-white/90">
                   {follower}
                 </p>
               ))}
@@ -115,13 +115,13 @@ export function StreamCreditsOverlay({
 
         {/* Tippers */}
         {hasTippers && (
-          <div className="mb-20">
-            <h2 className="text-4xl font-bold text-green-400 mb-8">Supporters</h2>
-            <div className="space-y-2">
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-green-400 mb-3">Supporters</h2>
+            <div className="space-y-1">
               {streamCredits.tippers
                 .sort((a, b) => b.amount - a.amount)
                 .map((tipper, i) => (
-                  <p key={i} className="text-2xl text-white/90">
+                  <p key={i} className="text-sm text-white/90">
                     {tipper.name} - ${tipper.amount.toFixed(2)}
                   </p>
                 ))}
@@ -131,13 +131,13 @@ export function StreamCreditsOverlay({
 
         {/* Cheerers */}
         {hasCheerers && (
-          <div className="mb-20">
-            <h2 className="text-4xl font-bold text-purple-400 mb-8">Bit Cheerers</h2>
-            <div className="space-y-2">
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-purple-400 mb-3">Bit Cheerers</h2>
+            <div className="space-y-1">
               {streamCredits.cheerers
                 .sort((a, b) => b.bits - a.bits)
                 .map((cheerer, i) => (
-                  <p key={i} className="text-2xl text-white/90">
+                  <p key={i} className="text-sm text-white/90">
                     {cheerer.name} - {cheerer.bits} bits
                   </p>
                 ))}
@@ -147,12 +147,12 @@ export function StreamCreditsOverlay({
 
         {/* Raiders */}
         {hasRaiders && (
-          <div className="mb-20">
-            <h2 className="text-4xl font-bold text-orange-400 mb-8">Raiders</h2>
-            <div className="space-y-2">
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-orange-400 mb-3">Raiders</h2>
+            <div className="space-y-1">
               {streamCredits.raiders.map((raider, i) => (
-                <p key={i} className="text-2xl text-white/90">
-                  {raider.name} {raider.viewers > 0 && `(${raider.viewers} viewers)`}
+                <p key={i} className="text-sm text-white/90">
+                  {raider.name} {raider.viewers > 0 && `(${raider.viewers})`}
                 </p>
               ))}
             </div>
@@ -161,15 +161,15 @@ export function StreamCreditsOverlay({
 
         {/* Flower Legends (10+ flowers this stream) */}
         {hasLegends && (
-          <div className="mb-20">
-            <h2 className="text-4xl font-bold text-lime-400 mb-8">Flower Legends</h2>
-            <p className="text-lg text-white/50 mb-6">Picked 10+ flowers this stream</p>
-            <div className="space-y-2">
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-lime-400 mb-3">Flower Legends</h2>
+            <p className="text-xs text-white/50 mb-2">10+ flowers this stream</p>
+            <div className="space-y-1">
               {flowerLegends
                 .sort((a, b) => b.count - a.count)
                 .map((legend, i) => (
-                  <p key={i} className="text-2xl text-white/90">
-                    {legend.username} - {legend.count} flowers
+                  <p key={i} className="text-sm text-white/90">
+                    {legend.username} - {legend.count}
                   </p>
                 ))}
             </div>
@@ -178,9 +178,9 @@ export function StreamCreditsOverlay({
 
         {/* All-Time Guild of Guardians */}
         {hasGuardians && (
-          <div className="mb-20">
+          <div className="mb-8">
             <h2
-              className="text-5xl font-bold mb-8"
+              className="text-xl font-bold mb-3"
               style={{
                 background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
                 WebkitBackgroundClip: "text",
@@ -190,10 +190,10 @@ export function StreamCreditsOverlay({
             >
               Guild of Guardians
             </h2>
-            <p className="text-lg text-white/50 mb-6">All-Time Nature's Guardians (50+ flowers)</p>
-            <div className="space-y-2">
-              {guardians.map((guardian, i) => (
-                <p key={guardian.id} className="text-2xl text-white/90">
+            <p className="text-xs text-white/50 mb-2">All-Time (50+ flowers)</p>
+            <div className="space-y-1">
+              {guardians.map((guardian) => (
+                <p key={guardian.id} className="text-sm text-white/90">
                   {guardian.username}
                 </p>
               ))}
@@ -202,18 +202,17 @@ export function StreamCreditsOverlay({
         )}
 
         {/* End Credits */}
-        <div className="mt-32 mb-48">
-          <p className="text-3xl text-white/80 mb-4">See you next stream!</p>
-          <p className="text-xl text-white/40">vernigosh</p>
+        <div className="mt-12 mb-16">
+          <p className="text-base text-white/80 mb-2">See you next stream!</p>
         </div>
       </div>
 
       {/* Skip button */}
       <button
         onClick={onHide}
-        className="fixed bottom-8 right-8 px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors"
+        className="absolute bottom-2 right-2 px-3 py-1 bg-white/20 hover:bg-white/30 text-white text-xs rounded transition-colors"
       >
-        Skip Credits
+        Skip
       </button>
     </div>
   )

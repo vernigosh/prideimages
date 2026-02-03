@@ -130,7 +130,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         .sort((a, b) => b.count - a.count)
       onFlowerLegendsUpdate(legends)
     }
-  }, [userPickedTotals, onFlowerLegendsUpdate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPickedTotals])
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {

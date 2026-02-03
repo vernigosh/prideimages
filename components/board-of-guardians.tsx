@@ -68,7 +68,7 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
               backgroundClip: "text",
             }}
           >
-            Board of Guardians
+            Guild of Guardians
           </h2>
           <Shield className="w-10 h-10 text-yellow-400" />
         </div>

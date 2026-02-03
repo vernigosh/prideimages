@@ -562,6 +562,21 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
+                console.log("Manual test: Showing Guild of Guardians")
+                window.dispatchEvent(
+                  new CustomEvent("showGuardians", {
+                    detail: { username: "Manual Test" },
+                  }),
+                )
+                addRecentCommand("Guild of Guardians by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-yellow-400 hover:bg-yellow-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Test Guild of Guardians
+            </button>
+            <button
+              onClick={() => {
                 console.log("Manual test: Hiding garden legend celebration")
                 window.dispatchEvent(
                   new CustomEvent("hideGardenLegend", {

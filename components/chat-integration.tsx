@@ -306,6 +306,18 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Flowerboard command detected")
           window.dispatchEvent(new CustomEvent("requestLeaderboard", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!guardians" || command === "!boardofguardians" || command === "!guildofguardians") {
+          console.log("Guild of Guardians command detected")
+          window.dispatchEvent(new CustomEvent("showGuardians", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!credits" && (isMod || isBroadcaster || isVip)) {
+          console.log("Credits command detected")
+          window.dispatchEvent(new CustomEvent("showCredits", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidecredits" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide credits command detected")
+          window.dispatchEvent(new CustomEvent("hideCredits", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!testflowerboard" && (isMod || isBroadcaster || isVip)) {
           console.log("Test flowerboard command detected")
           window.dispatchEvent(
@@ -555,6 +567,36 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             >
               <Play className="w-4 h-4" />
               Test Easter Egg
+            </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Showing Guild of Guardians")
+                window.dispatchEvent(
+                  new CustomEvent("showGuardians", {
+                    detail: { username: "Manual Test" },
+                  }),
+                )
+                addRecentCommand("Guild of Guardians by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-yellow-400 hover:bg-yellow-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Test Guild of Guardians
+            </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Showing stream credits")
+                window.dispatchEvent(
+                  new CustomEvent("showCredits", {
+                    detail: { username: "Manual Test" },
+                  }),
+                )
+                addRecentCommand("Stream credits by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-blue-400 hover:bg-blue-500 text-white"
+            >
+              <Play className="w-4 h-4" />
+              Test Stream Credits
             </button>
             <button
               onClick={() => {

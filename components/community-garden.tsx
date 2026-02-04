@@ -24,6 +24,7 @@ interface CommunityGardenProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
+  onFlowerLegendsUpdate?: (legends: Array<{ username: string; count: number }>) => void
 }
 
 const flowerTypes = {
@@ -82,7 +83,7 @@ const flowerRarity = {
   rose: 5,
 }
 
-export function CommunityGarden({ isVisible, onConnectionChange, onHide }: CommunityGardenProps) {
+export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowerLegendsUpdate }: CommunityGardenProps) {
   const [flowers, setFlowers] = useState<Flower[]>([])
   const [gardenStats, setGardenStats] = useState({
     totalFlowers: 0,
@@ -119,6 +120,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
   const [naturesGuardianUsername, setNaturesGuardianUsername] = useState("") // Add state for Nature's Guardian celebration
   const [showGardenEliteCelebration, setShowGardenEliteCelebration] = useState(false) // Add state for Garden Elite celebration
   const [gardenEliteUsername, setGardenEliteUsername] = useState("") // Add state for Garden Elite celebration
+
+  // Update flower legends (10+ flowers) for stream credits
+  useEffect(() => {
+    if (onFlowerLegendsUpdate) {
+      const legends = Object.entries(userPickedTotals)
+        .filter(([_, count]) => count >= 10)
+        .map(([username, count]) => ({ username, count }))
+        .sort((a, b) => b.count - a.count)
+      onFlowerLegendsUpdate(legends)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPickedTotals])
 
   // Test function to spawn 20 flowers
   const handleTestSpawn = () => {
@@ -608,6 +621,16 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide }: Commu
 
       if (newPickedTotal >= 50 && (userPickedTotals[username] || 0) < 50) {
         window.dispatchEvent(new CustomEvent("showNaturesGuardian", { detail: { username } }))
+        // Save guardian to database
+        console.log("[v0] Attempting to save guardian:", username, newPickedTotal)
+        fetch("/api/guardians/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, flowerCount: newPickedTotal }),
+        })
+          .then((res) => res.json())
+          .then((data) => console.log("[v0] Guardian save response:", data))
+          .catch((err) => console.error("[v0] Failed to save guardian:", err))
       }
 
       if (newPickedTotal >= 60 && (userPickedTotals[username] || 0) < 60) {

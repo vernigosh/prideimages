@@ -10,20 +10,34 @@ interface EasterEggCelebrationProps {
 
 export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggCelebrationProps) {
   const [showCelebration, setShowCelebration] = useState(false)
+  const [movedToSide, setMovedToSide] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
       console.log("[v0] Easter egg triggered for user:", username)
       setShowCelebration(true)
+      setMovedToSide(false)
+      
+      // After 30 seconds, move the banner to the left side
+      const moveTimer = setTimeout(() => {
+        console.log("[v0] Moving celebration to side")
+        setMovedToSide(true)
+      }, 30000)
+      
       // Song is about 3:50, set timeout for 4 minutes to be safe
       const timer = setTimeout(() => {
         console.log("[v0] Easter egg timer complete, hiding")
         setShowCelebration(false)
+        setMovedToSide(false)
         onHide()
       }, 240000)
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(timer)
+        clearTimeout(moveTimer)
+      }
     } else {
       setShowCelebration(false)
+      setMovedToSide(false)
     }
   }, [isVisible])
 
@@ -43,28 +57,41 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
       />
-      {/* Big celebration banner in top third of screen */}
-      <div className="absolute top-[10%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-6">
-        <div className="flex items-center gap-8">
-          <img src="/images/pixel-knight.gif" alt="Knight" className="w-40 h-40" />
-          <img src="/images/pixel-knight.gif" alt="Knight" className="w-40 h-40" style={{ transform: "scaleX(-1)" }} />
-        </div>
-        <div className="text-center">
+      {/* Celebration banner - starts top center, moves to left middle after 30s */}
+      <div 
+        className="absolute flex items-center transition-all duration-1000 ease-in-out"
+        style={{
+          top: movedToSide ? "50%" : "10%",
+          left: movedToSide ? "32px" : "50%",
+          transform: movedToSide ? "translateY(-50%)" : "translateX(-50%)",
+        }}
+      >
+        {/* Left Knight */}
+        <img 
+          src="/images/pixel-knight.gif" 
+          alt="Knight" 
+          className={`transition-all duration-1000 ${movedToSide ? "w-24 h-24" : "w-40 h-40"}`}
+        />
+        
+        {/* Text content */}
+        <div 
+          className={`flex flex-col transition-all duration-1000 ${movedToSide ? "mx-4" : "mx-8"}`}
+          style={{ textAlign: movedToSide ? "left" : "center" }}
+        >
           <div
-            className="text-6xl font-black font-sans uppercase tracking-wider mb-4"
+            className={`font-black font-sans uppercase tracking-wider transition-all duration-1000 ${movedToSide ? "text-3xl mb-1" : "text-6xl mb-4"}`}
             style={{
               background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              textShadow: "0 0 40px rgba(255, 215, 0, 0.8)",
               filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.5))",
             }}
           >
             {username}
           </div>
           <div
-            className="text-5xl font-black font-sans uppercase tracking-wide"
+            className={`font-black font-sans uppercase transition-all duration-1000 ${movedToSide ? "text-xl" : "text-5xl tracking-wide"}`}
             style={{
               background: "linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #ffffff 100%)",
               WebkitBackgroundClip: "text",
@@ -76,19 +103,26 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
             Has Been Knighted As
           </div>
           <div
-            className="text-7xl font-black font-sans uppercase tracking-widest mt-4"
+            className={`font-black font-sans uppercase transition-all duration-1000 ${movedToSide ? "text-2xl mt-1" : "text-7xl tracking-widest mt-4"}`}
             style={{
               background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              textShadow: "0 0 60px rgba(255, 215, 0, 0.9)",
               filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.6))",
             }}
           >
             Knight of the Gardenverse
           </div>
         </div>
+
+        {/* Right Knight (mirrored) */}
+        <img 
+          src="/images/pixel-knight.gif" 
+          alt="Knight" 
+          className={`transition-all duration-1000 ${movedToSide ? "w-24 h-24" : "w-40 h-40"}`}
+          style={{ transform: "scaleX(-1)" }}
+        />
       </div>
     </div>
   )

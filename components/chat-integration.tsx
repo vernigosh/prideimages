@@ -342,6 +342,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Test easter egg command detected")
           window.dispatchEvent(new CustomEvent("showEasterEgg", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidecelebration" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide celebration command detected")
+          window.dispatchEvent(new CustomEvent("hideAllCelebrations"))
+          addRecentCommand(`${command} by ${username}`)
         } else {
           console.log("Unknown command:", command)
         }

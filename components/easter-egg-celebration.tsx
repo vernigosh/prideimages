@@ -43,12 +43,52 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
       />
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4">
-        <img src="/images/pixel-knight.gif" alt="Knight" className="w-16 h-16" />
-        <span className="text-white text-3xl font-sans font-black drop-shadow-lg uppercase">
-          {username} has been knighted as Knight of the Gardenverse!
-        </span>
-        <img src="/images/pixel-knight.gif" alt="Knight" className="w-16 h-16" style={{ transform: "scaleX(-1)" }} />
+      {/* Big celebration banner in top third of screen */}
+      <div className="absolute top-[10%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-6">
+        <div className="flex items-center gap-8">
+          <img src="/images/pixel-knight.gif" alt="Knight" className="w-40 h-40" />
+          <img src="/images/pixel-knight.gif" alt="Knight" className="w-40 h-40" style={{ transform: "scaleX(-1)" }} />
+        </div>
+        <div className="text-center">
+          <div
+            className="text-6xl font-black font-sans uppercase tracking-wider mb-4"
+            style={{
+              background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              textShadow: "0 0 40px rgba(255, 215, 0, 0.8)",
+              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.5))",
+            }}
+          >
+            {username}
+          </div>
+          <div
+            className="text-5xl font-black font-sans uppercase tracking-wide"
+            style={{
+              background: "linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #ffffff 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.5))",
+            }}
+          >
+            Has Been Knighted As
+          </div>
+          <div
+            className="text-7xl font-black font-sans uppercase tracking-widest mt-4"
+            style={{
+              background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              textShadow: "0 0 60px rgba(255, 215, 0, 0.9)",
+              filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.6))",
+            }}
+          >
+            Knight of the Gardenverse
+          </div>
+        </div>
       </div>
     </div>
   )

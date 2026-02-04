@@ -622,11 +622,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       if (newPickedTotal >= 50 && (userPickedTotals[username] || 0) < 50) {
         window.dispatchEvent(new CustomEvent("showNaturesGuardian", { detail: { username } }))
         // Save guardian to database
+        console.log("[v0] Attempting to save guardian:", username, newPickedTotal)
         fetch("/api/guardians/add", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, flowerCount: newPickedTotal }),
-        }).catch((err) => console.error("Failed to save guardian:", err))
+        })
+          .then((res) => res.json())
+          .then((data) => console.log("[v0] Guardian save response:", data))
+          .catch((err) => console.error("[v0] Failed to save guardian:", err))
       }
 
       if (newPickedTotal >= 60 && (userPickedTotals[username] || 0) < 60) {

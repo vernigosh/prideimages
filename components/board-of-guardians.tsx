@@ -58,7 +58,7 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-center gap-3 mb-6">
-          <Shield className="w-8 h-8 text-yellow-400" />
+          <img src="/images/pixel-knight.gif" alt="Knight" className="w-12 h-12" />
           <h2
             className="text-3xl font-black text-center font-sans uppercase tracking-wider"
             style={{
@@ -70,7 +70,7 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
           >
             Guild of Guardians
           </h2>
-          <Shield className="w-8 h-8 text-yellow-400" />
+          <img src="/images/pixel-knight.gif" alt="Knight" className="w-12 h-12" style={{ transform: "scaleX(-1)" }} />
         </div>
 
         <p className="text-center text-yellow-200/80 mb-6 font-sans text-xl font-black uppercase">

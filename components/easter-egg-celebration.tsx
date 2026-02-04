@@ -43,8 +43,12 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
       />
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white text-2xl font-sans font-bold drop-shadow-lg">
-        {username.toUpperCase()} IS NOW PROTECTOR OF THE GARDENVERSE!
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4">
+        <img src="/images/pixel-knight.gif" alt="Knight" className="w-16 h-16" />
+        <span className="text-white text-3xl font-sans font-black drop-shadow-lg uppercase">
+          {username} has been knighted as Knight of the Gardenverse!
+        </span>
+        <img src="/images/pixel-knight.gif" alt="Knight" className="w-16 h-16" style={{ transform: "scaleX(-1)" }} />
       </div>
     </div>
   )

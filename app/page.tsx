@@ -399,6 +399,17 @@ export default function DJRandomizer() {
       setShowStreamCredits(false)
     }
 
+    const handleHideAllCelebrations = () => {
+      setShowFlowerCelebration(false)
+      setShowBeeParadeCelebration(false)
+      setShowGardenLegendCelebration(false)
+      setShowMasterGardenerCelebration(false)
+      setShowNaturesGuardianCelebration(false)
+      setShowGardenEliteCelebration(false)
+      setShowEasterEgg(false)
+      console.log("All celebrations hidden")
+    }
+
     window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
     window.addEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
     window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
@@ -421,6 +432,7 @@ export default function DJRandomizer() {
     window.addEventListener("showNaturesGuardian", handleShowNaturesGuardian as EventListener)
     window.addEventListener("showGardenElite", handleShowGardenElite as EventListener)
     window.addEventListener("showEasterEgg", handleShowEasterEgg as EventListener)
+    window.addEventListener("hideAllCelebrations", handleHideAllCelebrations as EventListener)
     window.addEventListener("showGuardians", handleShowGuardians as EventListener)
     window.addEventListener("showCredits", handleShowCredits as EventListener)
     window.addEventListener("hideCredits", handleHideCredits as EventListener)
@@ -448,6 +460,7 @@ export default function DJRandomizer() {
       window.removeEventListener("showNaturesGuardian", handleShowNaturesGuardian as EventListener)
       window.removeEventListener("showGardenElite", handleShowGardenElite as EventListener)
       window.removeEventListener("showEasterEgg", handleShowEasterEgg as EventListener)
+      window.removeEventListener("hideAllCelebrations", handleHideAllCelebrations as EventListener)
       window.removeEventListener("showGuardians", handleShowGuardians as EventListener)
       window.removeEventListener("showCredits", handleShowCredits as EventListener)
       window.removeEventListener("hideCredits", handleHideCredits as EventListener)

@@ -47,7 +47,10 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
   if (!isVisible) return null
 
   return (
-    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
+    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none flex items-center gap-4">
+      {/* Left Knight */}
+      <img src="/images/pixel-knight.gif" alt="Knight" className="w-32 h-32 pointer-events-none" />
+      
       <div
         className="rounded-lg p-8 w-[480px] max-h-[80vh] overflow-y-auto pointer-events-auto"
         style={{
@@ -58,7 +61,6 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-center gap-3 mb-6">
-          <img src="/images/pixel-knight.gif" alt="Knight" className="w-12 h-12" />
           <h2
             className="text-3xl font-black text-center font-sans uppercase tracking-wider"
             style={{
@@ -70,7 +72,6 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
           >
             Guild of Guardians
           </h2>
-          <img src="/images/pixel-knight.gif" alt="Knight" className="w-12 h-12" style={{ transform: "scaleX(-1)" }} />
         </div>
 
         <p className="text-center text-yellow-200/80 mb-6 font-sans text-xl font-black uppercase">
@@ -121,6 +122,9 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
           </p>
         </div>
       </div>
+
+      {/* Right Knight (mirrored) */}
+      <img src="/images/pixel-knight.gif" alt="Knight" className="w-32 h-32 pointer-events-none" style={{ transform: "scaleX(-1)" }} />
     </div>
   )
 }

@@ -100,7 +100,7 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
               filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.5))",
             }}
           >
-            Has Been Knighted As
+            Is Now A
           </div>
           <div
             className={`font-black font-sans uppercase transition-all duration-1000 ${movedToSide ? "text-2xl mt-1" : "text-7xl tracking-widest mt-4"}`}

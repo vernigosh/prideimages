@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 interface WorkTimerProps {
   isVisible: boolean
@@ -8,33 +8,68 @@ interface WorkTimerProps {
   onHide: () => void
 }
 
+const WORK_DURATION = 25 * 60 // 25 minutes in seconds
+const SHORT_BREAK = 5 * 60 // 5 minutes in seconds
+const CYCLE_DURATION = WORK_DURATION + SHORT_BREAK // 30 minutes total
+
 export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerProps) {
-  const [phase, setPhase] = useState<"work" | "break" | "complete">("work")
-  const [timeLeft, setTimeLeft] = useState(25 * 60) // Start with 25 minutes for work
-  const [isRunning, setIsRunning] = useState(false) // Timer doesn't auto-start
-  const [isConnected, setIsConnected] = useState(false) // Track chat connection
+  const [phase, setPhase] = useState<"work" | "break">("work")
+  const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
+  const [cycleCount, setCycleCount] = useState(1)
+  const [isRunning, setIsRunning] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const wsRef = useRef<WebSocket | null>(null)
+  const syncedRef = useRef(false)
+
+  // Calculate where we are in the current 30-min block based on the real clock
+  const syncToClock = useCallback(() => {
+    const now = new Date()
+    const minutesIntoHour = now.getMinutes()
+    const secondsIntoHour = now.getSeconds()
+
+    // Total seconds into the current 30-min block
+    const minutesIntoBlock = minutesIntoHour % 30
+    const totalSecondsIntoBlock = minutesIntoBlock * 60 + secondsIntoHour
+
+    if (totalSecondsIntoBlock < WORK_DURATION) {
+      // We're in a work phase
+      const remaining = WORK_DURATION - totalSecondsIntoBlock
+      setPhase("work")
+      setTimeLeft(remaining)
+    } else {
+      // We're in a break phase
+      const secondsIntoBreak = totalSecondsIntoBlock - WORK_DURATION
+      const remaining = SHORT_BREAK - secondsIntoBreak
+      setPhase("break")
+      setTimeLeft(Math.max(remaining, 0))
+    }
+
+    // Calculate which cycle we're on (based on how many 30-min blocks since midnight)
+    const totalMinutesSinceMidnight = now.getHours() * 60 + minutesIntoHour
+    const cyclesSinceMidnight = Math.floor(totalMinutesSinceMidnight / 30) + 1
+    setCycleCount(cyclesSinceMidnight)
+
+    syncedRef.current = true
+  }, [])
 
   useEffect(() => {
-    const handleStartTimer = (event: CustomEvent) => {
-      console.log("Work Timer: Received start command from", event.detail.username)
-      startTimer() // This will automatically start the countdown
+    const handleStartTimer = () => {
+      syncToClock()
+      setIsRunning(true)
     }
 
-    const handleStopTimer = (event: CustomEvent) => {
-      console.log("Work Timer: Received stop command from", event.detail.username)
-      stopTimer()
+    const handleStopTimer = () => {
+      setIsRunning(false)
     }
 
-    const handleResetTimer = (event: CustomEvent) => {
-      console.log("Work Timer: Received reset command from", event.detail.username)
-      resetTimer()
+    const handleResetTimer = () => {
+      syncToClock()
+      setIsRunning(true)
     }
 
-    const handleHideTimer = (event: CustomEvent) => {
-      console.log("Work Timer: Received hide command from", event.detail.username)
-      hideTimer()
+    const handleHideTimer = () => {
+      setIsRunning(false)
+      syncedRef.current = false
+      onHide()
     }
 
     window.addEventListener("startWorkTimer", handleStartTimer as EventListener)
@@ -42,7 +77,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     window.addEventListener("resetWorkTimer", handleResetTimer as EventListener)
     window.addEventListener("hideWorkTimer", handleHideTimer as EventListener)
 
-    // Set connected status based on visibility
     onConnectionChange(isVisible)
 
     return () => {
@@ -51,61 +85,45 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
       window.removeEventListener("resetWorkTimer", handleResetTimer as EventListener)
       window.removeEventListener("hideWorkTimer", handleHideTimer as EventListener)
     }
-  }, [isVisible, onConnectionChange])
+  }, [isVisible, onConnectionChange, onHide, syncToClock])
 
-  const startTimer = () => {
-    console.log("Work Timer: startTimer called - resetting and starting")
-    setPhase("work")
-    setTimeLeft(25 * 60)
-    // Use setTimeout to ensure state updates are processed
-    setTimeout(() => {
-      setIsRunning(true)
-      console.log("Work Timer: isRunning set to true via setTimeout")
-    }, 100)
-  }
-
-  const stopTimer = () => {
-    setIsRunning(false)
-  }
-
-  const resetTimer = () => {
-    setIsRunning(false)
-    setPhase("work")
-    setTimeLeft(25 * 60)
-  }
-
-  const hideTimer = () => {
-    setIsRunning(false)
-    setPhase("work")
-    setTimeLeft(25 * 60)
-    onHide()
-  }
-
+  // Auto-start and sync when becoming visible
   useEffect(() => {
-    console.log("Work Timer: isRunning changed to:", isRunning)
+    if (isVisible && !isRunning) {
+      syncToClock()
+      setTimeout(() => {
+        setIsRunning(true)
+      }, 200)
+    }
+  }, [isVisible, syncToClock])
+
+  // Main countdown loop - re-syncs to clock every tick for accuracy
+  useEffect(() => {
     if (isRunning) {
-      console.log("Work Timer: Starting interval")
       intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          console.log("Work Timer: Countdown tick, time left:", prev - 1)
-          if (prev <= 1) {
-            if (phase === "work") {
-              setPhase("break")
-              return 5 * 60 // 5 minutes for break
-            } else {
-              setPhase("complete")
-              setIsRunning(false)
-              if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-              }
-              return 0
-            }
+        const now = new Date()
+        const minutesIntoBlock = now.getMinutes() % 30
+        const totalSecondsIntoBlock = minutesIntoBlock * 60 + now.getSeconds()
+
+        if (totalSecondsIntoBlock < WORK_DURATION) {
+          const remaining = WORK_DURATION - totalSecondsIntoBlock
+          if (phase !== "work") {
+            setPhase("work")
+            // New cycle started
+            const totalMinutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
+            setCycleCount(Math.floor(totalMinutesSinceMidnight / 30) + 1)
           }
-          return prev - 1
-        })
+          setTimeLeft(remaining)
+        } else {
+          const secondsIntoBreak = totalSecondsIntoBlock - WORK_DURATION
+          const remaining = SHORT_BREAK - secondsIntoBreak
+          if (phase !== "break") {
+            setPhase("break")
+          }
+          setTimeLeft(Math.max(remaining, 0))
+        }
       }, 1000)
     } else {
-      console.log("Work Timer: Clearing interval")
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
       }
@@ -118,21 +136,21 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     }
   }, [isRunning, phase])
 
-  // Auto-start timer when it becomes visible from a command
-  useEffect(() => {
-    if (isVisible && timeLeft === 25 * 60 && !isRunning && phase === "work") {
-      console.log("Work Timer: Auto-starting because timer just became visible")
-      setTimeout(() => {
-        setIsRunning(true)
-      }, 200)
-    }
-  }, [isVisible, timeLeft, isRunning, phase])
-
-  const totalTime = phase === "work" ? 25 * 60 : 5 * 60
+  const totalTime = phase === "work" ? WORK_DURATION : SHORT_BREAK
   const progress = (totalTime - timeLeft) / totalTime
 
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
+
+  // Get the next sync time (when the current block ends)
+  const getNextSyncTime = () => {
+    const now = new Date()
+    const minutesIntoBlock = now.getMinutes() % 30
+    const nextBlockStart = 30 - minutesIntoBlock
+    const nextHour = now.getHours()
+    const nextMin = (now.getMinutes() + nextBlockStart) % 60
+    return `${String(nextHour + (now.getMinutes() + nextBlockStart >= 60 ? 1 : 0)).padStart(2, "0")}:${String(nextMin).padStart(2, "0")}`
+  }
 
   const createPieSlicePath = (percentage: number) => {
     const radius = 90
@@ -144,7 +162,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
       return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${centerX - 0.1} ${centerY - radius} Z`
     }
 
-    const angle = percentage * 2 * Math.PI - Math.PI / 2 // Start from top (-90 degrees)
+    const angle = percentage * 2 * Math.PI - Math.PI / 2
     const x = centerX + radius * Math.cos(angle)
     const y = centerY + radius * Math.sin(angle)
     const largeArcFlag = percentage > 0.5 ? 1 : 0
@@ -154,35 +172,15 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
 
   if (!isVisible) return null
 
-  if (phase === "complete") {
-    // Auto-hide after 1 minute instead of immediately
-    setTimeout(() => {
-      onHide()
-    }, 60000) // Changed from 3000ms to 60000ms (1 minute)
-
-    return (
-      <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
-        <div className="flex flex-col items-center justify-center font-bold">
-          <div className="relative w-64 h-64 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-4xl text-white mb-2 drop-shadow-lg font-bold uppercase font-sans">TIME'S UP!</div>
-              <div className="text-4xl text-green-400 drop-shadow-lg font-bold uppercase font-sans">GREAT JOB!</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
       <div className="flex flex-col items-center justify-center gap-4 font-bold">
         <div className="relative w-64 h-64">
           <div className="absolute inset-0">
-            {[0, 5, 10, 15, 20, 25].map((num, index) => {
+            {(phase === "work" ? [0, 5, 10, 15, 20, 25] : [0, 1, 2, 3, 4, 5]).map((num, index) => {
               const angle = (index * 360) / 6 - 90
               const radian = (angle * Math.PI) / 180
-              const distance = 120 // Reduced distance for smaller size
+              const distance = 120
               const x = 128 + distance * Math.cos(radian)
               const y = 128 + distance * Math.sin(radian)
 
@@ -218,7 +216,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
                 {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
               </div>
               <div className="text-sm text-gray-300 mt-1 drop-shadow-md font-semibold">
-                {isRunning ? "Running" : "Paused"}
+                {isRunning ? (phase === "work" ? "Focus Time" : "Break Time") : "Paused"}
               </div>
             </div>
           </div>
@@ -231,8 +229,15 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
               <div>WORK CHALLENGE</div>
             </>
           ) : (
-            "BREAK TIME!"
+            <>
+              <div>5 MIN</div>
+              <div>BREAK TIME</div>
+            </>
           )}
+        </div>
+
+        <div className="text-lg text-gray-300 drop-shadow-md font-sans">
+          Cycle {cycleCount} &middot; Next: {getNextSyncTime()}
         </div>
       </div>
     </div>

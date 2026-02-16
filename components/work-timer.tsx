@@ -64,25 +64,24 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
   const [cycleCount, setCycleCount] = useState(1)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const mountedRef = useRef(true)
+  const rafRef = useRef<number | null>(null)
+  const lastTickRef = useRef(0)
+  const isVisibleRef = useRef(isVisible)
 
-  // Track mount/unmount
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-    }
-  }, [])
+  // Keep ref in sync
+  isVisibleRef.current = isVisible
 
-  // Single effect: start interval when visible, kill it when not
+  // Single effect: use requestAnimationFrame instead of setInterval
+  // RAF automatically pauses when OBS hides the browser source (scene change)
+  // so no state updates queue up in the background
   useEffect(() => {
     if (!isVisible) {
       // Full cleanup
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
       }
+      lastTickRef.current = 0
       setPhase("work")
       setTimeLeft(WORK_DURATION)
       setCycleCount(1)
@@ -96,24 +95,55 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     setTimeLeft(state.remaining)
     setCycleCount(state.cycle)
     onConnectionChange(true)
+    lastTickRef.current = Date.now()
 
-    // Start a single interval
-    intervalRef.current = setInterval(() => {
-      if (!mountedRef.current) return
-      const s = getClockState()
-      setPhase(s.currentPhase)
-      setTimeLeft(s.remaining)
-      setCycleCount(s.cycle)
-    }, 1000)
+    // RAF loop - only updates once per second, pauses when tab/source hidden
+    const tick = () => {
+      if (!isVisibleRef.current) return
+
+      const now = Date.now()
+      // Only update state once per second
+      if (now - lastTickRef.current >= 1000) {
+        lastTickRef.current = now
+        const s = getClockState()
+        setPhase(s.currentPhase)
+        setTimeLeft(s.remaining)
+        setCycleCount(s.cycle)
+      }
+
+      rafRef.current = requestAnimationFrame(tick)
+    }
+
+    rafRef.current = requestAnimationFrame(tick)
+
+    // Also pause on visibilitychange (belt and suspenders for OBS)
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
+      } else if (isVisibleRef.current) {
+        // Resuming - re-sync and restart
+        lastTickRef.current = Date.now()
+        const s = getClockState()
+        setPhase(s.currentPhase)
+        setTimeLeft(s.remaining)
+        setCycleCount(s.cycle)
+        rafRef.current = requestAnimationFrame(tick)
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibility)
 
     // Cleanup on re-run or unmount
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
       }
+      document.removeEventListener("visibilitychange", handleVisibility)
     }
-    // onConnectionChange is a state setter from parent, stable by default
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible])
 

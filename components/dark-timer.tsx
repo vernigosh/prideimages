@@ -8,116 +8,102 @@ interface DarkTimerProps {
   onHide: () => void
 }
 
+const DARK_DURATION = 20 * 60
+
 export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(20 * 60) // 20 minutes for dark mode
-  const [isRunning, setIsRunning] = useState(false)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [timeLeft, setTimeLeft] = useState(DARK_DURATION)
+  const [isComplete, setIsComplete] = useState(false)
+  const rafRef = useRef<number | null>(null)
+  const lastTickRef = useRef(0)
+  const isVisibleRef = useRef(isVisible)
+  const timeLeftRef = useRef(DARK_DURATION)
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  isVisibleRef.current = isVisible
 
   useEffect(() => {
-    const handleStartDarkTimer = (event: CustomEvent) => {
-      console.log("Dark Timer: Received start command from", event.detail.username)
-      startDarkTimer()
+    if (!isVisible) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current)
+        hideTimeoutRef.current = null
+      }
+      lastTickRef.current = 0
+      timeLeftRef.current = DARK_DURATION
+      setTimeLeft(DARK_DURATION)
+      setIsComplete(false)
+      onConnectionChange(false)
+      return
     }
 
-    const handleHideDarkTimer = (event: CustomEvent) => {
-      console.log("Dark Timer: Received hide command from", event.detail.username)
-      hideDarkTimer()
+    // Becoming visible - start fresh
+    timeLeftRef.current = DARK_DURATION
+    setTimeLeft(DARK_DURATION)
+    setIsComplete(false)
+    onConnectionChange(true)
+    lastTickRef.current = Date.now()
+
+    const tick = () => {
+      if (!isVisibleRef.current) return
+
+      const now = Date.now()
+      if (now - lastTickRef.current >= 1000) {
+        lastTickRef.current = now
+        timeLeftRef.current = Math.max(0, timeLeftRef.current - 1)
+        setTimeLeft(timeLeftRef.current)
+
+        if (timeLeftRef.current <= 0) {
+          setIsComplete(true)
+          // Auto-hide after 1 minute
+          hideTimeoutRef.current = setTimeout(() => {
+            onHide()
+          }, 60000)
+          return // Stop the RAF loop
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(tick)
     }
 
-    const handleResetDarkTimer = (event: CustomEvent) => {
-      console.log("Dark Timer: Received reset command from", event.detail.username)
-      resetDarkTimer()
-    }
+    rafRef.current = requestAnimationFrame(tick)
 
-    window.addEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
-    window.addEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
-    window.addEventListener("resetDarkTimer", handleResetDarkTimer as EventListener)
-
-    // Set connected status based on visibility
-    onConnectionChange(isVisible)
-
-    return () => {
-      window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
-      window.removeEventListener("hideDarkTimer", handleHideDarkTimer as EventListener)
-      window.removeEventListener("resetDarkTimer", handleResetDarkTimer as EventListener)
-    }
-  }, [isVisible, onConnectionChange])
-
-  useEffect(() => {
-    console.log("Dark Timer: isRunning changed to:", isRunning)
-    if (isRunning) {
-      console.log("Dark Timer: Starting interval")
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          console.log("Dark Timer: Countdown tick, time left:", prev - 1)
-          if (prev <= 1) {
-            setIsRunning(false)
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current)
-            }
-            // Auto-hide after 1 minute
-            setTimeout(() => {
-              onHide()
-            }, 60000)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    } else {
-      console.log("Dark Timer: Clearing interval")
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
+      } else if (isVisibleRef.current && timeLeftRef.current > 0) {
+        lastTickRef.current = Date.now()
+        rafRef.current = requestAnimationFrame(tick)
       }
     }
 
+    document.addEventListener("visibilitychange", handleVisibility)
+
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
       }
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current)
+        hideTimeoutRef.current = null
+      }
+      document.removeEventListener("visibilitychange", handleVisibility)
     }
-  }, [isRunning, onHide])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible])
 
-  // Auto-start timer when it becomes visible from a command
-  useEffect(() => {
-    if (isVisible && timeLeft === 20 * 60 && !isRunning) {
-      console.log("Dark Timer: Auto-starting because timer just became visible")
-      setTimeout(() => {
-        setIsRunning(true)
-      }, 200)
-    }
-  }, [isVisible, timeLeft, isRunning])
-
-  const startDarkTimer = () => {
-    console.log("Dark Timer: startDarkTimer called - resetting and starting")
-    setTimeLeft(20 * 60)
-    setTimeout(() => {
-      setIsRunning(true)
-      console.log("Dark Timer: isRunning set to true via setTimeout")
-    }, 100)
-  }
-
-  const resetDarkTimer = () => {
-    console.log("Dark Timer: resetDarkTimer called - resetting and restarting")
-    setTimeLeft(20 * 60)
-    setTimeout(() => {
-      setIsRunning(true)
-      console.log("Dark Timer: isRunning set to true via reset")
-    }, 100)
-  }
-
-  const hideDarkTimer = () => {
-    setIsRunning(false)
-    setTimeLeft(20 * 60)
-    onHide()
-  }
+  if (!isVisible) return null
 
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
 
-  if (!isVisible) return null
-
-  if (timeLeft === 0) {
+  if (isComplete) {
     return (
       <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
         <div className="flex flex-col items-center justify-center font-bold">
@@ -153,7 +139,6 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerPr
   return (
     <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
       <div className="flex flex-col items-center justify-center gap-6 font-bold">
-        {/* Main Countdown - Large and Pulsing */}
         <div className="text-center">
           <div
             className="text-4xl drop-shadow-lg font-bold animate-pulse"
@@ -174,11 +159,10 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerPr
               letterSpacing: "0.2em",
             }}
           >
-            {isRunning ? "ACTIVE" : "PAUSED"}
+            ACTIVE
           </div>
         </div>
 
-        {/* Dark Vernigosh Text */}
         <div className="text-center">
           <div
             className="text-3xl mb-2 drop-shadow-lg font-bold uppercase animate-pulse"

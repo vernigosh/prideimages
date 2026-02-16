@@ -8,148 +8,127 @@ interface SocialTimerProps {
   onHide: () => void
 }
 
+const SOCIAL_DURATION = 2 * 60
+
+function createPieSlicePath(percentage: number) {
+  const radius = 90
+  const centerX = 100
+  const centerY = 100
+
+  if (percentage <= 0) return ""
+  if (percentage >= 1) {
+    return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${centerX - 0.1} ${centerY - radius} Z`
+  }
+
+  const angle = percentage * 2 * Math.PI - Math.PI / 2
+  const x = centerX + radius * Math.cos(angle)
+  const y = centerY + radius * Math.sin(angle)
+  const largeArcFlag = percentage > 0.5 ? 1 : 0
+
+  return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x} ${y} Z`
+}
+
 export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(2 * 60) // 2 minutes for social
-  const [isRunning, setIsRunning] = useState(false)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [timeLeft, setTimeLeft] = useState(SOCIAL_DURATION)
+  const [isComplete, setIsComplete] = useState(false)
+  const rafRef = useRef<number | null>(null)
+  const lastTickRef = useRef(0)
+  const isVisibleRef = useRef(isVisible)
+  const timeLeftRef = useRef(SOCIAL_DURATION)
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  isVisibleRef.current = isVisible
 
   useEffect(() => {
-    const handleStartSocialTimer = (event: CustomEvent) => {
-      console.log("[v0] Social Timer: Received start command from", event.detail.username)
-      console.log("[v0] Social Timer: Current state before start:", { isVisible, timeLeft, isRunning })
-      startSocialTimer() // This will automatically start the countdown
+    if (!isVisible) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current)
+        hideTimeoutRef.current = null
+      }
+      lastTickRef.current = 0
+      timeLeftRef.current = SOCIAL_DURATION
+      setTimeLeft(SOCIAL_DURATION)
+      setIsComplete(false)
+      onConnectionChange(false)
+      return
     }
 
-    const handleHideSocialTimer = (event: CustomEvent) => {
-      console.log("[v0] Social Timer: Received hide command from", event.detail.username)
-      hideSocialTimer()
+    // Becoming visible - start fresh
+    timeLeftRef.current = SOCIAL_DURATION
+    setTimeLeft(SOCIAL_DURATION)
+    setIsComplete(false)
+    onConnectionChange(true)
+    lastTickRef.current = Date.now()
+
+    const tick = () => {
+      if (!isVisibleRef.current) return
+
+      const now = Date.now()
+      if (now - lastTickRef.current >= 1000) {
+        lastTickRef.current = now
+        timeLeftRef.current = Math.max(0, timeLeftRef.current - 1)
+        setTimeLeft(timeLeftRef.current)
+
+        if (timeLeftRef.current <= 0) {
+          setIsComplete(true)
+          hideTimeoutRef.current = setTimeout(() => {
+            onHide()
+          }, 60000)
+          return
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(tick)
     }
 
-    const handleResetSocialTimer = (event: CustomEvent) => {
-      console.log("[v0] Social Timer: Received reset command from", event.detail.username)
-      resetSocialTimer()
-    }
+    rafRef.current = requestAnimationFrame(tick)
 
-    window.addEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
-    window.addEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
-    window.addEventListener("resetSocialTimer", handleResetSocialTimer as EventListener)
-
-    // Set connected status based on visibility
-    onConnectionChange(isVisible)
-
-    return () => {
-      window.removeEventListener("startSocialTimer", handleStartSocialTimer as EventListener)
-      window.removeEventListener("hideSocialTimer", handleHideSocialTimer as EventListener)
-      window.removeEventListener("resetSocialTimer", handleResetSocialTimer as EventListener)
-    }
-  }, [isVisible, onConnectionChange]) // Removed dependency on isVisible for event listeners
-
-  useEffect(() => {
-    console.log("Social Timer: isRunning changed to:", isRunning)
-    if (isRunning) {
-      console.log("Social Timer: Starting interval")
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          console.log("Social Timer: Countdown tick, time left:", prev - 1)
-          if (prev <= 1) {
-            setIsRunning(false)
-            if (intervalRef.current) {
-              clearInterval(intervalRef.current)
-            }
-            // Auto-hide after 1 minute instead of 3 seconds
-            setTimeout(() => {
-              onHide()
-            }, 60000) // Changed from 3000ms to 60000ms (1 minute)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    } else {
-      console.log("Social Timer: Clearing interval")
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
+      } else if (isVisibleRef.current && timeLeftRef.current > 0) {
+        lastTickRef.current = Date.now()
+        rafRef.current = requestAnimationFrame(tick)
       }
     }
 
+    document.addEventListener("visibilitychange", handleVisibility)
+
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
       }
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current)
+        hideTimeoutRef.current = null
+      }
+      document.removeEventListener("visibilitychange", handleVisibility)
     }
-  }, [isRunning, onHide])
-
-  // Auto-start timer when it becomes visible from a command
-  useEffect(() => {
-    if (isVisible && timeLeft === 2 * 60 && !isRunning) {
-      console.log("[v0] Social Timer: Auto-starting because timer just became visible")
-      console.log("[v0] Social timer visibility changed, current state:", { isVisible, timeLeft, isRunning })
-      setTimeout(() => {
-        setIsRunning(true)
-        console.log("[v0] Social timer started via auto-start")
-      }, 200)
-    }
-  }, [isVisible, timeLeft, isRunning])
-
-  const startSocialTimer = () => {
-    console.log("[v0] Social Timer: startSocialTimer called - resetting and starting")
-    setTimeLeft(2 * 60)
-    // Use setTimeout to ensure state updates are processed
-    setTimeout(() => {
-      setIsRunning(true)
-      console.log("[v0] Social Timer: isRunning set to true via setTimeout")
-    }, 100)
-  }
-
-  const resetSocialTimer = () => {
-    console.log("[v0] Social Timer: resetSocialTimer called - resetting and restarting")
-    setTimeLeft(2 * 60)
-    setTimeout(() => {
-      setIsRunning(true)
-      console.log("[v0] Social Timer: isRunning set to true via reset")
-    }, 100)
-  }
-
-  const hideSocialTimer = () => {
-    setIsRunning(false)
-    setTimeLeft(2 * 60)
-    onHide()
-  }
-
-  const totalTime = 2 * 60
-  const progress = (totalTime - timeLeft) / totalTime
-
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = timeLeft % 60
-
-  const createPieSlicePath = (percentage: number) => {
-    const radius = 90
-    const centerX = 100
-    const centerY = 100
-
-    if (percentage <= 0) return ""
-    if (percentage >= 1) {
-      return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${centerX - 0.1} ${centerY - radius} Z`
-    }
-
-    const angle = percentage * 2 * Math.PI - Math.PI / 2
-    const x = centerX + radius * Math.cos(angle)
-    const y = centerY + radius * Math.sin(angle)
-    const largeArcFlag = percentage > 0.5 ? 1 : 0
-
-    return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x} ${y} Z`
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible])
 
   if (!isVisible) return null
 
-  if (timeLeft === 0) {
+  const progress = (SOCIAL_DURATION - timeLeft) / SOCIAL_DURATION
+  const minutes = Math.floor(timeLeft / 60)
+  const seconds = timeLeft % 60
+
+  if (isComplete) {
     return (
       <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-4xl text-white mb-2 drop-shadow-lg">Cheers everyone!</div>
-              <div className="text-4xl text-white drop-shadow-lg">Thank you for being here!</div>
+              <div className="text-4xl text-white mb-2 drop-shadow-lg font-sans">Cheers everyone!</div>
+              <div className="text-4xl text-white drop-shadow-lg font-sans">Thank you for being here!</div>
             </div>
           </div>
         </div>
@@ -163,27 +142,19 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
         <div className="relative w-64 h-64">
           <div className="absolute inset-6 flex items-center justify-center">
             <svg className="absolute w-full h-full" viewBox="0 0 200 200">
-              <path
-                d={createPieSlicePath(1 - progress)}
-                fill="rgba(50, 205, 50, 0.8)"
-                style={{
-                  transition: "d 1s ease-linear",
-                }}
-              />
+              <path d={createPieSlicePath(1 - progress)} fill="rgba(50, 205, 50, 0.8)" />
             </svg>
 
             <div className="text-center z-10 relative">
-              <div className="text-4xl text-white drop-shadow-lg font-bold">
+              <div className="text-4xl text-white drop-shadow-lg font-bold font-sans">
                 {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
               </div>
-              <div className="text-sm text-gray-300 mt-1 drop-shadow-md font-semibold">
-                {isRunning ? "Running" : "Paused"}
-              </div>
+              <div className="text-sm text-gray-300 mt-1 drop-shadow-md font-semibold font-sans">Running</div>
             </div>
           </div>
         </div>
 
-        <div className="text-4xl text-white text-center drop-shadow-lg font-bold">SOCIAL!</div>
+        <div className="text-4xl text-white text-center drop-shadow-lg font-bold font-sans">SOCIAL!</div>
       </div>
     </div>
   )

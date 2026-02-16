@@ -218,87 +218,58 @@ export default function DJRandomizer() {
 
   // Add event listeners for timer commands
   useEffect(() => {
-    const handleStartDarkTimer = (event: CustomEvent) => {
-      console.log("Page: Received startDarkTimer event", event.detail)
-      if (!showDarkTimer) {
-        console.log("Page: Enabling dark timer")
-        setShowDarkTimer(true)
-      }
+    const handleStartDarkTimer = () => {
+      setShowDarkTimer(true)
     }
 
-    const handleStartWorkTimer = (event: CustomEvent) => {
-      console.log("Page: Received startWorkTimer event", event.detail)
-      if (!showWorkTimer) {
-        console.log("Page: Enabling work timer")
-        setShowWorkTimer(true)
-      }
+    const handleStartWorkTimer = () => {
+      setShowWorkTimer(true)
     }
 
-    const handleStartSocialTimer = (event: CustomEvent) => {
-      console.log("Page: Received startSocialTimer event", event.detail)
-      if (!showSocialTimer) {
-        console.log("Page: Enabling social timer")
-        setShowSocialTimer(true)
-      }
+    const handleStartSocialTimer = () => {
+      setShowSocialTimer(true)
     }
 
-    const handleHideDarkTimer = (event: CustomEvent) => {
-      console.log("Page: Received hideDarkTimer event", event.detail)
+    const handleHideDarkTimer = () => {
       setShowDarkTimer(false)
     }
 
-    const handleHideWorkTimer = (event: CustomEvent) => {
-      console.log("Page: Received hideWorkTimer event", event.detail)
+    const handleHideWorkTimer = () => {
       setShowWorkTimer(false)
     }
 
-    const handleHideSocialTimer = (event: CustomEvent) => {
-      console.log("Page: Received hideSocialTimer event", event.detail)
+    const handleHideSocialTimer = () => {
       setShowSocialTimer(false)
     }
 
-    const handleHideAnyTimer = (event: CustomEvent) => {
-      console.log("Page: Received hideAnyTimer event", event.detail)
-      if (showDarkTimer) {
-        console.log("Page: Hiding dark timer via !hidetimer")
-        setShowDarkTimer(false)
-      } else if (showSocialTimer) {
-        console.log("Page: Hiding social timer via !hidetimer")
-        setShowSocialTimer(false)
-      } else if (showWorkTimer) {
-        console.log("Page: Hiding work timer via !hidetimer")
-        setShowWorkTimer(false)
-      } else {
-        console.log("Page: No timer visible to hide")
-      }
+    const handleHideAnyTimer = () => {
+      // Use functional updates to avoid stale closures
+      setShowDarkTimer((prev) => {
+        if (prev) return false
+        return prev
+      })
+      setShowWorkTimer((prev) => {
+        if (prev) return false
+        return prev
+      })
+      setShowSocialTimer((prev) => {
+        if (prev) return false
+        return prev
+      })
     }
 
     const handleResetAnyTimer = (event: CustomEvent) => {
-      console.log("Page: Received resetAnyTimer event", event.detail)
-      if (showDarkTimer) {
-        console.log("Page: Resetting dark timer via !resettimer")
-        window.dispatchEvent(new CustomEvent("resetDarkTimer", { detail: event.detail }))
-      } else if (showSocialTimer) {
-        console.log("Page: Resetting social timer via !resettimer")
-        window.dispatchEvent(new CustomEvent("resetSocialTimer", { detail: event.detail }))
-      } else if (showWorkTimer) {
-        console.log("Page: Resetting work timer via !resettimer")
-        window.dispatchEvent(new CustomEvent("resetWorkTimer", { detail: event.detail }))
-      } else {
-        console.log("Page: No timer visible to reset")
-      }
+      // Fire all reset events - only the active timer will respond
+      window.dispatchEvent(new CustomEvent("resetDarkTimer", { detail: event.detail }))
+      window.dispatchEvent(new CustomEvent("resetSocialTimer", { detail: event.detail }))
+      window.dispatchEvent(new CustomEvent("resetWorkTimer", { detail: event.detail }))
     }
 
-    const handleStartGarden = (event: CustomEvent) => {
-      console.log("Page: Received startGarden event", event.detail)
-      if (!showGarden) {
-        console.log("Page: Enabling community garden")
-        setShowGarden(true)
-      }
+    const handleStartGarden = () => {
+      setShowGarden(true)
     }
 
-    const handleHideGarden = (event: CustomEvent) => {
-      console.log("Page: Received hideGarden event", event.detail)
+    const handleHideGarden = () => {
       setShowGarden(false)
     }
 
@@ -465,7 +436,8 @@ export default function DJRandomizer() {
       window.removeEventListener("showCredits", handleShowCredits as EventListener)
       window.removeEventListener("hideCredits", handleHideCredits as EventListener)
     }
-  }, [showDarkTimer, showWorkTimer, showSocialTimer, showGarden])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Simulate chat command integration
   useEffect(() => {

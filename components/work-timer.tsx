@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 
 interface WorkTimerProps {
   isVisible: boolean
@@ -8,168 +8,121 @@ interface WorkTimerProps {
   onHide: () => void
 }
 
-const WORK_DURATION = 25 * 60 // 25 minutes in seconds
-const SHORT_BREAK = 5 * 60 // 5 minutes in seconds
+const WORK_DURATION = 25 * 60
+const SHORT_BREAK = 5 * 60
+
+function getClockState() {
+  const now = new Date()
+  const minutesIntoBlock = now.getMinutes() % 30
+  const totalSecondsIntoBlock = minutesIntoBlock * 60 + now.getSeconds()
+
+  let currentPhase: "work" | "break"
+  let remaining: number
+
+  if (totalSecondsIntoBlock < WORK_DURATION) {
+    currentPhase = "work"
+    remaining = WORK_DURATION - totalSecondsIntoBlock
+  } else {
+    currentPhase = "break"
+    const secondsIntoBreak = totalSecondsIntoBlock - WORK_DURATION
+    remaining = Math.max(SHORT_BREAK - secondsIntoBreak, 0)
+  }
+
+  const totalMinutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
+  const cycle = Math.floor(totalMinutesSinceMidnight / 30) + 1
+
+  return { currentPhase, remaining, cycle }
+}
+
+function getNextSyncTime() {
+  const now = new Date()
+  const minutesIntoBlock = now.getMinutes() % 30
+  const nextBlockMinutes = 30 - minutesIntoBlock
+  const target = new Date(now.getTime() + nextBlockMinutes * 60 * 1000)
+  return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
+}
+
+function createPieSlicePath(percentage: number) {
+  const radius = 90
+  const centerX = 100
+  const centerY = 100
+
+  if (percentage <= 0) return ""
+  if (percentage >= 1) {
+    return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${centerX - 0.1} ${centerY - radius} Z`
+  }
+
+  const angle = percentage * 2 * Math.PI - Math.PI / 2
+  const x = centerX + radius * Math.cos(angle)
+  const y = centerY + radius * Math.sin(angle)
+  const largeArcFlag = percentage > 0.5 ? 1 : 0
+
+  return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x} ${y} Z`
+}
 
 export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerProps) {
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
   const [cycleCount, setCycleCount] = useState(1)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const isVisibleRef = useRef(isVisible)
+  const mountedRef = useRef(true)
 
-  // Keep ref in sync so interval callback always has latest value
+  // Track mount/unmount
   useEffect(() => {
-    isVisibleRef.current = isVisible
-  }, [isVisible])
-
-  // Calculate where we are in the current 30-min block based on the real clock
-  const getClockState = useCallback(() => {
-    const now = new Date()
-    const minutesIntoBlock = now.getMinutes() % 30
-    const totalSecondsIntoBlock = minutesIntoBlock * 60 + now.getSeconds()
-
-    let currentPhase: "work" | "break"
-    let remaining: number
-
-    if (totalSecondsIntoBlock < WORK_DURATION) {
-      currentPhase = "work"
-      remaining = WORK_DURATION - totalSecondsIntoBlock
-    } else {
-      currentPhase = "break"
-      const secondsIntoBreak = totalSecondsIntoBlock - WORK_DURATION
-      remaining = Math.max(SHORT_BREAK - secondsIntoBreak, 0)
-    }
-
-    const totalMinutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
-    const cycle = Math.floor(totalMinutesSinceMidnight / 30) + 1
-
-    return { currentPhase, remaining, cycle }
-  }, [])
-
-  // Clean up interval helper
-  const clearTimer = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
     }
   }, [])
 
-  // Start the timer interval
-  const startTimer = useCallback(() => {
-    clearTimer()
+  // Single effect: start interval when visible, kill it when not
+  useEffect(() => {
+    if (!isVisible) {
+      // Full cleanup
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      setPhase("work")
+      setTimeLeft(WORK_DURATION)
+      setCycleCount(1)
+      onConnectionChange(false)
+      return
+    }
 
-    // Sync immediately
+    // Becoming visible - sync immediately
     const state = getClockState()
     setPhase(state.currentPhase)
     setTimeLeft(state.remaining)
     setCycleCount(state.cycle)
+    onConnectionChange(true)
 
-    // Tick every second, re-syncing to clock each time
+    // Start a single interval
     intervalRef.current = setInterval(() => {
-      // Safety: if we're no longer visible, kill the interval
-      if (!isVisibleRef.current) {
-        clearTimer()
-        return
-      }
-
+      if (!mountedRef.current) return
       const s = getClockState()
       setPhase(s.currentPhase)
       setTimeLeft(s.remaining)
       setCycleCount(s.cycle)
     }, 1000)
-  }, [getClockState, clearTimer])
 
-  // Listen for chat commands
-  useEffect(() => {
-    const handleStart = () => {
-      if (isVisibleRef.current) {
-        startTimer()
+    // Cleanup on re-run or unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
       }
     }
+    // onConnectionChange is a state setter from parent, stable by default
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible])
 
-    const handleStop = () => {
-      clearTimer()
-    }
-
-    const handleReset = () => {
-      if (isVisibleRef.current) {
-        startTimer()
-      }
-    }
-
-    const handleHide = () => {
-      clearTimer()
-      onHide()
-    }
-
-    window.addEventListener("startWorkTimer", handleStart)
-    window.addEventListener("stopWorkTimer", handleStop)
-    window.addEventListener("resetWorkTimer", handleReset)
-    window.addEventListener("hideWorkTimer", handleHide)
-
-    return () => {
-      window.removeEventListener("startWorkTimer", handleStart)
-      window.removeEventListener("stopWorkTimer", handleStop)
-      window.removeEventListener("resetWorkTimer", handleReset)
-      window.removeEventListener("hideWorkTimer", handleHide)
-    }
-  }, [startTimer, clearTimer, onHide])
-
-  // When visibility changes, start or fully stop
-  useEffect(() => {
-    if (isVisible) {
-      onConnectionChange(true)
-      startTimer()
-    } else {
-      // FULL CLEANUP when hidden - prevents OBS crashes
-      clearTimer()
-      setPhase("work")
-      setTimeLeft(WORK_DURATION)
-      setCycleCount(1)
-      onConnectionChange(false)
-    }
-
-    // Always clean up interval on unmount
-    return () => {
-      clearTimer()
-    }
-  }, [isVisible, startTimer, clearTimer, onConnectionChange])
-
-  // Get the next sync time label
-  const getNextSyncTime = () => {
-    const now = new Date()
-    const minutesIntoBlock = now.getMinutes() % 30
-    const nextBlockMinutes = 30 - minutesIntoBlock
-    const target = new Date(now.getTime() + nextBlockMinutes * 60 * 1000)
-    return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
-  }
+  if (!isVisible) return null
 
   const totalTime = phase === "work" ? WORK_DURATION : SHORT_BREAK
   const progress = (totalTime - timeLeft) / totalTime
-
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
-
-  const createPieSlicePath = (percentage: number) => {
-    const radius = 90
-    const centerX = 100
-    const centerY = 100
-
-    if (percentage <= 0) return ""
-    if (percentage >= 1) {
-      return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${centerX - 0.1} ${centerY - radius} Z`
-    }
-
-    const angle = percentage * 2 * Math.PI - Math.PI / 2
-    const x = centerX + radius * Math.cos(angle)
-    const y = centerY + radius * Math.sin(angle)
-    const largeArcFlag = percentage > 0.5 ? 1 : 0
-
-    return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x} ${y} Z`
-  }
-
-  if (!isVisible) return null
 
   return (
     <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
@@ -204,9 +157,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
               <path
                 d={createPieSlicePath(1 - progress)}
                 fill={phase === "work" ? "rgba(239, 68, 68, 0.8)" : "rgba(59, 130, 246, 0.8)"}
-                style={{
-                  transition: "d 1s ease-linear",
-                }}
               />
             </svg>
 

@@ -19,14 +19,14 @@ export async function POST(request: Request) {
       .single()
 
     if (existing) {
-      // Update flower count if higher
-      const { error: updateError } = await supabase
+      // Update flower count if the new count is higher than what's stored
+      await supabase
         .from("guardians")
         .update({ flower_count: flowerCount })
         .eq("username", username.toLowerCase())
-        .gt("flower_count", flowerCount)
+        .lt("flower_count", flowerCount)
 
-      return NextResponse.json({ success: true, message: "Guardian already exists" })
+      return NextResponse.json({ success: true, message: "Guardian updated" })
     }
 
     // Add new guardian

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 
 interface WorkTimerProps {
   isVisible: boolean
@@ -8,175 +8,156 @@ interface WorkTimerProps {
   onHide: () => void
 }
 
-const WORK_DURATION = 25 * 60 // 25 minutes in seconds
-const SHORT_BREAK = 5 * 60 // 5 minutes in seconds
+const WORK_DURATION = 50 * 60
+const SHORT_BREAK = 10 * 60
+const CYCLE_LENGTH = WORK_DURATION + SHORT_BREAK // 60 min total
+
+// Get timer state relative to when the timer was activated
+function getTimerState(activatedAt: number) {
+  const elapsed = Math.floor((Date.now() - activatedAt) / 1000)
+  const posInCycle = elapsed % CYCLE_LENGTH
+  const cycle = Math.floor(elapsed / CYCLE_LENGTH) + 1
+
+  let currentPhase: "work" | "break"
+  let remaining: number
+
+  if (posInCycle < WORK_DURATION) {
+    currentPhase = "work"
+    remaining = WORK_DURATION - posInCycle
+  } else {
+    currentPhase = "break"
+    remaining = CYCLE_LENGTH - posInCycle
+  }
+
+  return { currentPhase, remaining, cycle }
+}
+
+function getNextBreakTime(activatedAt: number) {
+  const elapsed = Math.floor((Date.now() - activatedAt) / 1000)
+  const posInCycle = elapsed % CYCLE_LENGTH
+  const secsUntilBreak = posInCycle < WORK_DURATION ? WORK_DURATION - posInCycle : CYCLE_LENGTH - posInCycle
+  const target = new Date(Date.now() + secsUntilBreak * 1000)
+  return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
+}
+
+function createPieSlicePath(percentage: number) {
+  const radius = 90
+  const centerX = 100
+  const centerY = 100
+
+  if (percentage <= 0) return ""
+  if (percentage >= 1) {
+    return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${centerX - 0.1} ${centerY - radius} Z`
+  }
+
+  const angle = percentage * 2 * Math.PI - Math.PI / 2
+  const x = centerX + radius * Math.cos(angle)
+  const y = centerY + radius * Math.sin(angle)
+  const largeArcFlag = percentage > 0.5 ? 1 : 0
+
+  return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x} ${y} Z`
+}
 
 export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerProps) {
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
   const [cycleCount, setCycleCount] = useState(1)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const rafRef = useRef<number | null>(null)
+  const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
+  const activatedAtRef = useRef(0)
 
-  // Keep ref in sync so interval callback always has latest value
+  // Keep ref in sync
+  isVisibleRef.current = isVisible
+
+  // Single effect: use requestAnimationFrame instead of setInterval
+  // RAF automatically pauses when OBS hides the browser source (scene change)
+  // so no state updates queue up in the background
   useEffect(() => {
-    isVisibleRef.current = isVisible
-  }, [isVisible])
-
-  // Calculate where we are in the current 30-min block based on the real clock
-  const getClockState = useCallback(() => {
-    const now = new Date()
-    const minutesIntoBlock = now.getMinutes() % 30
-    const totalSecondsIntoBlock = minutesIntoBlock * 60 + now.getSeconds()
-
-    let currentPhase: "work" | "break"
-    let remaining: number
-
-    if (totalSecondsIntoBlock < WORK_DURATION) {
-      currentPhase = "work"
-      remaining = WORK_DURATION - totalSecondsIntoBlock
-    } else {
-      currentPhase = "break"
-      const secondsIntoBreak = totalSecondsIntoBlock - WORK_DURATION
-      remaining = Math.max(SHORT_BREAK - secondsIntoBreak, 0)
-    }
-
-    const totalMinutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
-    const cycle = Math.floor(totalMinutesSinceMidnight / 30) + 1
-
-    return { currentPhase, remaining, cycle }
-  }, [])
-
-  // Clean up interval helper
-  const clearTimer = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-  }, [])
-
-  // Start the timer interval
-  const startTimer = useCallback(() => {
-    clearTimer()
-
-    // Sync immediately
-    const state = getClockState()
-    setPhase(state.currentPhase)
-    setTimeLeft(state.remaining)
-    setCycleCount(state.cycle)
-
-    // Tick every second, re-syncing to clock each time
-    intervalRef.current = setInterval(() => {
-      // Safety: if we're no longer visible, kill the interval
-      if (!isVisibleRef.current) {
-        clearTimer()
-        return
+    if (!isVisible) {
+      // Full cleanup
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
       }
-
-      const s = getClockState()
-      setPhase(s.currentPhase)
-      setTimeLeft(s.remaining)
-      setCycleCount(s.cycle)
-    }, 1000)
-  }, [getClockState, clearTimer])
-
-  // Listen for chat commands
-  useEffect(() => {
-    const handleStart = () => {
-      if (isVisibleRef.current) {
-        startTimer()
-      }
-    }
-
-    const handleStop = () => {
-      clearTimer()
-    }
-
-    const handleReset = () => {
-      if (isVisibleRef.current) {
-        startTimer()
-      }
-    }
-
-    const handleHide = () => {
-      clearTimer()
-      onHide()
-    }
-
-    window.addEventListener("startWorkTimer", handleStart)
-    window.addEventListener("stopWorkTimer", handleStop)
-    window.addEventListener("resetWorkTimer", handleReset)
-    window.addEventListener("hideWorkTimer", handleHide)
-
-    return () => {
-      window.removeEventListener("startWorkTimer", handleStart)
-      window.removeEventListener("stopWorkTimer", handleStop)
-      window.removeEventListener("resetWorkTimer", handleReset)
-      window.removeEventListener("hideWorkTimer", handleHide)
-    }
-  }, [startTimer, clearTimer, onHide])
-
-  // When visibility changes, start or fully stop
-  useEffect(() => {
-    if (isVisible) {
-      onConnectionChange(true)
-      startTimer()
-    } else {
-      // FULL CLEANUP when hidden - prevents OBS crashes
-      clearTimer()
+      lastTickRef.current = 0
+      activatedAtRef.current = 0
       setPhase("work")
       setTimeLeft(WORK_DURATION)
       setCycleCount(1)
       onConnectionChange(false)
+      return
     }
 
-    // Always clean up interval on unmount
+    // Becoming visible - record activation time, reset cycle to 1
+    activatedAtRef.current = Date.now()
+    const state = getTimerState(activatedAtRef.current)
+    setPhase(state.currentPhase)
+    setTimeLeft(state.remaining)
+    setCycleCount(state.cycle)
+    onConnectionChange(true)
+    lastTickRef.current = Date.now()
+
+    // RAF loop - only updates once per second, pauses when tab/source hidden
+    const tick = () => {
+      if (!isVisibleRef.current) return
+
+      const now = Date.now()
+      if (now - lastTickRef.current >= 1000) {
+        lastTickRef.current = now
+        const s = getTimerState(activatedAtRef.current)
+        setPhase(s.currentPhase)
+        setTimeLeft(s.remaining)
+        setCycleCount(s.cycle)
+      }
+
+      rafRef.current = requestAnimationFrame(tick)
+    }
+
+    rafRef.current = requestAnimationFrame(tick)
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
+      } else if (isVisibleRef.current) {
+        lastTickRef.current = Date.now()
+        const s = getTimerState(activatedAtRef.current)
+        setPhase(s.currentPhase)
+        setTimeLeft(s.remaining)
+        setCycleCount(s.cycle)
+        rafRef.current = requestAnimationFrame(tick)
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibility)
+
+    // Cleanup on re-run or unmount
     return () => {
-      clearTimer()
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+      document.removeEventListener("visibilitychange", handleVisibility)
     }
-  }, [isVisible, startTimer, clearTimer, onConnectionChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible])
 
-  // Get the next sync time label
-  const getNextSyncTime = () => {
-    const now = new Date()
-    const minutesIntoBlock = now.getMinutes() % 30
-    const nextBlockMinutes = 30 - minutesIntoBlock
-    const target = new Date(now.getTime() + nextBlockMinutes * 60 * 1000)
-    return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
-  }
+  if (!isVisible) return null
 
   const totalTime = phase === "work" ? WORK_DURATION : SHORT_BREAK
   const progress = (totalTime - timeLeft) / totalTime
-
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
-
-  const createPieSlicePath = (percentage: number) => {
-    const radius = 90
-    const centerX = 100
-    const centerY = 100
-
-    if (percentage <= 0) return ""
-    if (percentage >= 1) {
-      return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${centerX - 0.1} ${centerY - radius} Z`
-    }
-
-    const angle = percentage * 2 * Math.PI - Math.PI / 2
-    const x = centerX + radius * Math.cos(angle)
-    const y = centerY + radius * Math.sin(angle)
-    const largeArcFlag = percentage > 0.5 ? 1 : 0
-
-    return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x} ${y} Z`
-  }
-
-  if (!isVisible) return null
 
   return (
     <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
       <div className="flex flex-col items-center justify-center gap-4 font-bold">
         <div className="relative w-64 h-64">
           <div className="absolute inset-0">
-            {(phase === "work" ? [0, 5, 10, 15, 20, 25] : [0, 1, 2, 3, 4, 5]).map((num, index) => {
+            {(phase === "work" ? [0, 10, 20, 30, 40, 50] : [0, 2, 4, 6, 8, 10]).map((num, index) => {
               const angle = (index * 360) / 6 - 90
               const radian = (angle * Math.PI) / 180
               const distance = 120
@@ -204,9 +185,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
               <path
                 d={createPieSlicePath(1 - progress)}
                 fill={phase === "work" ? "rgba(239, 68, 68, 0.8)" : "rgba(59, 130, 246, 0.8)"}
-                style={{
-                  transition: "d 1s ease-linear",
-                }}
               />
             </svg>
 
@@ -224,19 +202,19 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         <div className="text-4xl text-white text-center drop-shadow-lg font-semibold leading-tight uppercase font-sans">
           {phase === "work" ? (
             <>
-              <div>25 MIN</div>
+              <div>50 MIN</div>
               <div>WORK CHALLENGE</div>
             </>
           ) : (
             <>
-              <div>5 MIN</div>
+              <div>10 MIN</div>
               <div>BREAK TIME</div>
             </>
           )}
         </div>
 
-        <div className="text-lg text-gray-300 drop-shadow-md font-sans">
-          Cycle {cycleCount} &middot; Next: {getNextSyncTime()}
+        <div className="text-3xl text-gray-300 drop-shadow-lg font-sans font-semibold">
+          Cycle {cycleCount} &middot; Next: {getNextBreakTime(activatedAtRef.current)}
         </div>
       </div>
     </div>

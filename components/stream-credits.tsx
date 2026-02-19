@@ -60,7 +60,7 @@ export function StreamCreditsComponent({
     if (!isVisible || !containerRef.current) return
 
     const contentHeight = containerRef.current.scrollHeight
-    const containerHeight = 384 // h-96 = 384px
+    const containerHeight = 600
 
     if (scrollPosition > contentHeight + containerHeight) {
       onHide()
@@ -77,16 +77,16 @@ export function StreamCreditsComponent({
   const hasGuardians = guardians.length > 0
 
   return (
-    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[9998] w-80 h-96 bg-black/50 rounded-xl overflow-hidden">
+    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[9998] w-[500px] h-[600px] bg-black/50 rounded-xl overflow-hidden">
       <div
         ref={containerRef}
-        className="absolute inset-x-0 text-center px-4"
-        style={{ transform: `translateY(${384 - scrollPosition * 0.8}px)` }}
+        className="absolute inset-x-0 text-center px-6"
+        style={{ transform: `translateY(${600 - scrollPosition * 0.8}px)` }}
       >
         {/* Title */}
-        <div className="mb-8">
+        <div className="mb-10">
           <h1
-            className="text-2xl font-bold mb-2"
+            className="text-5xl font-bold mb-3"
             style={{
               background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
               WebkitBackgroundClip: "text",
@@ -96,16 +96,16 @@ export function StreamCreditsComponent({
           >
             STREAM CREDITS
           </h1>
-          <p className="text-sm text-white/60">Thank you for watching!</p>
+          <p className="text-2xl text-white/60">Thank you for watching!</p>
         </div>
 
         {/* New Followers */}
         {hasFollowers && (
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-pink-400 mb-3">New Followers</h2>
-            <div className="space-y-1">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-pink-400 mb-4">New Followers</h2>
+            <div className="space-y-2">
               {streamCredits.followers.map((follower, i) => (
-                <p key={i} className="text-sm text-white/90">
+                <p key={i} className="text-2xl text-white/90">
                   {follower}
                 </p>
               ))}
@@ -115,13 +115,13 @@ export function StreamCreditsComponent({
 
         {/* Tippers */}
         {hasTippers && (
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-green-400 mb-3">Supporters</h2>
-            <div className="space-y-1">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-green-400 mb-4">Supporters</h2>
+            <div className="space-y-2">
               {streamCredits.tippers
                 .sort((a, b) => b.amount - a.amount)
                 .map((tipper, i) => (
-                  <p key={i} className="text-sm text-white/90">
+                  <p key={i} className="text-2xl text-white/90">
                     {tipper.name} - ${tipper.amount.toFixed(2)}
                   </p>
                 ))}
@@ -131,13 +131,13 @@ export function StreamCreditsComponent({
 
         {/* Cheerers */}
         {hasCheerers && (
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-purple-400 mb-3">Bit Cheerers</h2>
-            <div className="space-y-1">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-purple-400 mb-4">Bit Cheerers</h2>
+            <div className="space-y-2">
               {streamCredits.cheerers
                 .sort((a, b) => b.bits - a.bits)
                 .map((cheerer, i) => (
-                  <p key={i} className="text-sm text-white/90">
+                  <p key={i} className="text-2xl text-white/90">
                     {cheerer.name} - {cheerer.bits} bits
                   </p>
                 ))}
@@ -147,11 +147,11 @@ export function StreamCreditsComponent({
 
         {/* Raiders */}
         {hasRaiders && (
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-orange-400 mb-3">Raiders</h2>
-            <div className="space-y-1">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-orange-400 mb-4">Raiders</h2>
+            <div className="space-y-2">
               {streamCredits.raiders.map((raider, i) => (
-                <p key={i} className="text-sm text-white/90">
+                <p key={i} className="text-2xl text-white/90">
                   {raider.name} {raider.viewers > 0 && `(${raider.viewers})`}
                 </p>
               ))}
@@ -161,14 +161,14 @@ export function StreamCreditsComponent({
 
         {/* Flower Legends (10+ flowers this stream) */}
         {hasLegends && (
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-lime-400 mb-3">Flower Legends</h2>
-            <p className="text-xs text-white/50 mb-2">10+ flowers this stream</p>
-            <div className="space-y-1">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-lime-400 mb-4">Flower Legends</h2>
+            <p className="text-xl text-white/50 mb-3">10+ flowers this stream</p>
+            <div className="space-y-2">
               {flowerLegends
                 .sort((a, b) => b.count - a.count)
                 .map((legend, i) => (
-                  <p key={i} className="text-sm text-white/90">
+                  <p key={i} className="text-2xl text-white/90">
                     {legend.username} - {legend.count}
                   </p>
                 ))}
@@ -178,9 +178,9 @@ export function StreamCreditsComponent({
 
         {/* All-Time Guild of Guardians */}
         {hasGuardians && (
-          <div className="mb-8">
+          <div className="mb-10">
             <h2
-              className="text-xl font-bold mb-3"
+              className="text-3xl font-bold mb-4"
               style={{
                 background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
                 WebkitBackgroundClip: "text",
@@ -190,10 +190,10 @@ export function StreamCreditsComponent({
             >
               Guild of Guardians
             </h2>
-            <p className="text-xs text-white/50 mb-2">All-Time (50+ flowers)</p>
-            <div className="space-y-1">
+            <p className="text-xl text-white/50 mb-3">All-Time (50+ flowers)</p>
+            <div className="space-y-2">
               {guardians.map((guardian) => (
-                <p key={guardian.id} className="text-sm text-white/90">
+                <p key={guardian.id} className="text-2xl text-white/90">
                   {guardian.username}
                 </p>
               ))}
@@ -202,15 +202,15 @@ export function StreamCreditsComponent({
         )}
 
         {/* End Credits */}
-        <div className="mt-12 mb-16">
-          <p className="text-base text-white/80 mb-2">See you next stream!</p>
+        <div className="mt-16 mb-20">
+          <p className="text-3xl text-white/80 mb-2">See you next stream!</p>
         </div>
       </div>
 
       {/* Skip button */}
       <button
         onClick={onHide}
-        className="absolute bottom-2 right-2 px-3 py-1 bg-white/20 hover:bg-white/30 text-white text-xs rounded transition-colors"
+        className="absolute bottom-3 right-3 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-lg rounded transition-colors"
       >
         Skip
       </button>

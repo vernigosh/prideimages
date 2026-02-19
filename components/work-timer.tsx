@@ -184,7 +184,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
             <svg className="absolute w-full h-full" viewBox="0 0 200 200">
               <path
                 d={createPieSlicePath(1 - progress)}
-                fill={phase === "work" ? "rgba(239, 68, 68, 0.8)" : "rgba(59, 130, 246, 0.8)"}
+                fill={phase === "work" ? "rgba(145, 70, 255, 0.85)" : "rgba(59, 130, 246, 0.8)"}
               />
             </svg>
 

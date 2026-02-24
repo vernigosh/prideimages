@@ -8,35 +8,51 @@ interface WorkTimerProps {
   onHide: () => void
 }
 
-const WORK_DURATION = 50 * 60
-const SHORT_BREAK = 10 * 60
-const CYCLE_LENGTH = WORK_DURATION + SHORT_BREAK // 60 min total
+const WORK_DURATION = 25 * 60
+const SHORT_BREAK = 5 * 60
 
-// Get timer state relative to when the timer was activated
-function getTimerState(activatedAt: number) {
-  const elapsed = Math.floor((Date.now() - activatedAt) / 1000)
-  const posInCycle = elapsed % CYCLE_LENGTH
-  const cycle = Math.floor(elapsed / CYCLE_LENGTH) + 1
+// Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
+function getClockState() {
+  const now = new Date()
+  const minutesIntoBlock = now.getMinutes() % 30
+  const totalSecondsIntoBlock = minutesIntoBlock * 60 + now.getSeconds()
 
   let currentPhase: "work" | "break"
   let remaining: number
 
-  if (posInCycle < WORK_DURATION) {
+  if (totalSecondsIntoBlock < WORK_DURATION) {
     currentPhase = "work"
-    remaining = WORK_DURATION - posInCycle
+    remaining = WORK_DURATION - totalSecondsIntoBlock
   } else {
     currentPhase = "break"
-    remaining = CYCLE_LENGTH - posInCycle
+    const secondsIntoBreak = totalSecondsIntoBlock - WORK_DURATION
+    remaining = Math.max(SHORT_BREAK - secondsIntoBreak, 0)
   }
+
+  // Cycle resets each half-hour block
+  const blockIndex = Math.floor(now.getMinutes() / 30)
+  const cycle = now.getHours() * 2 + blockIndex + 1
 
   return { currentPhase, remaining, cycle }
 }
 
-function getNextBreakTime(activatedAt: number) {
-  const elapsed = Math.floor((Date.now() - activatedAt) / 1000)
-  const posInCycle = elapsed % CYCLE_LENGTH
-  const secsUntilBreak = posInCycle < WORK_DURATION ? WORK_DURATION - posInCycle : CYCLE_LENGTH - posInCycle
-  const target = new Date(Date.now() + secsUntilBreak * 1000)
+function getNextBreakTime() {
+  const now = new Date()
+  const mins = now.getMinutes()
+  // Next break starts at either x:25 or x:55
+  let nextBreakMin: number
+  if (mins < 25) {
+    nextBreakMin = 25
+  } else if (mins < 55) {
+    nextBreakMin = 55
+  } else {
+    nextBreakMin = 25 // next hour
+  }
+  const target = new Date(now)
+  if (nextBreakMin <= mins) {
+    target.setHours(target.getHours() + 1)
+  }
+  target.setMinutes(nextBreakMin, 0, 0)
   return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
 }
 
@@ -65,7 +81,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
-  const activatedAtRef = useRef(0)
 
   // Keep ref in sync
   isVisibleRef.current = isVisible
@@ -81,7 +96,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         rafRef.current = null
       }
       lastTickRef.current = 0
-      activatedAtRef.current = 0
       setPhase("work")
       setTimeLeft(WORK_DURATION)
       setCycleCount(1)
@@ -89,23 +103,22 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
       return
     }
 
-    // Becoming visible - record activation time, reset cycle to 1
-    activatedAtRef.current = Date.now()
-    const state = getTimerState(activatedAtRef.current)
+    // Becoming visible - sync to clock immediately
+    const state = getClockState()
     setPhase(state.currentPhase)
     setTimeLeft(state.remaining)
     setCycleCount(state.cycle)
     onConnectionChange(true)
     lastTickRef.current = Date.now()
 
-    // RAF loop - only updates once per second, pauses when tab/source hidden
+    // RAF loop - syncs to real clock every second
     const tick = () => {
       if (!isVisibleRef.current) return
 
       const now = Date.now()
       if (now - lastTickRef.current >= 1000) {
         lastTickRef.current = now
-        const s = getTimerState(activatedAtRef.current)
+        const s = getClockState()
         setPhase(s.currentPhase)
         setTimeLeft(s.remaining)
         setCycleCount(s.cycle)
@@ -124,7 +137,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         }
       } else if (isVisibleRef.current) {
         lastTickRef.current = Date.now()
-        const s = getTimerState(activatedAtRef.current)
+        const s = getClockState()
         setPhase(s.currentPhase)
         setTimeLeft(s.remaining)
         setCycleCount(s.cycle)
@@ -157,7 +170,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
       <div className="flex flex-col items-center justify-center gap-4 font-bold">
         <div className="relative w-64 h-64">
           <div className="absolute inset-0">
-            {(phase === "work" ? [0, 10, 20, 30, 40, 50] : [0, 2, 4, 6, 8, 10]).map((num, index) => {
+            {(phase === "work" ? [0, 5, 10, 15, 20, 25] : [0, 1, 2, 3, 4, 5]).map((num, index) => {
               const angle = (index * 360) / 6 - 90
               const radian = (angle * Math.PI) / 180
               const distance = 120
@@ -202,19 +215,19 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         <div className="text-4xl text-white text-center drop-shadow-lg font-semibold leading-tight uppercase font-sans">
           {phase === "work" ? (
             <>
-              <div>50 MIN</div>
+              <div>25 MIN</div>
               <div>WORK CHALLENGE</div>
             </>
           ) : (
             <>
-              <div>10 MIN</div>
+              <div>5 MIN</div>
               <div>BREAK TIME</div>
             </>
           )}
         </div>
 
         <div className="text-3xl text-gray-300 drop-shadow-lg font-sans font-semibold">
-          Cycle {cycleCount} &middot; Next: {getNextBreakTime(activatedAtRef.current)}
+          Break at {getNextBreakTime()}
         </div>
       </div>
     </div>

@@ -40,8 +40,22 @@ export function useStreamElements() {
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
-    const JWT_TOKEN =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaXRhZGVsIiwiZXhwIjoxNzcxNjEyOTk1LCJqdGkiOiI4MGZiMjUxZi1lNDNhLTRjMTMtOGFkMS04MzRmNjBmZWMzODMiLCJjaGFubmVsIjoiNjRhZTk3ZWNjOTBjNWJjMjZiMGMwZjk3Iiwicm9sZSI6Im93bmVyIiwiYXV0aFRva2VuIjoiY1JwbjJhdmVlMjVMSFZHMUlUcVdLOXViVG1KYTNtQmw3ZFBSZTR3UkFGRDBRX3Q0IiwidXNlciI6IjY0YWU5N2VjYzkwYzViYzI2YjBjMGY5NiIsInVzZXJfaWQiOiJiNjM0NmM2ZS0yZjA2LTQwNmEtOTQ0ZC04NzQ5YjM1ODZhYTYiLCJ1c2VyX3JvbGUiOiJjcmVhdG9yIiwicHJvdmlkZXIiOiJ0d2l0Y2giLCJwcm92aWRlcl9pZCI6Ijg1NzczMTUxNyIsImNoYW5uZWxfaWQiOiI3N2QyYTU2NS1hM2JhLTRkNzktYjg5ZS05ODEzZTQyMmViNDYiLCJjcmVhdG9yX2lkIjoiODc2YjIxOGItMThmNi00YzkzLTg5MTEtYTc3MTBjYTc0YjdiIn0.tk56AEzeBCVFApK8WRN2YWSxmki-GHXFc6nk1TbaVfI"
+    let jwtToken = ""
+
+    const fetchTokenAndConnect = async () => {
+      try {
+        const res = await fetch("/api/streamelements-token")
+        const data = await res.json()
+        if (data.token) {
+          jwtToken = data.token
+          connectToStreamElements()
+        } else {
+          console.log("[v0] Failed to fetch StreamElements token")
+        }
+      } catch (err) {
+        console.log("[v0] Error fetching StreamElements token:", err)
+      }
+    }
 
     const connectToStreamElements = () => {
       try {
@@ -57,7 +71,7 @@ export function useStreamElements() {
             JSON.stringify({
               type: "authenticate",
               data: {
-                token: JWT_TOKEN,
+                token: jwtToken,
                 token_type: "jwt",
               },
             }),
@@ -71,7 +85,7 @@ export function useStreamElements() {
               data: {
                 topic: "channel.activities",
                 room: "64ae97ecc90c5bc26b0c0f97",
-                token: JWT_TOKEN,
+                token: jwtToken,
                 token_type: "jwt",
               },
             }),
@@ -161,8 +175,8 @@ export function useStreamElements() {
       }
     }
 
-    connectToStreamElements()
-
+    fetchTokenAndConnect()
+  
     return () => {
       if (wsRef.current) {
         wsRef.current.close()

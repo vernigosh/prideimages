@@ -8,7 +8,7 @@ export async function GET() {
     const { data: guardians, error } = await supabase
       .from("guardians")
       .select("*")
-      .order("achieved_at", { ascending: true })
+      .order("flower_count", { ascending: false })
 
     if (error) {
       console.error("Error fetching guardians:", error)

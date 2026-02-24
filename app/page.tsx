@@ -244,11 +244,8 @@ export default function DJRandomizer() {
 
     const handleHideAnyTimer = () => {
       // Use functional updates to avoid stale closures
+      // Work timer is independent - only !hideworktimer affects it
       setShowDarkTimer((prev) => {
-        if (prev) return false
-        return prev
-      })
-      setShowWorkTimer((prev) => {
         if (prev) return false
         return prev
       })
@@ -459,9 +456,8 @@ export default function DJRandomizer() {
   const handleSpin = (username: string) => {
     if (isSpinning) return
 
-    // Hide timers and celebrations but keep garden visible
+    // Hide timers and celebrations but keep garden and work timer visible
     if (showDarkTimer) setShowDarkTimer(false)
-    if (showWorkTimer) setShowWorkTimer(false)
     if (showSocialTimer) setShowSocialTimer(false)
     if (showFlowerShop) setShowFlowerShop(false)
     if (showFlowerCelebration) setShowFlowerCelebration(false)
@@ -493,9 +489,8 @@ export default function DJRandomizer() {
       setShowDarkTimer(true)
     } else if (socialTimerConnected) {
       setShowSocialTimer(true)
-    } else if (workTimerConnected) {
-      setShowWorkTimer(true)
     }
+    // Work timer is never hidden/restored by other timers - it stays independent
   }
 
   const addTrick = (name: string, definition: string) => {

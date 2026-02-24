@@ -81,9 +81,22 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
+  const prevPhaseRef = useRef<"work" | "break" | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   // Keep ref in sync
   isVisibleRef.current = isVisible
+
+  // Initialize audio element once
+  useEffect(() => {
+    const audio = new Audio("/sounds/loon_sample.wav")
+    audio.volume = 0.3
+    audioRef.current = audio
+    return () => {
+      audio.pause()
+      audio.src = ""
+    }
+  }, [])
 
   // Single effect: use requestAnimationFrame instead of setInterval
   // RAF automatically pauses when OBS hides the browser source (scene change)
@@ -108,8 +121,16 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     setPhase(state.currentPhase)
     setTimeLeft(state.remaining)
     setCycleCount(state.cycle)
+    prevPhaseRef.current = state.currentPhase
     onConnectionChange(true)
     lastTickRef.current = Date.now()
+
+    const playLoon = () => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0
+        audioRef.current.play().catch(() => {})
+      }
+    }
 
     // RAF loop - syncs to real clock every second
     const tick = () => {
@@ -119,6 +140,13 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
       if (now - lastTickRef.current >= 1000) {
         lastTickRef.current = now
         const s = getClockState()
+
+        // Play loon sound on phase transition
+        if (prevPhaseRef.current !== null && s.currentPhase !== prevPhaseRef.current) {
+          playLoon()
+        }
+        prevPhaseRef.current = s.currentPhase
+
         setPhase(s.currentPhase)
         setTimeLeft(s.remaining)
         setCycleCount(s.cycle)

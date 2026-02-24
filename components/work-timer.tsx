@@ -118,7 +118,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     document.addEventListener("click", handleInteraction)
     document.addEventListener("keydown", handleInteraction)
 
-    const handleLoonTest = () => {
+    const playLoonSound = () => {
       console.log("[v0] Loon test triggered!")
       if (audioRef.current) {
         audioRef.current.currentTime = 0
@@ -130,10 +130,23 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
       }
     }
 
+    // Listen for !loontest chat command event
+    const handleLoonTest = () => playLoonSound()
+
+    // Press "L" key to test loon sound (for preview/OBS testing)
+    const handleKeyTest = (e: KeyboardEvent) => {
+      if (e.key === "l" || e.key === "L") {
+        console.log("[v0] Loon test via L key")
+        playLoonSound()
+      }
+    }
+
     window.addEventListener("loonTest", handleLoonTest)
+    document.addEventListener("keydown", handleKeyTest)
 
     return () => {
       window.removeEventListener("loonTest", handleLoonTest)
+      document.removeEventListener("keydown", handleKeyTest)
       document.removeEventListener("click", handleInteraction)
       document.removeEventListener("keydown", handleInteraction)
       audio.pause()

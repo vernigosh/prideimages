@@ -87,12 +87,23 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   // Keep ref in sync
   isVisibleRef.current = isVisible
 
-  // Initialize audio element once
+  // Initialize audio element once and listen for !loontest command
   useEffect(() => {
     const audio = new Audio("/sounds/loon_sample.wav")
     audio.volume = 0.3
     audioRef.current = audio
+
+    const handleLoonTest = () => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0
+        audioRef.current.play().catch(() => {})
+      }
+    }
+
+    window.addEventListener("loonTest", handleLoonTest)
+
     return () => {
+      window.removeEventListener("loonTest", handleLoonTest)
       audio.pause()
       audio.src = ""
     }

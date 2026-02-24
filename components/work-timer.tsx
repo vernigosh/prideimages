@@ -89,21 +89,66 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
 
   // Initialize audio element once and listen for !loontest command
   useEffect(() => {
-    const audio = new Audio("/sounds/loon_sample.wav")
+    const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_fObYh0WRAk3pRRTwd6xTyQuxNBq8/kc2Bu8tQrZRoUie65EevDO/public/sounds/loon_sample.wav")
     audio.volume = 0.3
     audioRef.current = audio
 
-    const handleLoonTest = () => {
+    // OBS browser sources block audio until a user interaction.
+    // "Interact" with the page via a silent play to unlock the audio context.
+    const unlockAudio = () => {
+      const silentPlay = audio.play()
+      if (silentPlay) {
+        silentPlay.then(() => {
+          audio.pause()
+          audio.currentTime = 0
+          console.log("[v0] Audio unlocked successfully")
+        }).catch((e) => {
+          console.log("[v0] Audio unlock failed (expected in OBS until interaction):", e.message)
+        })
+      }
+    }
+
+    // Try to unlock immediately and also on first click/keypress
+    unlockAudio()
+    const handleInteraction = () => {
+      unlockAudio()
+      document.removeEventListener("click", handleInteraction)
+      document.removeEventListener("keydown", handleInteraction)
+    }
+    document.addEventListener("click", handleInteraction)
+    document.addEventListener("keydown", handleInteraction)
+
+    const playLoonSound = () => {
+      console.log("[v0] Loon test triggered!")
       if (audioRef.current) {
         audioRef.current.currentTime = 0
-        audioRef.current.play().catch(() => {})
+        audioRef.current.play().then(() => {
+          console.log("[v0] Loon audio playing!")
+        }).catch((e) => {
+          console.log("[v0] Loon audio play failed:", e.message)
+        })
+      }
+    }
+
+    // Listen for !loontest chat command event
+    const handleLoonTest = () => playLoonSound()
+
+    // Press "L" key to test loon sound (for preview/OBS testing)
+    const handleKeyTest = (e: KeyboardEvent) => {
+      if (e.key === "l" || e.key === "L") {
+        console.log("[v0] Loon test via L key")
+        playLoonSound()
       }
     }
 
     window.addEventListener("loonTest", handleLoonTest)
+    document.addEventListener("keydown", handleKeyTest)
 
     return () => {
       window.removeEventListener("loonTest", handleLoonTest)
+      document.removeEventListener("keydown", handleKeyTest)
+      document.removeEventListener("click", handleInteraction)
+      document.removeEventListener("keydown", handleInteraction)
       audio.pause()
       audio.src = ""
     }
@@ -137,9 +182,14 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     lastTickRef.current = Date.now()
 
     const playLoon = () => {
+      console.log("[v0] Playing loon sound for phase transition")
       if (audioRef.current) {
         audioRef.current.currentTime = 0
-        audioRef.current.play().catch(() => {})
+        audioRef.current.play().then(() => {
+          console.log("[v0] Loon phase transition audio playing!")
+        }).catch((e) => {
+          console.log("[v0] Loon phase transition play failed:", e.message)
+        })
       }
     }
 

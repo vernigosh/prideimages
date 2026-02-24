@@ -161,6 +161,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         const isRestrictedCommand =
           command === "!resettimer" ||
           command === "!hidetimer" ||
+          command === "!hideworktimer" ||
           command === "!hidedark" ||
           command === "!hidespin" ||
           command === "!hidesj" ||
@@ -235,6 +236,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Universal hide timer command detected")
           // Dispatch event to hide any visible timer
           window.dispatchEvent(new CustomEvent("hideAnyTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hideworktimer" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide work timer command detected")
+          window.dispatchEvent(new CustomEvent("hideWorkTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!hidelegend" && (isMod || isBroadcaster || isVip)) {
           console.log("Hide garden legend celebration command detected")

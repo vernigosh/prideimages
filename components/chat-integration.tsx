@@ -318,10 +318,6 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide credits command detected")
           window.dispatchEvent(new CustomEvent("hideCredits", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!loontest" && (isMod || isBroadcaster)) {
-          console.log("Loon test command detected")
-          window.dispatchEvent(new CustomEvent("loonTest", { detail: { username } }))
-          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!testflowerboard" && (isMod || isBroadcaster || isVip)) {
           console.log("Test flowerboard command detected")
           window.dispatchEvent(

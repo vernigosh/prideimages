@@ -79,7 +79,7 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
           style={{ textAlign: movedToSide ? "left" : "center" }}
         >
           <div
-            className={`font-black font-sans uppercase tracking-wider transition-all duration-1000 ${movedToSide ? "text-3xl mb-1" : "text-6xl mb-4"}`}
+            className={`font-black font-sans uppercase tracking-wider transition-all duration-1000 ${movedToSide ? "text-3xl mb-1" : "text-4xl mb-2"}`}
             style={{
               background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
               WebkitBackgroundClip: "text",
@@ -91,7 +91,7 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
             {username}
           </div>
           <div
-            className={`font-black font-sans uppercase transition-all duration-1000 ${movedToSide ? "text-xl" : "text-5xl tracking-wide"}`}
+            className={`font-black font-sans uppercase transition-all duration-1000 ${movedToSide ? "text-xl" : "text-3xl tracking-wide"}`}
             style={{
               background: "linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #ffffff 100%)",
               WebkitBackgroundClip: "text",
@@ -103,7 +103,7 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
             Is Now A
           </div>
           <div
-            className={`font-black font-sans uppercase transition-all duration-1000 ${movedToSide ? "text-2xl mt-1" : "text-7xl tracking-widest mt-4"}`}
+            className={`font-black font-sans uppercase transition-all duration-1000 ${movedToSide ? "text-2xl mt-1" : "text-5xl tracking-widest mt-2"}`}
             style={{
               background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
               WebkitBackgroundClip: "text",

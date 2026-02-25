@@ -43,13 +43,13 @@ export function MasterGardenerCelebration({ isVisible, username, onHide }: Maste
         showCelebration ? "opacity-100" : "opacity-0"
       }`}
     >
-      <div className="relative text-center -mt-48">
-        <div className="relative mb-8">
+      <div className="relative text-center -mt-72">
+        <div className="relative mb-4">
           <Image
             src="/images/pixelrainbow.gif"
             alt="Rainbow celebration"
-            width={350}
-            height={350}
+            width={250}
+            height={250}
             className="mx-auto drop-shadow-2xl"
           />
           <div className="absolute inset-0 flex items-center justify-center">
@@ -70,11 +70,11 @@ export function MasterGardenerCelebration({ isVisible, username, onHide }: Maste
           </div>
         </div>
 
-        <div className="space-y-4 px-8">
+        <div className="space-y-2 px-8">
           <h1
             className="font-bold drop-shadow-lg"
             style={{
-              fontSize: "4rem",
+              fontSize: "2.75rem",
               background: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -86,7 +86,7 @@ export function MasterGardenerCelebration({ isVisible, username, onHide }: Maste
           <h2
             className="font-bold drop-shadow-lg"
             style={{
-              fontSize: "3rem",
+              fontSize: "2.25rem",
               background: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",

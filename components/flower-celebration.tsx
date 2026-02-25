@@ -45,29 +45,29 @@ export function FlowerCelebration({ isVisible, username, onHide }: FlowerCelebra
       <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #ffb8ad30, #84cc1630)` }} />
 
       {/* Main celebration content */}
-      <div className="relative text-center -mt-48">
+      <div className="relative text-center -mt-72">
         {/* Rainbow pixel art */}
-        <div className="mb-8 flex justify-center">
+        <div className="mb-4 flex justify-center">
           <img
             src="/images/pixelrainbow.gif"
             alt="Rainbow celebration"
             className="pixelated animate-pulse"
             style={{
               imageRendering: "pixelated",
-              width: "200px",
+              width: "160px",
               height: "auto",
             }}
           />
         </div>
 
-        <div className="space-y-4">
-          <h1 className="text-6xl font-black text-white font-sans uppercase animate-bounce drop-shadow-lg">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-black text-white font-sans uppercase animate-bounce drop-shadow-lg">
             GOLDEN GREENTHUMB!
           </h1>
-          <h2 className="text-4xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#ffd700" }}>
+          <h2 className="text-2xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#ffd700" }}>
             {username.toUpperCase()} PICKED 10 FLOWERS!
           </h2>
-          <p className="text-2xl font-bold text-white font-sans uppercase animate-pulse drop-shadow-lg">
+          <p className="text-xl font-bold text-white font-sans uppercase animate-pulse drop-shadow-lg">
             GOLDEN GREENTHUMB UNLOCKED!
           </p>
         </div>

@@ -62,21 +62,21 @@ export function GardenEliteCelebration({ username, isVisible, onHide }: GardenEl
         </div>
       ))}
 
-      <div className="text-center px-4 relative z-10 -mt-48">
+      <div className="text-center px-4 relative z-10 -mt-72">
         <img
           src="/images/pixelrainbow.gif"
           alt="Rainbow"
-          className="mx-auto mb-6"
-          style={{ width: "375px", height: "auto" }}
+          className="mx-auto mb-3"
+          style={{ width: "260px", height: "auto" }}
         />
 
-        <h1 className="text-7xl md:text-8xl font-black mb-6 text-white drop-shadow-lg font-sans">
+        <h1 className="text-5xl md:text-6xl font-black mb-3 text-white drop-shadow-lg font-sans">
           {username.toUpperCase()}
         </h1>
 
-        <h2 className="text-6xl md:text-7xl font-black mb-4 text-white drop-shadow-lg font-sans">PICKED 40 FLOWERS!</h2>
+        <h2 className="text-4xl md:text-5xl font-black mb-2 text-white drop-shadow-lg font-sans">PICKED 40 FLOWERS!</h2>
 
-        <h3 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg font-sans">
+        <h3 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg font-sans">
           GARDEN LEGEND!
         </h3>
       </div>

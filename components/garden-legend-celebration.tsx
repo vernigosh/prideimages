@@ -42,28 +42,28 @@ export function GardenLegendCelebration({ isVisible, username, onHide }: GardenL
     >
       <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #ffd70030, #ffb50030)` }} />
 
-      <div className="relative text-center -mt-48">
-        <div className="mb-8 flex justify-center">
+      <div className="relative text-center -mt-72">
+        <div className="mb-4 flex justify-center">
           <img
             src="/images/pixelrainbow.gif"
             alt="Rainbow celebration"
             className="pixelated animate-pulse"
             style={{
               imageRendering: "pixelated",
-              width: "300px",
+              width: "220px",
               height: "auto",
             }}
           />
         </div>
 
-        <div className="space-y-4">
-          <h1 className="text-7xl font-black text-white font-sans uppercase animate-bounce drop-shadow-lg">
+        <div className="space-y-2">
+          <h1 className="text-5xl font-black text-white font-sans uppercase animate-bounce drop-shadow-lg">
             FLOWER SPECIALIST!
           </h1>
-          <h2 className="text-5xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#84cc16" }}>
+          <h2 className="text-3xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#84cc16" }}>
             {username.toUpperCase()} PICKED 20 FLOWERS!
           </h2>
-          <p className="text-3xl font-bold text-white font-sans uppercase animate-pulse drop-shadow-lg">
+          <p className="text-2xl font-bold text-white font-sans uppercase animate-pulse drop-shadow-lg">
             FLOWER SPECIALIST UNLOCKED!
           </p>
         </div>

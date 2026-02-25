@@ -43,28 +43,28 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
         showCelebration ? "opacity-100" : "opacity-0"
       }`}
     >
-      <div className="relative text-center -mt-48">
-        <div className="relative mb-8 flex items-center justify-center gap-8">
+      <div className="relative text-center -mt-72">
+        <div className="relative mb-4 flex items-center justify-center gap-4">
           <Image
             src="/images/pixel-knight.gif"
             alt="Pixel Knight Guardian"
-            width={200}
-            height={200}
+            width={140}
+            height={140}
             className="drop-shadow-2xl"
             style={{ imageRendering: "pixelated" }}
           />
           <Image
             src="/images/pixelrainbow.gif"
             alt="Rainbow celebration"
-            width={400}
-            height={400}
+            width={280}
+            height={280}
             className="drop-shadow-2xl"
           />
           <Image
             src="/images/pixel-knight.gif"
             alt="Pixel Knight Guardian"
-            width={200}
-            height={200}
+            width={140}
+            height={140}
             className="drop-shadow-2xl scale-x-[-1]"
             style={{ imageRendering: "pixelated" }}
           />
@@ -86,11 +86,11 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
           </div>
         </div>
 
-        <div className="space-y-4 px-8">
+        <div className="space-y-2 px-8">
           <h1
             className="font-bold drop-shadow-lg"
             style={{
-              fontSize: "4.5rem",
+              fontSize: "3rem",
               background: "linear-gradient(135deg, #059669 0%, #8b5cf6 50%, #f59e0b 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -102,7 +102,7 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
           <h2
             className="font-bold drop-shadow-lg"
             style={{
-              fontSize: "3.5rem",
+              fontSize: "2.25rem",
               background: "linear-gradient(135deg, #059669 0%, #8b5cf6 50%, #f59e0b 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",

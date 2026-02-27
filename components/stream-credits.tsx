@@ -70,6 +70,8 @@ export function StreamCreditsComponent({
   if (!isVisible) return null
 
   const hasFollowers = streamCredits.followers.length > 0
+  const hasSubscribers = streamCredits.subscribers.length > 0
+  const hasGiftSubs = streamCredits.giftSubs.length > 0
   const hasTippers = streamCredits.tippers.length > 0
   const hasCheerers = streamCredits.cheerers.length > 0
   const hasRaiders = streamCredits.raiders.length > 0
@@ -109,6 +111,40 @@ export function StreamCreditsComponent({
                   {follower}
                 </p>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Gift Sub Bombers */}
+        {hasGiftSubs && (
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-fuchsia-400 mb-4">Gift Sub Bombers</h2>
+            <div className="space-y-2">
+              {streamCredits.giftSubs
+                .sort((a, b) => b.count - a.count)
+                .map((gifter, i) => (
+                  <p key={i} className="text-2xl text-white/90">
+                    {gifter.gifter} - {gifter.count} gift {gifter.count === 1 ? "sub" : "subs"}
+                  </p>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Subscribers */}
+        {hasSubscribers && (
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold text-blue-400 mb-4">Subscribers</h2>
+            <div className="space-y-2">
+              {streamCredits.subscribers
+                .sort((a, b) => b.months - a.months)
+                .map((sub, i) => (
+                  <p key={i} className="text-2xl text-white/90">
+                    {sub.name}
+                    {sub.months > 1 ? ` (${sub.months} months)` : ""}
+                    {sub.gifted && sub.gifter ? ` - gifted by ${sub.gifter}` : ""}
+                  </p>
+                ))}
             </div>
           </div>
         )}

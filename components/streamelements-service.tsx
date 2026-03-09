@@ -23,6 +23,8 @@ interface StreamElementsEvent {
 
 export interface StreamCredits {
   followers: string[]
+  subscribers: Array<{ name: string; months: number; tier: string; gifted: boolean; gifter?: string }>
+  giftSubs: Array<{ gifter: string; count: number }>
   tippers: Array<{ name: string; amount: number }>
   cheerers: Array<{ name: string; bits: number }>
   raiders: Array<{ name: string; viewers: number }>
@@ -32,6 +34,8 @@ export function useStreamElements() {
   const [recentTippers, setRecentTippers] = useState<Array<{ name: string; amount: number }>>([])
   const [streamCredits, setStreamCredits] = useState<StreamCredits>({
     followers: [],
+    subscribers: [],
+    giftSubs: [],
     tippers: [],
     cheerers: [],
     raiders: [],
@@ -151,6 +155,35 @@ export function useStreamElements() {
                   raiders: [...prev.raiders, { name: activityData.username, viewers }],
                 }))
                 console.log("[v0] Raid event received:", activityData.username, viewers)
+              }
+
+              // Handle subscriber events
+              if ((activityType === "subscriber" || activityType === "sub") && activityData.username) {
+                const months = activityData.amount ? Number.parseInt(activityData.amount) : 1
+                const tier = (activityData as any).tier || "1000"
+                const gifted = (activityData as any).gifted || false
+                const gifter = (activityData as any).sender || (activityData as any).gifter || undefined
+                setStreamCredits((prev) => ({
+                  ...prev,
+                  subscribers: [
+                    ...prev.subscribers.filter((s) => s.name !== activityData.username),
+                    { name: activityData.username!, months, tier, gifted, gifter },
+                  ],
+                }))
+                console.log("[v0] Sub event received:", activityData.username, months, "months, tier:", tier, gifted ? `gifted by ${gifter}` : "")
+              }
+
+              // Handle community gift sub events
+              if ((activityType === "communityGiftPurchase" || activityType === "bulkGiftPurchase") && activityData.username) {
+                const count = activityData.amount ? Number.parseInt(activityData.amount) : 1
+                setStreamCredits((prev) => ({
+                  ...prev,
+                  giftSubs: [
+                    ...prev.giftSubs.filter((g) => g.gifter !== activityData.username),
+                    { gifter: activityData.username!, count: (prev.giftSubs.find((g) => g.gifter === activityData.username)?.count || 0) + count },
+                  ],
+                }))
+                console.log("[v0] Gift sub event received:", activityData.username, count, "gift subs")
               }
             }
           } catch (error) {

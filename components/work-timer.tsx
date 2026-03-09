@@ -166,7 +166,14 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
 
   return (
     <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
-      <div className="flex flex-col items-center justify-center gap-4 font-bold">
+      {/* Gradient background for visibility on light backgrounds */}
+      <div
+        className="absolute inset-0 -m-8 rounded-3xl"
+        style={{
+          background: "radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 80%)",
+        }}
+      />
+      <div className="flex flex-col items-center justify-center gap-4 font-bold relative z-10">
         <div className="relative w-64 h-64">
           <div className="absolute inset-0">
             {(phase === "work" ? [0, 5, 10, 15, 20, 25] : [0, 1, 2, 3, 4, 5]).map((num, index) => {

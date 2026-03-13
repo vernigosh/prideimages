@@ -8,7 +8,6 @@ import { ChatIntegration } from "@/components/chat-integration"
 import { TimeOverlay } from "@/components/time-overlay"
 import { OverlaySettings } from "@/components/overlay-settings"
 import { WorkTimer } from "@/components/work-timer"
-import { WorkAnnouncement } from "@/components/work-announcement"
 import { SocialTimer } from "@/components/social-timer"
 import { DarkTimer } from "@/components/dark-timer"
 import { BlurbOverlay } from "@/components/blurb-overlay"
@@ -622,14 +621,11 @@ export default function DJRandomizer() {
 
     if (showWorkTimer) {
       return (
-        <>
-          <WorkTimer
-            isVisible={showWorkTimer}
-            onConnectionChange={setWorkTimerConnected}
-            onHide={() => setShowWorkTimer(false)}
-          />
-          <WorkAnnouncement />
-        </>
+        <WorkTimer
+          isVisible={showWorkTimer}
+          onConnectionChange={setWorkTimerConnected}
+          onHide={() => setShowWorkTimer(false)}
+        />
       )
     }
 

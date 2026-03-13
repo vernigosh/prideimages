@@ -56,6 +56,19 @@ function getNextBreakTime() {
   return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
 }
 
+// Send chat message via StreamElements bot
+async function sendChatMessage(message: string) {
+  try {
+    await fetch("/api/send-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    })
+  } catch (error) {
+    console.error("[v0] Failed to send chat message:", error)
+  }
+}
+
 function createPieSlicePath(percentage: number) {
   const radius = 90
   const centerX = 100
@@ -129,9 +142,11 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
             window.dispatchEvent(new CustomEvent("workCycleStart", { detail: { cycle: s.cycle } }))
             setShowPulse(true)
             setTimeout(() => setShowPulse(false), 10000) // 10 second pulse
+            sendChatMessage("FOCUS TIME! 25 minutes of productivity starts now! Let's get it done!")
           } else {
             // Break started
             window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))
+            sendChatMessage("BREAK TIME! Take 5 minutes to rest and recharge. You earned it!")
           }
         }
         prevPhaseRef.current = s.currentPhase

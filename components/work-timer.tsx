@@ -78,9 +78,11 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
   const [cycleCount, setCycleCount] = useState(1)
+  const [showPulse, setShowPulse] = useState(false)
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
+  const prevPhaseRef = useRef<"work" | "break" | null>(null)
   // Keep ref in sync
   isVisibleRef.current = isVisible
 
@@ -107,6 +109,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     setPhase(state.currentPhase)
     setTimeLeft(state.remaining)
     setCycleCount(state.cycle)
+    prevPhaseRef.current = state.currentPhase
     onConnectionChange(true)
     lastTickRef.current = Date.now()
 
@@ -118,6 +121,21 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
       if (now - lastTickRef.current >= 1000) {
         lastTickRef.current = now
         const s = getClockState()
+        
+        // Detect phase transitions
+        if (prevPhaseRef.current !== null && s.currentPhase !== prevPhaseRef.current) {
+          if (s.currentPhase === "work") {
+            // New work cycle started
+            window.dispatchEvent(new CustomEvent("workCycleStart", { detail: { cycle: s.cycle } }))
+            setShowPulse(true)
+            setTimeout(() => setShowPulse(false), 10000) // 10 second pulse
+          } else {
+            // Break started
+            window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))
+          }
+        }
+        prevPhaseRef.current = s.currentPhase
+        
         setPhase(s.currentPhase)
         setTimeLeft(s.remaining)
         setCycleCount(s.cycle)
@@ -165,7 +183,18 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const seconds = timeLeft % 60
 
   return (
-    <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+    <>
+      {/* Purple pulse overlay for new work cycle */}
+      {showPulse && (
+        <div 
+          className="fixed inset-0 pointer-events-none z-50 animate-pulse"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(147, 51, 234, 0.3) 0%, rgba(147, 51, 234, 0.15) 50%, transparent 70%)",
+            animation: "pulse 2s ease-in-out infinite",
+          }}
+        />
+      )}
+      <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
       {/* Gradient background for visibility on light backgrounds */}
       <div
         className="absolute inset-0 -m-8 rounded-3xl"
@@ -237,5 +266,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         </div>
       </div>
     </div>
+    </>
   )
 }

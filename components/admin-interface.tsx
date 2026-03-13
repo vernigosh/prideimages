@@ -228,6 +228,40 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
           ))}
         </div>
 
+        {/* Work Timer Test */}
+        <div className="mt-8 bg-gray-100 border-2 border-black rounded-lg">
+          <div className="p-4" style={{ backgroundColor: "#c4b5fd" }}>
+            <h2 className="text-black flex items-center gap-2 font-bold text-xl">
+              Test Work Timer Announcements
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <p className="text-gray-700 text-sm">
+              Test the singing bowl sound and chat messages that play when work/break cycles change.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("testWorkCycle"))
+                }}
+                className="px-6 py-3 font-bold border-2 border-black rounded"
+                style={{ backgroundColor: "#86efac", color: "black" }}
+              >
+                Test Work Cycle Start
+              </button>
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("testBreakCycle"))
+                }}
+                className="px-6 py-3 font-bold border-2 border-black rounded"
+                style={{ backgroundColor: "#93c5fd", color: "black" }}
+              >
+                Test Break Start
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="mt-8 text-center text-gray-600">
           <p>Total Tricks: {tricks.length}</p>
           <p className="text-sm mt-2">Use Ctrl+S to simulate !spin command | Ctrl+H to simulate !hidespin command</p>

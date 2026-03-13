@@ -110,6 +110,29 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   // Keep ref in sync
   isVisibleRef.current = isVisible
 
+  // Listen for test events from admin interface
+  useEffect(() => {
+    const handleTestWork = () => {
+      playSingingBowl()
+      setShowPulse(true)
+      setTimeout(() => setShowPulse(false), 10000)
+      sendChatMessage("FOCUS TIME! 25 minutes of productivity starts now!")
+    }
+    
+    const handleTestBreak = () => {
+      playSingingBowl()
+      sendChatMessage("BREAK TIME! Take 5 minutes to rest and recharge!")
+    }
+    
+    window.addEventListener("testWorkCycle", handleTestWork)
+    window.addEventListener("testBreakCycle", handleTestBreak)
+    
+    return () => {
+      window.removeEventListener("testWorkCycle", handleTestWork)
+      window.removeEventListener("testBreakCycle", handleTestBreak)
+    }
+  }, [])
+
   // Single effect: use requestAnimationFrame instead of setInterval
   // RAF automatically pauses when OBS hides the browser source (scene change)
   // so no state updates queue up in the background

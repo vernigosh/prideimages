@@ -55,17 +55,18 @@ export function StreamCreditsComponent({
     return () => clearInterval(interval)
   }, [isVisible])
 
-  // Auto-hide after credits finish scrolling
+  // Loop credits when they finish scrolling
   useEffect(() => {
     if (!isVisible || !containerRef.current) return
 
     const contentHeight = containerRef.current.scrollHeight
     const containerHeight = 700
 
+    // Reset to beginning when credits finish scrolling (loop)
     if (scrollPosition > contentHeight + containerHeight) {
-      onHide()
+      setScrollPosition(0)
     }
-  }, [scrollPosition, isVisible, onHide])
+  }, [scrollPosition, isVisible])
 
   if (!isVisible) return null
 
@@ -244,14 +245,6 @@ export function StreamCreditsComponent({
           <p className="text-4xl text-white/80 mb-2">See you next stream!</p>
         </div>
       </div>
-
-      {/* Skip button */}
-      <button
-        onClick={onHide}
-        className="absolute bottom-4 right-4 px-6 py-3 bg-white/20 hover:bg-white/30 text-white text-xl rounded transition-colors"
-      >
-        Skip
-      </button>
     </div>
   )
 }

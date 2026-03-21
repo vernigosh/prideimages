@@ -244,14 +244,6 @@ export function StreamCreditsComponent({
           <p className="text-4xl text-white/80 mb-2">See you next stream!</p>
         </div>
       </div>
-
-      {/* Skip button */}
-      <button
-        onClick={onHide}
-        className="absolute bottom-4 right-4 px-6 py-3 bg-white/20 hover:bg-white/30 text-white text-xl rounded transition-colors"
-      >
-        Skip
-      </button>
     </div>
   )
 }

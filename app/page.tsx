@@ -633,10 +633,10 @@ export default function DJRandomizer() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-hidden">
       {/* OBS Overlay Section */}
       <div
-        className={`h-screen flex items-center justify-center relative ${
+        className={`h-screen flex items-center justify-center relative overflow-hidden ${
           overlayBackground === "black" ? "bg-black" : ""
         }`}
       >

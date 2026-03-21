@@ -370,18 +370,18 @@ export default function DJRandomizer() {
       setShowBoardOfGuardians(true)
     }
 
-  const handleShowCredits = (event?: Event) => {
-    const customEvent = event as CustomEvent
-    if (customEvent?.detail?.testData) {
-      setTestCreditsData(customEvent.detail.testData)
+    const handleShowCredits = (event?: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent?.detail?.testData) {
+        setTestCreditsData(customEvent.detail.testData)
+      }
+      setShowStreamCredits(true)
     }
-    setShowStreamCredits(true)
-  }
 
-  const handleHideCredits = () => {
-    setShowStreamCredits(false)
-    setTestCreditsData(null) // Clear test data when hiding
-  }
+    const handleHideCredits = () => {
+      setShowStreamCredits(false)
+      setTestCreditsData(null) // Clear test data when hiding
+    }
 
     const handleHideAllCelebrations = () => {
       setShowFlowerCelebration(false)

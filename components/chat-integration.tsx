@@ -643,16 +643,9 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("[v0] Manual test: Test work cycle - attempting audio")
-                try {
-                  const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
-                  audio.volume = 0.5
-                  audio.play()
-                    .then(() => console.log("[v0] Work cycle audio playing successfully"))
-                    .catch((e) => console.log("[v0] Work cycle audio play failed:", e))
-                } catch (e) {
-                  console.log("[v0] Work cycle audio error:", e)
-                }
+                const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
+                audio.volume = 0.5
+                audio.play().catch(() => {})
                 fetch("/api/send-chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -667,16 +660,9 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("[v0] Manual test: Test break cycle - attempting audio")
-                try {
-                  const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
-                  audio.volume = 0.5
-                  audio.play()
-                    .then(() => console.log("[v0] Break cycle audio playing successfully"))
-                    .catch((e) => console.log("[v0] Break cycle audio play failed:", e))
-                } catch (e) {
-                  console.log("[v0] Break cycle audio error:", e)
-                }
+                const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
+                audio.volume = 0.5
+                audio.play().catch(() => {})
                 fetch("/api/send-chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },

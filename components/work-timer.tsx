@@ -75,15 +75,12 @@ const SINGING_BOWL_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.co
 // Play singing bowl gong sound for phase transitions
 function playSingingBowl() {
   if (typeof window === "undefined") return
-  console.log("[v0] Attempting to play singing bowl sound")
   try {
     const audio = new Audio(SINGING_BOWL_URL)
     audio.volume = 0.5
-    audio.play()
-      .then(() => console.log("[v0] Singing bowl sound playing"))
-      .catch((e) => console.log("[v0] Audio play failed:", e))
-  } catch (error) {
-    console.error("[v0] Failed to play singing bowl sound:", error)
+    audio.play().catch(() => {})
+  } catch {
+    // Audio playback failed silently
   }
 }
 

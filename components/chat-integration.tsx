@@ -643,9 +643,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
-                audio.volume = 0.5
-                audio.play().catch(() => {})
+                // Audio disabled for DJ stream - set SINGING_BOWL_ENABLED in work-timer.tsx to re-enable
+                // const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
+                // audio.volume = 0.5
+                // audio.play().catch(() => {})
                 fetch("/api/send-chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -660,9 +661,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
-                audio.volume = 0.5
-                audio.play().catch(() => {})
+                // Audio disabled for DJ stream - set SINGING_BOWL_ENABLED in work-timer.tsx to re-enable
+                // const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
+                // audio.volume = 0.5
+                // audio.play().catch(() => {})
                 fetch("/api/send-chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },

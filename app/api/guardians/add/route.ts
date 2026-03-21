@@ -10,33 +10,44 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient()
+    const lowerUsername = username.toLowerCase()
 
     // Check if user is already a guardian
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchError } = await supabase
       .from("guardians")
-      .select("id")
-      .eq("username", username.toLowerCase())
+      .select("id, flower_count")
+      .eq("username", lowerUsername)
       .single()
 
-    if (existing) {
-      // Update flower count if the new count is higher than what's stored
-      await supabase
-        .from("guardians")
-        .update({ flower_count: flowerCount })
-        .eq("username", username.toLowerCase())
-        .lt("flower_count", flowerCount)
+    if (fetchError && fetchError.code !== "PGRST116") {
+      // PGRST116 = no rows found, which is fine
+      console.error("Error checking existing guardian:", fetchError)
+      return NextResponse.json({ error: "Database error" }, { status: 500 })
+    }
 
+    if (existing) {
+      // Update flower count if the new count is higher
+      if (flowerCount > existing.flower_count) {
+        const { error: updateError } = await supabase
+          .from("guardians")
+          .update({ flower_count: flowerCount })
+          .eq("username", lowerUsername)
+
+        if (updateError) {
+          console.error("Error updating guardian:", updateError)
+          return NextResponse.json({ error: "Failed to update guardian" }, { status: 500 })
+        }
+      }
       return NextResponse.json({ success: true, message: "Guardian updated" })
     }
 
     // Add new guardian
-    const { error } = await supabase.from("guardians").insert({
-      username: username.toLowerCase(),
-      flower_count: flowerCount || 50,
-    })
+    const { error: insertError } = await supabase
+      .from("guardians")
+      .insert({ username: lowerUsername, flower_count: flowerCount || 50 })
 
-    if (error) {
-      console.error("Error adding guardian:", error)
+    if (insertError) {
+      console.error("Error inserting guardian:", insertError)
       return NextResponse.json({ error: "Failed to add guardian" }, { status: 500 })
     }
 

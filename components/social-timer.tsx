@@ -11,22 +11,12 @@ interface SocialTimerProps {
 
 const SOCIAL_DURATION = 2 * 60
 
-function createPieSlicePath(percentage: number) {
-  const radius = 90
-  const centerX = 100
-  const centerY = 100
-
-  if (percentage <= 0) return ""
-  if (percentage >= 1) {
-    return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${centerX - 0.1} ${centerY - radius} Z`
-  }
-
-  const angle = percentage * 2 * Math.PI - Math.PI / 2
-  const x = centerX + radius * Math.cos(angle)
-  const y = centerY + radius * Math.sin(angle)
-  const largeArcFlag = percentage > 0.5 ? 1 : 0
-
-  return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x} ${y} Z`
+// Ring progress calculation
+function getRingProps(progress: number) {
+  const radius = 85
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference * progress
+  return { radius, circumference, strokeDashoffset }
 }
 
 export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false }: SocialTimerProps) {
@@ -140,20 +130,43 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
     )
   }
 
+  const { radius, circumference, strokeDashoffset } = getRingProps(progress)
+
   return (
     <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
       <div className="flex flex-col items-center justify-center gap-4 font-bold">
         <div className="relative w-64 h-64">
-          <div className="absolute inset-6 flex items-center justify-center">
-            <svg className="absolute w-full h-full" viewBox="0 0 200 200">
-              <path d={createPieSlicePath(1 - progress)} fill="rgba(50, 205, 50, 0.8)" />
-            </svg>
+          <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">
+            {/* Background ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r={radius}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.2)"
+              strokeWidth="12"
+            />
+            {/* Progress ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r={radius}
+              fill="none"
+              stroke="rgba(50, 205, 50, 0.9)"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
+            />
+          </svg>
 
-            <div className="text-center z-10 relative">
-              <div className="text-4xl text-white drop-shadow-lg font-bold font-sans">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-5xl text-white drop-shadow-lg font-bold font-sans">
                 {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
               </div>
-              <div className="text-sm text-gray-300 mt-1 drop-shadow-md font-semibold font-sans">Running</div>
+              <div className="text-sm text-gray-300 mt-2 drop-shadow-md font-semibold font-sans">Running</div>
             </div>
           </div>
         </div>

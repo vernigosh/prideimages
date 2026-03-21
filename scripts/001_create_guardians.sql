@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.guardians (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT NOT NULL UNIQUE,
   achieved_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  flowers_picked INTEGER DEFAULT 50
+  flower_count INTEGER DEFAULT 50
 );
 
 -- Enable RLS but allow public read access (no auth required for this feature)

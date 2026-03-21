@@ -212,9 +212,20 @@ export default function DJRandomizer() {
   // Stream Credits settings
   const [showStreamCredits, setShowStreamCredits] = useState(false)
   const [flowerLegends, setFlowerLegends] = useState<Array<{ username: string; count: number }>>([])
+  const [testCreditsData, setTestCreditsData] = useState<{
+    followers: string[]
+    subscribers: Array<{ name: string; months: number; tier: string; gifted: boolean; gifter?: string }>
+    giftSubs: Array<{ gifter: string; count: number }>
+    tippers: Array<{ name: string; amount: number }>
+    cheerers: Array<{ name: string; bits: number }>
+    raiders: Array<{ name: string; viewers: number }>
+  } | null>(null)
 
   // StreamElements service for tracking stream events
   const { streamCredits } = useStreamElements()
+  
+  // Use test data if available, otherwise use live data
+  const activeStreamCredits = testCreditsData || streamCredits
 
   // Add event listeners for timer commands
   useEffect(() => {
@@ -359,12 +370,17 @@ export default function DJRandomizer() {
       setShowBoardOfGuardians(true)
     }
 
-    const handleShowCredits = () => {
+    const handleShowCredits = (event?: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent?.detail?.testData) {
+        setTestCreditsData(customEvent.detail.testData)
+      }
       setShowStreamCredits(true)
     }
 
     const handleHideCredits = () => {
       setShowStreamCredits(false)
+      setTestCreditsData(null) // Clear test data when hiding
     }
 
     const handleHideAllCelebrations = () => {
@@ -788,13 +804,16 @@ export default function DJRandomizer() {
           onHide={() => setShowBoardOfGuardians(false)}
         />
 
-        {/* Stream Credits */}
-        <StreamCredits
-          isVisible={showStreamCredits}
-          onHide={() => setShowStreamCredits(false)}
-          streamCredits={streamCredits}
-          flowerLegends={flowerLegends}
-        />
+      {/* Stream Credits */}
+      <StreamCredits
+        isVisible={showStreamCredits}
+        onHide={() => {
+          setShowStreamCredits(false)
+          setTestCreditsData(null)
+        }}
+        streamCredits={activeStreamCredits}
+        flowerLegends={flowerLegends}
+      />
       </div>
 
       {/* Separator Line */}

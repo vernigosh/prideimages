@@ -72,10 +72,13 @@ async function sendChatMessage(message: string) {
 // Play singing bowl gong sound for phase transitions
 function playSingingBowl() {
   if (typeof window === "undefined") return
+  console.log("[v0] Attempting to play singing bowl sound")
   try {
     const audio = new Audio("/sounds/singing-bowl-gong.mp3")
     audio.volume = 0.5
-    audio.play().catch((e) => console.log("Audio play failed:", e))
+    audio.play()
+      .then(() => console.log("[v0] Singing bowl sound playing"))
+      .catch((e) => console.log("[v0] Audio play failed:", e))
   } catch (error) {
     console.error("[v0] Failed to play singing bowl sound:", error)
   }

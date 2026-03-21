@@ -152,7 +152,7 @@ export function StreamCreditsComponent({
         {/* Tippers */}
         {hasTippers && (
           <div className="mb-10">
-            <h2 className="text-3xl font-bold text-green-400 mb-4">Supporters</h2>
+            <h2 className="text-3xl font-bold text-green-400 mb-4">Tips</h2>
             <div className="space-y-2">
               {streamCredits.tippers
                 .sort((a, b) => b.amount - a.amount)
@@ -228,9 +228,11 @@ export function StreamCreditsComponent({
             </h2>
             <p className="text-xl text-white/50 mb-3">All-Time (50+ flowers)</p>
             <div className="space-y-2">
-              {guardians.map((guardian) => (
+              {guardians
+                .sort((a, b) => b.flower_count - a.flower_count)
+                .map((guardian) => (
                 <p key={guardian.id} className="text-2xl text-white/90">
-                  {guardian.username}
+                  {guardian.username} - {guardian.flower_count}
                 </p>
               ))}
             </div>

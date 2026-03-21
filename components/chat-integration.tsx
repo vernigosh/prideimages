@@ -643,10 +643,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("Manual test: Test work cycle")
-                const audio = new Audio("/sounds/singing-bowl-gong.mp3")
-                audio.volume = 0.5
-                audio.play().catch((e) => console.log("Audio play failed:", e))
+                console.log("[v0] Manual test: Test work cycle - attempting audio")
+                try {
+                  const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                  audio.volume = 0.5
+                  audio.play()
+                    .then(() => console.log("[v0] Work cycle audio playing successfully"))
+                    .catch((e) => console.log("[v0] Work cycle audio play failed:", e))
+                } catch (e) {
+                  console.log("[v0] Work cycle audio error:", e)
+                }
                 fetch("/api/send-chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -661,10 +667,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("Manual test: Test break cycle")
-                const audio = new Audio("/sounds/singing-bowl-gong.mp3")
-                audio.volume = 0.5
-                audio.play().catch((e) => console.log("Audio play failed:", e))
+                console.log("[v0] Manual test: Test break cycle - attempting audio")
+                try {
+                  const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                  audio.volume = 0.5
+                  audio.play()
+                    .then(() => console.log("[v0] Break cycle audio playing successfully"))
+                    .catch((e) => console.log("[v0] Break cycle audio play failed:", e))
+                } catch (e) {
+                  console.log("[v0] Break cycle audio error:", e)
+                }
                 fetch("/api/send-chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },

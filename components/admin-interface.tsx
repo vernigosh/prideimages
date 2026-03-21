@@ -234,9 +234,11 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
           <div className="flex gap-4 justify-center mt-4">
             <button
               onClick={() => {
-                const audio = new Audio("/sounds/singing-bowl-gong.mp3")
-                audio.volume = 0.5
-                audio.play()
+                if (typeof window !== "undefined") {
+                  const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                  audio.volume = 0.5
+                  audio.play().catch((e) => console.log("Audio play failed:", e))
+                }
                 fetch("/api/send-chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -250,9 +252,11 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
             </button>
             <button
               onClick={() => {
-                const audio = new Audio("/sounds/singing-bowl-gong.mp3")
-                audio.volume = 0.5
-                audio.play()
+                if (typeof window !== "undefined") {
+                  const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                  audio.volume = 0.5
+                  audio.play().catch((e) => console.log("Audio play failed:", e))
+                }
                 fetch("/api/send-chat", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },

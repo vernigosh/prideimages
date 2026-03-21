@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { neon } from "@neondatabase/serverless"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -9,36 +9,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Username is required" }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    const sql = neon(process.env.DATABASE_URL!)
+    const lowerUsername = username.toLowerCase()
 
     // Check if user is already a guardian
-    const { data: existing } = await supabase
-      .from("guardians")
-      .select("id")
-      .eq("username", username.toLowerCase())
-      .single()
+    const existing = await sql`
+      SELECT id, flower_count FROM guardians 
+      WHERE username = ${lowerUsername}
+    `
 
-    if (existing) {
-      // Update flower count if the new count is higher than what's stored
-      await supabase
-        .from("guardians")
-        .update({ flower_count: flowerCount })
-        .eq("username", username.toLowerCase())
-        .lt("flower_count", flowerCount)
-
+    if (existing.length > 0) {
+      // Update flower count if the new count is higher
+      if (flowerCount > existing[0].flower_count) {
+        await sql`
+          UPDATE guardians 
+          SET flower_count = ${flowerCount}
+          WHERE username = ${lowerUsername}
+        `
+      }
       return NextResponse.json({ success: true, message: "Guardian updated" })
     }
 
     // Add new guardian
-    const { error } = await supabase.from("guardians").insert({
-      username: username.toLowerCase(),
-      flower_count: flowerCount || 50,
-    })
-
-    if (error) {
-      console.error("Error adding guardian:", error)
-      return NextResponse.json({ error: "Failed to add guardian" }, { status: 500 })
-    }
+    await sql`
+      INSERT INTO guardians (username, flower_count)
+      VALUES (${lowerUsername}, ${flowerCount || 50})
+    `
 
     return NextResponse.json({ success: true, message: "Guardian added!" })
   } catch (error) {

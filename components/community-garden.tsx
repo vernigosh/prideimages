@@ -1079,11 +1079,11 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         onHide={() => setShowGardenEliteCelebration(false)}
       />
 
-      <div className="fixed left-0 right-0 z-10" style={{ bottom: "38px" }}>
+      <div className="absolute left-0 right-0 z-10 pointer-events-none" style={{ bottom: "38px" }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
-            className="fixed left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
+            className="absolute left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
             style={{ bottom: "328px" }} // Moving activity text down 5px: 333px -> 328px
           >
             <div className="text-center">

@@ -597,31 +597,15 @@ export default function DJRandomizer() {
     return null
   }
 
-  // Determine which right-side element to show (Dark Timer > Social Timer > Work Timer)
-  const getRightSideElement = () => {
-    if (showDarkTimer) {
-      return (
-        <DarkTimer
-          isVisible={showDarkTimer}
-          onConnectionChange={setDarkTimerConnected}
-          onHide={() => setShowDarkTimer(false)}
-        />
-      )
-    }
+  // Render timers - work timer always on right, other timers move to left when work timer is active
+  const getTimerElements = () => {
+    const elements: React.ReactNode[] = []
 
-    if (showSocialTimer) {
-      return (
-        <SocialTimer
-          isVisible={showSocialTimer}
-          onConnectionChange={setSocialTimerConnected}
-          onHide={() => setShowSocialTimer(false)}
-        />
-      )
-    }
-
+    // Work timer always takes the right side when visible
     if (showWorkTimer) {
-      return (
+      elements.push(
         <WorkTimer
+          key="work-timer"
           isVisible={showWorkTimer}
           onConnectionChange={setWorkTimerConnected}
           onHide={() => setShowWorkTimer(false)}
@@ -629,14 +613,40 @@ export default function DJRandomizer() {
       )
     }
 
-    return null
+    // Dark timer: left side if work timer is active, otherwise right side
+    if (showDarkTimer) {
+      elements.push(
+        <DarkTimer
+          key="dark-timer"
+          isVisible={showDarkTimer}
+          onConnectionChange={setDarkTimerConnected}
+          onHide={() => setShowDarkTimer(false)}
+          workTimerActive={showWorkTimer}
+        />
+      )
+    }
+
+    // Social timer: left side if work timer is active, otherwise right side
+    if (showSocialTimer) {
+      elements.push(
+        <SocialTimer
+          key="social-timer"
+          isVisible={showSocialTimer}
+          onConnectionChange={setSocialTimerConnected}
+          onHide={() => setShowSocialTimer(false)}
+          workTimerActive={showWorkTimer}
+        />
+      )
+    }
+
+    return elements.length > 0 ? <>{elements}</> : null
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-hidden">
       {/* OBS Overlay Section */}
       <div
-        className={`h-screen flex items-center justify-center relative ${
+        className={`h-screen flex items-center justify-center relative overflow-hidden ${
           overlayBackground === "black" ? "bg-black" : ""
         }`}
       >
@@ -673,8 +683,8 @@ export default function DJRandomizer() {
         {/* Upper Left Elements (DJ Spinner with flip transition) */}
         {getUpperLeftElement()}
 
-        {/* Right Side Elements (Timers) */}
-        {getRightSideElement()}
+{/* Timer Elements */}
+          {getTimerElements()}
 
         {/* Community Garden - Always at bottom when visible */}
         {showGarden && (

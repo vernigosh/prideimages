@@ -6,11 +6,12 @@ interface DarkTimerProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
+  workTimerActive?: boolean
 }
 
 const DARK_DURATION = 20 * 60
 
-export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerProps) {
+export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false }: DarkTimerProps) {
   const [timeLeft, setTimeLeft] = useState(DARK_DURATION)
   const [isComplete, setIsComplete] = useState(false)
   const rafRef = useRef<number | null>(null)
@@ -103,9 +104,12 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerPr
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
 
+  // Position on left side if work timer is active, otherwise right side
+  const positionClass = workTimerActive ? "left-8" : "right-8"
+
   if (isComplete) {
     return (
-      <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+      <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="text-center">
             <div
@@ -137,7 +141,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide }: DarkTimerPr
   }
 
   return (
-    <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
       <div className="flex flex-col items-center justify-center gap-6 font-bold">
         <div className="text-center">
           <div

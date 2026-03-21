@@ -56,6 +56,34 @@ function getNextBreakTime() {
   return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
 }
 
+// Send chat message via StreamElements bot
+async function sendChatMessage(message: string) {
+  try {
+    await fetch("/api/send-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    })
+  } catch (error) {
+    console.error("[v0] Failed to send chat message:", error)
+  }
+}
+
+// Singing bowl audio URL (using blob URL for v0 compatibility)
+const SINGING_BOWL_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3"
+
+// Play singing bowl gong sound for phase transitions
+function playSingingBowl() {
+  if (typeof window === "undefined") return
+  try {
+    const audio = new Audio(SINGING_BOWL_URL)
+    audio.volume = 0.5
+    audio.play().catch(() => {})
+  } catch {
+    // Audio playback failed silently
+  }
+}
+
 function createPieSlicePath(percentage: number) {
   const radius = 90
   const centerX = 100
@@ -78,9 +106,11 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
   const [cycleCount, setCycleCount] = useState(1)
+  const [showPulse, setShowPulse] = useState(false)
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
+  const prevPhaseRef = useRef<"work" | "break" | null>(null)
   // Keep ref in sync
   isVisibleRef.current = isVisible
 
@@ -107,6 +137,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
     setPhase(state.currentPhase)
     setTimeLeft(state.remaining)
     setCycleCount(state.cycle)
+    prevPhaseRef.current = state.currentPhase
     onConnectionChange(true)
     lastTickRef.current = Date.now()
 
@@ -118,6 +149,26 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
       if (now - lastTickRef.current >= 1000) {
         lastTickRef.current = now
         const s = getClockState()
+        
+        // Detect phase transitions
+        if (prevPhaseRef.current !== null && s.currentPhase !== prevPhaseRef.current) {
+          // Play singing bowl sound for any phase transition
+          playSingingBowl()
+          
+          if (s.currentPhase === "work") {
+            // New work cycle started
+            window.dispatchEvent(new CustomEvent("workCycleStart", { detail: { cycle: s.cycle } }))
+            setShowPulse(true)
+            setTimeout(() => setShowPulse(false), 10000) // 10 second pulse
+            sendChatMessage("FOCUS TIME! 25 minutes of productivity starts now!")
+          } else {
+            // Break started
+            window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))
+            sendChatMessage("BREAK TIME! Take 5 minutes to rest and recharge!")
+          }
+        }
+        prevPhaseRef.current = s.currentPhase
+        
         setPhase(s.currentPhase)
         setTimeLeft(s.remaining)
         setCycleCount(s.cycle)
@@ -165,7 +216,18 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const seconds = timeLeft % 60
 
   return (
-    <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+    <>
+      {/* Purple pulse overlay for new work cycle */}
+      {showPulse && (
+        <div 
+          className="fixed inset-0 pointer-events-none z-50 animate-pulse"
+          style={{
+            background: "radial-gradient(ellipse at center, rgba(147, 51, 234, 0.3) 0%, rgba(147, 51, 234, 0.15) 50%, transparent 70%)",
+            animation: "pulse 2s ease-in-out infinite",
+          }}
+        />
+      )}
+      <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
       {/* Gradient background for visibility on light backgrounds */}
       <div
         className="absolute inset-0 -m-8 rounded-3xl"
@@ -237,5 +299,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         </div>
       </div>
     </div>
+    </>
   )
 }

@@ -6,6 +6,7 @@ interface SocialTimerProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
+  workTimerActive?: boolean
 }
 
 const SOCIAL_DURATION = 2 * 60
@@ -28,7 +29,7 @@ function createPieSlicePath(percentage: number) {
   return `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x} ${y} Z`
 }
 
-export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTimerProps) {
+export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false }: SocialTimerProps) {
   const [timeLeft, setTimeLeft] = useState(SOCIAL_DURATION)
   const [isComplete, setIsComplete] = useState(false)
   const rafRef = useRef<number | null>(null)
@@ -121,9 +122,12 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
 
+  // Position on left side if work timer is active, otherwise right side
+  const positionClass = workTimerActive ? "left-8" : "right-8"
+
   if (isComplete) {
     return (
-      <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+      <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
@@ -137,7 +141,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide }: SocialTim
   }
 
   return (
-    <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
+    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
       <div className="flex flex-col items-center justify-center gap-4 font-bold">
         <div className="relative w-64 h-64">
           <div className="absolute inset-6 flex items-center justify-center">

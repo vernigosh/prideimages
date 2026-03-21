@@ -113,6 +113,9 @@ export function useStreamElements() {
             if (message.type === "event" && message.data?.activity) {
               const activityType = message.data.activity.type
               const activityData = message.data.activity.data
+              
+              // Log ALL activity types to debug which ones we're receiving
+              console.log("[v0] StreamElements activity:", activityType, JSON.stringify(activityData))
 
               // Handle tip events
               if (activityType === "tip" && activityData.username && activityData.amount) {
@@ -137,14 +140,16 @@ export function useStreamElements() {
                 console.log("[v0] Follow event received:", activityData.username)
               }
 
-              // Handle cheer/bits events
-              if (activityType === "cheer" && activityData.username && activityData.amount) {
-                const bitsAmount = Number.parseInt(activityData.amount)
-                setStreamCredits((prev) => ({
-                  ...prev,
-                  cheerers: [...prev.cheerers.filter((c) => c.name !== activityData.username), { name: activityData.username, bits: bitsAmount }],
-                }))
-                console.log("[v0] Cheer event received:", activityData.username, bitsAmount)
+              // Handle cheer/bits events (multiple possible type names)
+              if ((activityType === "cheer" || activityType === "bits" || activityType === "cheer-latest" || activityType === "cheer-recent") && activityData.username) {
+                const bitsAmount = Number.parseInt(activityData.amount || activityData.bits || "0")
+                if (bitsAmount > 0) {
+                  setStreamCredits((prev) => ({
+                    ...prev,
+                    cheerers: [...prev.cheerers.filter((c) => c.name !== activityData.username), { name: activityData.username, bits: bitsAmount }],
+                  }))
+                  console.log("[v0] Cheer event received:", activityData.username, bitsAmount)
+                }
               }
 
               // Handle raid events
@@ -157,8 +162,8 @@ export function useStreamElements() {
                 console.log("[v0] Raid event received:", activityData.username, viewers)
               }
 
-              // Handle subscriber events
-              if ((activityType === "subscriber" || activityType === "sub") && activityData.username) {
+              // Handle subscriber events (multiple possible type names)
+              if ((activityType === "subscriber" || activityType === "sub" || activityType === "subscription" || activityType === "resub" || activityType === "subscriber-latest" || activityType === "subscriber-recent") && activityData.username) {
                 const months = activityData.amount ? Number.parseInt(activityData.amount) : 1
                 const tier = (activityData as any).tier || "1000"
                 const gifted = (activityData as any).gifted || false
@@ -173,8 +178,8 @@ export function useStreamElements() {
                 console.log("[v0] Sub event received:", activityData.username, months, "months, tier:", tier, gifted ? `gifted by ${gifter}` : "")
               }
 
-              // Handle community gift sub events
-              if ((activityType === "communityGiftPurchase" || activityType === "bulkGiftPurchase") && activityData.username) {
+              // Handle community gift sub events (multiple possible type names)
+              if ((activityType === "communityGiftPurchase" || activityType === "bulkGiftPurchase" || activityType === "gift" || activityType === "gifted" || activityType === "subgift" || activityType === "submysterygift") && activityData.username) {
                 const count = activityData.amount ? Number.parseInt(activityData.amount) : 1
                 setStreamCredits((prev) => ({
                   ...prev,

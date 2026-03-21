@@ -228,43 +228,43 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
           ))}
         </div>
 
-        {/* Work Timer Test */}
-        <div className="mt-8 bg-gray-100 border-2 border-black rounded-lg">
-          <div className="p-4" style={{ backgroundColor: "#c4b5fd" }}>
-            <h2 className="text-black flex items-center gap-2 font-bold text-xl">
-              Test Work Timer Announcements
-            </h2>
-          </div>
-          <div className="p-6 space-y-4">
-            <p className="text-gray-700 text-sm">
-              Test the singing bowl sound and chat messages that play when work/break cycles change.
-            </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent("testWorkCycle"))
-                }}
-                className="px-6 py-3 font-bold border-2 border-black rounded"
-                style={{ backgroundColor: "#86efac", color: "black" }}
-              >
-                Test Work Cycle Start
-              </button>
-              <button
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent("testBreakCycle"))
-                }}
-                className="px-6 py-3 font-bold border-2 border-black rounded"
-                style={{ backgroundColor: "#93c5fd", color: "black" }}
-              >
-                Test Break Start
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="mt-8 text-center text-gray-600">
           <p>Total Tricks: {tricks.length}</p>
           <p className="text-sm mt-2">Use Ctrl+S to simulate !spin command | Ctrl+H to simulate !hidespin command</p>
+          <div className="flex gap-4 justify-center mt-4">
+            <button
+              onClick={() => {
+                const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                audio.volume = 0.5
+                audio.play()
+                fetch("/api/send-chat", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ message: "FOCUS TIME! 25 minutes of productivity starts now!" }),
+                })
+              }}
+              className="px-4 py-2 font-bold border-2 border-black rounded text-sm"
+              style={{ backgroundColor: "#86efac", color: "black" }}
+            >
+              Test Work Cycle
+            </button>
+            <button
+              onClick={() => {
+                const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                audio.volume = 0.5
+                audio.play()
+                fetch("/api/send-chat", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ message: "BREAK TIME! Take 5 minutes to rest and recharge!" }),
+                })
+              }}
+              className="px-4 py-2 font-bold border-2 border-black rounded text-sm"
+              style={{ backgroundColor: "#93c5fd", color: "black" }}
+            >
+              Test Break
+            </button>
+          </div>
         </div>
       </div>
     </div>

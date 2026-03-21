@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless"
+import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -9,32 +9,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Username is required" }, { status: 400 })
     }
 
-    const sql = neon(process.env.DATABASE_URL!)
+    const supabase = await createClient()
     const lowerUsername = username.toLowerCase()
 
     // Check if user is already a guardian
-    const existing = await sql`
-      SELECT id, flower_count FROM guardians 
-      WHERE username = ${lowerUsername}
-    `
+    const { data: existing, error: fetchError } = await supabase
+      .from("guardians")
+      .select("id, flower_count")
+      .eq("username", lowerUsername)
+      .single()
 
-    if (existing.length > 0) {
+    if (fetchError && fetchError.code !== "PGRST116") {
+      // PGRST116 = no rows found, which is fine
+      console.error("Error checking existing guardian:", fetchError)
+      return NextResponse.json({ error: "Database error" }, { status: 500 })
+    }
+
+    if (existing) {
       // Update flower count if the new count is higher
-      if (flowerCount > existing[0].flower_count) {
-        await sql`
-          UPDATE guardians 
-          SET flower_count = ${flowerCount}
-          WHERE username = ${lowerUsername}
-        `
+      if (flowerCount > existing.flower_count) {
+        const { error: updateError } = await supabase
+          .from("guardians")
+          .update({ flower_count: flowerCount })
+          .eq("username", lowerUsername)
+
+        if (updateError) {
+          console.error("Error updating guardian:", updateError)
+          return NextResponse.json({ error: "Failed to update guardian" }, { status: 500 })
+        }
       }
       return NextResponse.json({ success: true, message: "Guardian updated" })
     }
 
     // Add new guardian
-    await sql`
-      INSERT INTO guardians (username, flower_count)
-      VALUES (${lowerUsername}, ${flowerCount || 50})
-    `
+    const { error: insertError } = await supabase
+      .from("guardians")
+      .insert({ username: lowerUsername, flower_count: flowerCount || 50 })
+
+    if (insertError) {
+      console.error("Error inserting guardian:", insertError)
+      return NextResponse.json({ error: "Failed to add guardian" }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true, message: "Guardian added!" })
   } catch (error) {

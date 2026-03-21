@@ -72,8 +72,12 @@ async function sendChatMessage(message: string) {
 // Singing bowl audio URL (using blob URL for v0 compatibility)
 const SINGING_BOWL_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3"
 
+// Set to true to enable singing bowl audio on phase transitions
+const SINGING_BOWL_ENABLED = false
+
 // Play singing bowl gong sound for phase transitions
 function playSingingBowl() {
+  if (!SINGING_BOWL_ENABLED) return
   if (typeof window === "undefined") return
   try {
     const audio = new Audio(SINGING_BOWL_URL)

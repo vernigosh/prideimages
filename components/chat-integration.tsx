@@ -598,10 +598,39 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             </button>
             <button
               onClick={() => {
-                console.log("Manual test: Showing stream credits")
+                console.log("Manual test: Showing stream credits with sample data")
+                // Sample test data simulating a real stream
+                const testData = {
+                  followers: ["PixelDreamer", "CozyGamer", "NightOwl99", "StreamFan42", "ChillVibes"],
+                  subscribers: [
+                    { name: "LoyalViewer", months: 24, tier: "3000", gifted: false },
+                    { name: "NewSub2024", months: 1, tier: "1000", gifted: false },
+                    { name: "GiftedFriend", months: 1, tier: "1000", gifted: true, gifter: "GenerousGifter" },
+                    { name: "Resubber", months: 6, tier: "2000", gifted: false },
+                  ],
+                  giftSubs: [
+                    { gifter: "GenerousGifter", count: 10 },
+                    { gifter: "SubBomber", count: 5 },
+                    { gifter: "KindStranger", count: 2 },
+                  ],
+                  tippers: [
+                    { name: "BigSupporter", amount: 25.00 },
+                    { name: "CoffeeHelper", amount: 5.00 },
+                    { name: "AnonymousFan", amount: 10.00 },
+                  ],
+                  cheerers: [
+                    { name: "BitKing", bits: 1000 },
+                    { name: "CheerMaster", bits: 500 },
+                    { name: "SmallCheers", bits: 100 },
+                  ],
+                  raiders: [
+                    { name: "FriendlyStreamer", viewers: 50 },
+                    { name: "RaidSquad", viewers: 25 },
+                  ],
+                }
                 window.dispatchEvent(
                   new CustomEvent("showCredits", {
-                    detail: { username: "Manual Test" },
+                    detail: { username: "Manual Test", testData },
                   }),
                 )
                 addRecentCommand("Stream credits by Manual Test (manual)")

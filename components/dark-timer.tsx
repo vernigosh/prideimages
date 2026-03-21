@@ -11,6 +11,14 @@ interface DarkTimerProps {
 
 const DARK_DURATION = 20 * 60
 
+// Ring progress calculation
+function getRingProps(progress: number) {
+  const radius = 85
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference * progress
+  return { radius, circumference, strokeDashoffset }
+}
+
 export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false }: DarkTimerProps) {
   const [timeLeft, setTimeLeft] = useState(DARK_DURATION)
   const [isComplete, setIsComplete] = useState(false)
@@ -101,8 +109,10 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
 
   if (!isVisible) return null
 
+  const progress = (DARK_DURATION - timeLeft) / DARK_DURATION
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
+  const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
   // Position on left side if work timer is active, otherwise right side
   const positionClass = workTimerActive ? "left-8" : "right-8"
@@ -142,28 +152,60 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
 
   return (
     <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
-      <div className="flex flex-col items-center justify-center gap-6 font-bold">
-        <div className="text-center">
-          <div
-            className="text-4xl drop-shadow-lg font-bold animate-pulse"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              color: "#ffffff",
-              textShadow: "0 0 30px #ff0000, 0 0 60px #ff0000, 0 0 90px #ff0000",
-              letterSpacing: "0.1em",
-            }}
-          >
-            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-          </div>
-          <div
-            className="text-sm mt-2 drop-shadow-md font-semibold uppercase"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              color: "#cccccc",
-              letterSpacing: "0.2em",
-            }}
-          >
-            ACTIVE
+      <div className="flex flex-col items-center justify-center gap-4 font-bold">
+        <div className="relative w-64 h-64">
+          <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">
+            {/* Background ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r={radius}
+              fill="none"
+              stroke="rgba(255, 0, 0, 0.2)"
+              strokeWidth="12"
+            />
+            {/* Progress ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r={radius}
+              fill="none"
+              stroke="rgba(255, 0, 0, 0.9)"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              style={{ 
+                transition: "stroke-dashoffset 0.5s ease-out",
+                filter: "drop-shadow(0 0 10px #ff0000)"
+              }}
+            />
+          </svg>
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div
+                className="text-5xl drop-shadow-lg font-bold"
+                style={{
+                  fontFamily: "Orbitron, monospace",
+                  color: "#ffffff",
+                  textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+              </div>
+              <div
+                className="text-sm mt-2 drop-shadow-md font-semibold uppercase"
+                style={{
+                  fontFamily: "Orbitron, monospace",
+                  color: "#cccccc",
+                  letterSpacing: "0.1em",
+                }}
+              >
+                ACTIVE
+              </div>
+            </div>
           </div>
         </div>
 

@@ -69,12 +69,15 @@ async function sendChatMessage(message: string) {
   }
 }
 
+// Singing bowl audio URL (using blob URL for v0 compatibility)
+const SINGING_BOWL_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3"
+
 // Play singing bowl gong sound for phase transitions
 function playSingingBowl() {
   if (typeof window === "undefined") return
   console.log("[v0] Attempting to play singing bowl sound")
   try {
-    const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+    const audio = new Audio(SINGING_BOWL_URL)
     audio.volume = 0.5
     audio.play()
       .then(() => console.log("[v0] Singing bowl sound playing"))

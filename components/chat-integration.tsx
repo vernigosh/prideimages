@@ -645,7 +645,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               onClick={() => {
                 console.log("[v0] Manual test: Test work cycle - attempting audio")
                 try {
-                  const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                  const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
                   audio.volume = 0.5
                   audio.play()
                     .then(() => console.log("[v0] Work cycle audio playing successfully"))
@@ -669,7 +669,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               onClick={() => {
                 console.log("[v0] Manual test: Test break cycle - attempting audio")
                 try {
-                  const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                  const audio = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/freesound_community-singing-bowl-gong-69238-RUz3Yb1v9aENqbJIqZoYGxjyZD3apI.mp3")
                   audio.volume = 0.5
                   audio.play()
                     .then(() => console.log("[v0] Break cycle audio playing successfully"))

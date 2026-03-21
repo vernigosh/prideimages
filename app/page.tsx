@@ -807,7 +807,10 @@ export default function DJRandomizer() {
       {/* Stream Credits */}
       <StreamCredits
         isVisible={showStreamCredits}
-        onHide={handleHideCredits}
+        onHide={() => {
+          setShowStreamCredits(false)
+          setTestCreditsData(null)
+        }}
         streamCredits={activeStreamCredits}
         flowerLegends={flowerLegends}
       />

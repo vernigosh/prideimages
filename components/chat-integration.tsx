@@ -641,6 +641,42 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
               <Play className="w-4 h-4" />
               Hide All Celebrations
             </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Test work cycle")
+                const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                audio.volume = 0.5
+                audio.play().catch((e) => console.log("Audio play failed:", e))
+                fetch("/api/send-chat", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ message: "FOCUS TIME! 25 minutes of productivity starts now!" }),
+                })
+                addRecentCommand("Test work cycle by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-green-400 hover:bg-green-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Test Work Cycle
+            </button>
+            <button
+              onClick={() => {
+                console.log("Manual test: Test break cycle")
+                const audio = new Audio("/sounds/singing-bowl-gong.mp3")
+                audio.volume = 0.5
+                audio.play().catch((e) => console.log("Audio play failed:", e))
+                fetch("/api/send-chat", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ message: "BREAK TIME! Take 5 minutes to rest and recharge!" }),
+                })
+                addRecentCommand("Test break cycle by Manual Test (manual)")
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-blue-400 hover:bg-blue-500 text-black"
+            >
+              <Play className="w-4 h-4" />
+              Test Break
+            </button>
           </div>
           <p className="text-xs mt-2 text-black/70">Use these buttons to test functionality without chat commands</p>
         </div>

@@ -231,44 +231,6 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
         <div className="mt-8 text-center text-gray-600">
           <p>Total Tricks: {tricks.length}</p>
           <p className="text-sm mt-2">Use Ctrl+S to simulate !spin command | Ctrl+H to simulate !hidespin command</p>
-          <div className="flex gap-4 justify-center mt-4">
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  const audio = new Audio("/sounds/singing-bowl-gong.mp3")
-                  audio.volume = 0.5
-                  audio.play().catch((e) => console.log("Audio play failed:", e))
-                }
-                fetch("/api/send-chat", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ message: "FOCUS TIME! 25 minutes of productivity starts now!" }),
-                })
-              }}
-              className="px-4 py-2 font-bold border-2 border-black rounded text-sm"
-              style={{ backgroundColor: "#86efac", color: "black" }}
-            >
-              Test Work Cycle
-            </button>
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  const audio = new Audio("/sounds/singing-bowl-gong.mp3")
-                  audio.volume = 0.5
-                  audio.play().catch((e) => console.log("Audio play failed:", e))
-                }
-                fetch("/api/send-chat", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ message: "BREAK TIME! Take 5 minutes to rest and recharge!" }),
-                })
-              }}
-              className="px-4 py-2 font-bold border-2 border-black rounded text-sm"
-              style={{ backgroundColor: "#93c5fd", color: "black" }}
-            >
-              Test Break
-            </button>
-          </div>
         </div>
       </div>
     </div>

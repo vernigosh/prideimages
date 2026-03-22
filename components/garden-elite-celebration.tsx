@@ -47,18 +47,34 @@ export function GardenEliteCelebration({ username, isVisible, onHide }: GardenEl
           "linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(168, 85, 247, 0.15) 100%)",
       }}
     >
-      {flowers.map((flower) => (
+      {/* Left side flowers */}
+      {flowers.slice(0, 11).map((flower, i) => (
         <div
-          key={flower.id}
+          key={`left-${flower.id}`}
           className="absolute text-4xl animate-float"
           style={{
-            left: `${flower.startX}%`,
-            top: "-10%",
+            left: `${2 + (i % 2) * 5}%`,
+            top: `${5 + i * 8}%`,
             animationDelay: `${flower.delay}s`,
             animationDuration: `${flower.duration}s`,
           }}
         >
-          {Math.random() > 0.7 ? "⭐" : Math.random() > 0.5 ? "🌸" : "🌺"}
+          {i % 3 === 0 ? "⭐" : i % 2 === 0 ? "🌸" : "🌺"}
+        </div>
+      ))}
+      {/* Right side flowers */}
+      {flowers.slice(11).map((flower, i) => (
+        <div
+          key={`right-${flower.id}`}
+          className="absolute text-4xl animate-float"
+          style={{
+            right: `${2 + (i % 2) * 5}%`,
+            top: `${5 + i * 8}%`,
+            animationDelay: `${flower.delay}s`,
+            animationDuration: `${flower.duration}s`,
+          }}
+        >
+          {i % 3 === 0 ? "⭐" : i % 2 === 0 ? "🌺" : "🌸"}
         </div>
       ))}
 

@@ -68,22 +68,40 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
             className="drop-shadow-2xl scale-x-[-1]"
             style={{ imageRendering: "pixelated" }}
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            {[...Array(25)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute animate-float"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${3 + Math.random() * 2}s`,
-                }}
-              >
-                {["🌸", "🌺", "🌻", "🌷", "⭐", "✨", "👑", "🛡️"][Math.floor(Math.random() * 8)]}
-              </div>
-            ))}
-          </div>
+        </div>
+
+        {/* Floating elements - positioned at edges */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          {/* Left side */}
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={`left-${i}`}
+              className="absolute animate-float text-3xl"
+              style={{
+                left: `${2 + (i % 2) * 5}%`,
+                top: `${3 + i * 8}%`,
+                animationDelay: `${i * 0.25}s`,
+                animationDuration: `${3 + (i % 3)}s`,
+              }}
+            >
+              {["🌸", "🌺", "🌻", "🌷", "⭐", "✨", "👑", "🛡️"][i % 8]}
+            </div>
+          ))}
+          {/* Right side */}
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={`right-${i}`}
+              className="absolute animate-float text-3xl"
+              style={{
+                right: `${2 + (i % 2) * 5}%`,
+                top: `${3 + i * 8}%`,
+                animationDelay: `${i * 0.2}s`,
+                animationDuration: `${3 + (i % 3)}s`,
+              }}
+            >
+              {["🛡️", "👑", "✨", "⭐", "🌷", "🌻", "🌺", "🌸"][i % 8]}
+            </div>
+          ))}
         </div>
 
         <div className="space-y-2 px-8">

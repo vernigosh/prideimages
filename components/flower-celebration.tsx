@@ -72,23 +72,40 @@ export function FlowerCelebration({ isVisible, username, onHide }: FlowerCelebra
           </p>
         </div>
 
-        {/* Floating flowers animation */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute animate-bounce"
-              style={{
-                left: `${10 + i * 7}%`,
-                top: `${20 + (i % 3) * 20}%`,
-                animationDelay: `${i * 0.2}s`,
-                animationDuration: "2s",
-              }}
-            >
-              <span className="text-4xl">{["🌸", "🌺", "🌻", "🌷", "🌹", "🌼"][i % 6]}</span>
-            </div>
-          ))}
-        </div>
+      </div>
+
+      {/* Floating flowers animation - positioned at edges to not cover text */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Left side flowers */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`left-${i}`}
+            className="absolute animate-bounce"
+            style={{
+              left: `${2 + (i % 2) * 5}%`,
+              top: `${10 + i * 14}%`,
+              animationDelay: `${i * 0.2}s`,
+              animationDuration: "2s",
+            }}
+          >
+            <span className="text-4xl">{["🌸", "🌺", "🌻", "🌷", "🌹", "🌼"][i % 6]}</span>
+          </div>
+        ))}
+        {/* Right side flowers */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`right-${i}`}
+            className="absolute animate-bounce"
+            style={{
+              right: `${2 + (i % 2) * 5}%`,
+              top: `${10 + i * 14}%`,
+              animationDelay: `${i * 0.25}s`,
+              animationDuration: "2s",
+            }}
+          >
+            <span className="text-4xl">{["🌼", "🌹", "🌷", "🌻", "🌺", "🌸"][i % 6]}</span>
+          </div>
+        ))}
       </div>
     </div>
   )

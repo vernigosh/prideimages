@@ -52,22 +52,40 @@ export function MasterGardenerCelebration({ isVisible, username, onHide }: Maste
             height={250}
             className="mx-auto drop-shadow-2xl"
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute animate-float"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${3 + Math.random() * 2}s`,
-                }}
-              >
-                {["🌸", "🌺", "🌻", "🌷", "⭐", "✨"][Math.floor(Math.random() * 6)]}
-              </div>
-            ))}
-          </div>
+        </div>
+
+        {/* Floating flowers - positioned at edges */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          {/* Left side */}
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={`left-${i}`}
+              className="absolute animate-float text-3xl"
+              style={{
+                left: `${2 + (i % 2) * 5}%`,
+                top: `${5 + i * 9}%`,
+                animationDelay: `${i * 0.3}s`,
+                animationDuration: `${3 + (i % 3)}s`,
+              }}
+            >
+              {["🌸", "🌺", "🌻", "🌷", "⭐", "✨"][i % 6]}
+            </div>
+          ))}
+          {/* Right side */}
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={`right-${i}`}
+              className="absolute animate-float text-3xl"
+              style={{
+                right: `${2 + (i % 2) * 5}%`,
+                top: `${5 + i * 9}%`,
+                animationDelay: `${i * 0.25}s`,
+                animationDuration: `${3 + (i % 3)}s`,
+              }}
+            >
+              {["✨", "⭐", "🌷", "🌻", "🌺", "🌸"][i % 6]}
+            </div>
+          ))}
         </div>
 
         <div className="space-y-2 px-8">

@@ -68,22 +68,40 @@ export function GardenLegendCelebration({ isVisible, username, onHide }: GardenL
           </p>
         </div>
 
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(16)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute animate-bounce"
-              style={{
-                left: `${5 + i * 6}%`,
-                top: `${15 + (i % 4) * 18}%`,
-                animationDelay: `${i * 0.15}s`,
-                animationDuration: "2s",
-              }}
-            >
-              <span className="text-4xl">{i % 8 === 7 ? "⭐" : ["🌸", "🌺", "🌻", "🌷", "🌹", "🌼", "💐"][i % 7]}</span>
-            </div>
-          ))}
-        </div>
+      </div>
+
+      {/* Floating flowers animation - positioned at edges */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Left side flowers */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`left-${i}`}
+            className="absolute animate-bounce"
+            style={{
+              left: `${2 + (i % 2) * 5}%`,
+              top: `${8 + i * 11}%`,
+              animationDelay: `${i * 0.15}s`,
+              animationDuration: "2s",
+            }}
+          >
+            <span className="text-4xl">{i % 8 === 7 ? "⭐" : ["🌸", "🌺", "🌻", "🌷", "🌹", "🌼", "💐"][i % 7]}</span>
+          </div>
+        ))}
+        {/* Right side flowers */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`right-${i}`}
+            className="absolute animate-bounce"
+            style={{
+              right: `${2 + (i % 2) * 5}%`,
+              top: `${8 + i * 11}%`,
+              animationDelay: `${i * 0.2}s`,
+              animationDuration: "2s",
+            }}
+          >
+            <span className="text-4xl">{i % 8 === 0 ? "⭐" : ["💐", "🌼", "🌹", "🌷", "🌻", "🌺", "🌸"][i % 7]}</span>
+          </div>
+        ))}
       </div>
     </div>
   )

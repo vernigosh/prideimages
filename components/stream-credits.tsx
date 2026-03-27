@@ -80,7 +80,7 @@ export function StreamCreditsComponent({
   const hasGuardians = guardians.length > 0
 
   return (
-    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[9998] w-[650px] h-[700px] bg-black/50 rounded-xl overflow-hidden">
+    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[9998] w-[650px] h-[700px] bg-black/80 rounded-xl overflow-hidden">
       <div
         ref={containerRef}
         className="absolute inset-x-0 text-center px-8"
@@ -99,16 +99,16 @@ export function StreamCreditsComponent({
           >
             STREAM CREDITS
           </h1>
-          <p className="text-4xl text-white/60">Thank you for watching!</p>
+          <p className="text-4xl text-white">Thank you for watching!</p>
         </div>
 
         {/* New Followers */}
         {hasFollowers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-pink-400 mb-6">New Followers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">New Followers</h2>
             <div className="space-y-3">
               {streamCredits.followers.map((follower, i) => (
-                <p key={i} className="text-4xl text-white/90">
+                <p key={i} className="text-4xl text-white">
                   {follower}
                 </p>
               ))}
@@ -119,12 +119,12 @@ export function StreamCreditsComponent({
         {/* Gift Sub Bombers */}
         {hasGiftSubs && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-fuchsia-400 mb-6">Gift Sub Bombers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Gift Sub Bombers</h2>
             <div className="space-y-3">
               {streamCredits.giftSubs
                 .sort((a, b) => b.count - a.count)
                 .map((gifter, i) => (
-                  <p key={i} className="text-4xl text-white/90">
+                  <p key={i} className="text-4xl text-white">
                     {gifter.gifter} - {gifter.count} gift {gifter.count === 1 ? "sub" : "subs"}
                   </p>
                 ))}
@@ -135,12 +135,12 @@ export function StreamCreditsComponent({
         {/* Subscribers */}
         {hasSubscribers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-blue-400 mb-6">Subscribers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Subscribers</h2>
             <div className="space-y-3">
               {streamCredits.subscribers
                 .sort((a, b) => b.months - a.months)
                 .map((sub, i) => (
-                  <p key={i} className="text-4xl text-white/90">
+                  <p key={i} className="text-4xl text-white">
                     {sub.name}
                     {sub.months > 1 ? ` (${sub.months} months)` : ""}
                     {sub.gifted && sub.gifter ? ` - gifted by ${sub.gifter}` : ""}
@@ -153,12 +153,12 @@ export function StreamCreditsComponent({
         {/* Tippers */}
         {hasTippers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-green-400 mb-6">Tips</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Tips</h2>
             <div className="space-y-3">
               {streamCredits.tippers
                 .sort((a, b) => b.amount - a.amount)
                 .map((tipper, i) => (
-                  <p key={i} className="text-4xl text-white/90">
+                  <p key={i} className="text-4xl text-white">
                     {tipper.name} - ${tipper.amount.toFixed(2)}
                   </p>
                 ))}
@@ -169,12 +169,12 @@ export function StreamCreditsComponent({
         {/* Cheerers */}
         {hasCheerers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-purple-400 mb-6">Bit Cheerers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Bit Cheerers</h2>
             <div className="space-y-3">
               {streamCredits.cheerers
                 .sort((a, b) => b.bits - a.bits)
                 .map((cheerer, i) => (
-                  <p key={i} className="text-4xl text-white/90">
+                  <p key={i} className="text-4xl text-white">
                     {cheerer.name} - {cheerer.bits} bits
                   </p>
                 ))}
@@ -185,10 +185,10 @@ export function StreamCreditsComponent({
         {/* Raiders */}
         {hasRaiders && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-orange-400 mb-6">Raiders</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Raiders</h2>
             <div className="space-y-3">
               {streamCredits.raiders.map((raider, i) => (
-                <p key={i} className="text-4xl text-white/90">
+                <p key={i} className="text-4xl text-white">
                   {raider.name} {raider.viewers > 0 && `(${raider.viewers})`}
                 </p>
               ))}
@@ -199,13 +199,13 @@ export function StreamCreditsComponent({
         {/* Flower Legends (10+ flowers this stream) */}
         {hasLegends && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-lime-400 mb-6">Flower Legends</h2>
-            <p className="text-3xl text-white/50 mb-4">10+ flowers this stream</p>
+            <h2 className="text-5xl font-bold text-white mb-6">Flower Legends</h2>
+            <p className="text-3xl text-white mb-4">10+ flowers this stream</p>
             <div className="space-y-3">
               {flowerLegends
                 .sort((a, b) => b.count - a.count)
                 .map((legend, i) => (
-                  <p key={i} className="text-4xl text-white/90">
+                  <p key={i} className="text-4xl text-white">
                     {legend.username} - {legend.count}
                   </p>
                 ))}
@@ -227,12 +227,12 @@ export function StreamCreditsComponent({
             >
               Guild of Guardians
             </h2>
-            <p className="text-3xl text-white/50 mb-4">All-Time (50+ flowers)</p>
+            <p className="text-3xl text-white mb-4">All-Time (50+ flowers)</p>
             <div className="space-y-3">
               {guardians
                 .sort((a, b) => b.flower_count - a.flower_count)
                 .map((guardian) => (
-                <p key={guardian.id} className="text-4xl text-white/90">
+                <p key={guardian.id} className="text-4xl text-white">
                   {guardian.username} - {guardian.flower_count}
                 </p>
               ))}
@@ -242,7 +242,7 @@ export function StreamCreditsComponent({
 
         {/* End Credits */}
         <div className="mt-20 mb-24">
-          <p className="text-4xl text-white/80 mb-2">See you next stream!</p>
+          <p className="text-4xl text-white mb-2">See you next stream!</p>
         </div>
       </div>
     </div>

@@ -1,25 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-
-interface StreamElementsEvent {
-  type: string
-  data: {
-    amount?: number
-    username?: string
-    message?: string
-    activity?: {
-      type: string
-      data: {
-        username?: string
-        amount?: string
-        message?: string
-        displayName?: string
-        viewers?: number
-      }
-    }
-  }
-}
+import { io, Socket } from "socket.io-client"
 
 export interface StreamCredits {
   followers: string[]
@@ -41,18 +23,15 @@ export function useStreamElements() {
     raiders: [],
   })
   const [isConnected, setIsConnected] = useState(false)
-  const wsRef = useRef<WebSocket | null>(null)
+  const socketRef = useRef<Socket | null>(null)
 
   useEffect(() => {
-    let jwtToken = ""
-
     const fetchTokenAndConnect = async () => {
       try {
         const res = await fetch("/api/streamelements-token")
         const data = await res.json()
         if (data.token) {
-          jwtToken = data.token
-          connectToStreamElements()
+          connectToStreamElements(data.token)
         } else {
           console.log("[v0] Failed to fetch StreamElements token")
         }
@@ -61,163 +40,203 @@ export function useStreamElements() {
       }
     }
 
-    const connectToStreamElements = () => {
+    const connectToStreamElements = (jwtToken: string) => {
       try {
-        const ws = new WebSocket("wss://astro.streamelements.com")
-        wsRef.current = ws
+        // Use Socket.io realtime instead of Astro WebSockets
+        const socket = io("https://realtime.streamelements.com", {
+          transports: ["websocket"],
+        })
+        socketRef.current = socket
 
-        ws.onopen = () => {
-          console.log("[v0] Connected to StreamElements")
+        socket.on("connect", () => {
+          console.log("[v0] Connected to StreamElements Realtime")
           setIsConnected(true)
-
+          
           // Authenticate with JWT token
-          ws.send(
-            JSON.stringify({
-              type: "authenticate",
-              data: {
-                token: jwtToken,
-                token_type: "jwt",
-              },
-            }),
-          )
+          socket.emit("authenticate", {
+            method: "jwt",
+            token: jwtToken,
+          })
+        })
 
-          // Subscribe to tip events using correct topic
-          ws.send(
-            JSON.stringify({
-              type: "subscribe",
-              nonce: `nonce-${Date.now()}-activities`,
-              data: {
-                topic: "channel.activities",
-                room: "64ae97ecc90c5bc26b0c0f97",
-                token: jwtToken,
-                token_type: "jwt",
-              },
-            }),
-          )
-        }
+        socket.on("authenticated", (data: any) => {
+          console.log("[v0] StreamElements authenticated:", data)
+        })
 
-        ws.onmessage = (event) => {
-          try {
-            const message = JSON.parse(event.data)
-            console.log("[v0] StreamElements message:", message)
+        socket.on("unauthorized", (error: any) => {
+          console.log("[v0] StreamElements auth failed:", error)
+        })
 
-            if (message.type === "authenticated") {
-              console.log("[v0] StreamElements authenticated successfully")
-            }
+        // Listen for all events
+        socket.on("event", (eventData: any) => {
+          console.log("[v0] StreamElements event:", eventData)
+          handleEvent(eventData)
+        })
 
-            if (message.type === "response" && message.data?.subscribed) {
-              console.log("[v0] Successfully subscribed to:", message.data.topic)
-            }
+        socket.on("event:test", (eventData: any) => {
+          console.log("[v0] StreamElements test event:", eventData)
+          handleEvent(eventData)
+        })
 
-            // Handle various activity events
-            if (message.type === "event" && message.data?.activity) {
-              const activityType = message.data.activity.type
-              const activityData = message.data.activity.data
-              
-              // Log ALL activity types to debug which ones we're receiving
-              console.log("[v0] StreamElements activity:", activityType, JSON.stringify(activityData))
+        socket.on("event:update", (eventData: any) => {
+          console.log("[v0] StreamElements event update:", eventData)
+          handleEvent(eventData)
+        })
 
-              // Handle tip events
-              if (activityType === "tip" && activityData.username && activityData.amount) {
-                const tipAmount = Number.parseFloat(activityData.amount)
-                setRecentTippers((prev) => [
-                  { name: activityData.username, amount: tipAmount },
-                  ...prev.slice(0, 4),
-                ])
-                setStreamCredits((prev) => ({
-                  ...prev,
-                  tippers: [...prev.tippers.filter((t) => t.name !== activityData.username), { name: activityData.username, amount: tipAmount }],
-                }))
-                console.log("[v0] Tip event received:", activityData.username, tipAmount)
-              }
-
-              // Handle follow events
-              if (activityType === "follow" && activityData.username) {
-                setStreamCredits((prev) => ({
-                  ...prev,
-                  followers: prev.followers.includes(activityData.username) ? prev.followers : [...prev.followers, activityData.username],
-                }))
-                console.log("[v0] Follow event received:", activityData.username)
-              }
-
-              // Handle cheer/bits events (multiple possible type names)
-              if ((activityType === "cheer" || activityType === "bits" || activityType === "cheer-latest" || activityType === "cheer-recent") && activityData.username) {
-                const bitsAmount = Number.parseInt(activityData.amount || activityData.bits || "0")
-                if (bitsAmount > 0) {
-                  setStreamCredits((prev) => ({
-                    ...prev,
-                    cheerers: [...prev.cheerers.filter((c) => c.name !== activityData.username), { name: activityData.username, bits: bitsAmount }],
-                  }))
-                  console.log("[v0] Cheer event received:", activityData.username, bitsAmount)
-                }
-              }
-
-              // Handle raid events
-              if (activityType === "raid" && activityData.username) {
-                const viewers = activityData.viewers || 0
-                setStreamCredits((prev) => ({
-                  ...prev,
-                  raiders: [...prev.raiders, { name: activityData.username, viewers }],
-                }))
-                console.log("[v0] Raid event received:", activityData.username, viewers)
-              }
-
-              // Handle subscriber events (multiple possible type names)
-              if ((activityType === "subscriber" || activityType === "sub" || activityType === "subscription" || activityType === "resub" || activityType === "subscriber-latest" || activityType === "subscriber-recent") && activityData.username) {
-                const months = activityData.amount ? Number.parseInt(activityData.amount) : 1
-                const tier = (activityData as any).tier || "1000"
-                const gifted = (activityData as any).gifted || false
-                const gifter = (activityData as any).sender || (activityData as any).gifter || undefined
-                setStreamCredits((prev) => ({
-                  ...prev,
-                  subscribers: [
-                    ...prev.subscribers.filter((s) => s.name !== activityData.username),
-                    { name: activityData.username!, months, tier, gifted, gifter },
-                  ],
-                }))
-                console.log("[v0] Sub event received:", activityData.username, months, "months, tier:", tier, gifted ? `gifted by ${gifter}` : "")
-              }
-
-              // Handle community gift sub events (multiple possible type names)
-              if ((activityType === "communityGiftPurchase" || activityType === "bulkGiftPurchase" || activityType === "gift" || activityType === "gifted" || activityType === "subgift" || activityType === "submysterygift") && activityData.username) {
-                const count = activityData.amount ? Number.parseInt(activityData.amount) : 1
-                setStreamCredits((prev) => ({
-                  ...prev,
-                  giftSubs: [
-                    ...prev.giftSubs.filter((g) => g.gifter !== activityData.username),
-                    { gifter: activityData.username!, count: (prev.giftSubs.find((g) => g.gifter === activityData.username)?.count || 0) + count },
-                  ],
-                }))
-                console.log("[v0] Gift sub event received:", activityData.username, count, "gift subs")
-              }
-            }
-          } catch (error) {
-            console.error("[v0] Error parsing StreamElements message:", error)
-          }
-        }
-
-        ws.onclose = () => {
-          console.log("[v0] StreamElements connection closed")
+        socket.on("disconnect", () => {
+          console.log("[v0] StreamElements disconnected")
           setIsConnected(false)
-          // Reconnect after 5 seconds
-          setTimeout(connectToStreamElements, 5000)
-        }
+        })
 
-        ws.onerror = (error) => {
-          console.error("[v0] StreamElements connection error:", error)
+        socket.on("connect_error", (error: any) => {
+          console.log("[v0] StreamElements connection error:", error)
           setIsConnected(false)
-        }
+        })
       } catch (error) {
         console.error("[v0] Failed to connect to StreamElements:", error)
-        setTimeout(connectToStreamElements, 5000)
+      }
+    }
+
+    const handleEvent = (eventData: any) => {
+      const listener = eventData.listener
+      const event = eventData.event
+      
+      if (!event) return
+
+      console.log("[v0] Processing event - listener:", listener, "type:", event.type, "data:", JSON.stringify(event))
+
+      // Handle follow events
+      if (listener === "follower-latest" || event.type === "follow") {
+        const username = event.name || event.username
+        if (username) {
+          setStreamCredits((prev) => ({
+            ...prev,
+            followers: prev.followers.includes(username) ? prev.followers : [...prev.followers, username],
+          }))
+          console.log("[v0] Follow recorded:", username)
+        }
+      }
+
+      // Handle subscriber events
+      if (listener === "subscriber-latest" || event.type === "subscriber") {
+        const username = event.name || event.username
+        if (username) {
+          const months = event.amount || 1
+          const tier = event.tier || "1000"
+          const gifted = event.gifted || false
+          const gifter = event.sender || event.gifter
+          setStreamCredits((prev) => ({
+            ...prev,
+            subscribers: [
+              ...prev.subscribers.filter((s) => s.name !== username),
+              { name: username, months, tier, gifted, gifter },
+            ],
+          }))
+          console.log("[v0] Sub recorded:", username, months, "months")
+        }
+      }
+
+      // Handle cheer/bits events
+      if (listener === "cheer-latest" || event.type === "cheer") {
+        const username = event.name || event.username
+        const bits = event.amount || 0
+        if (username && bits > 0) {
+          setStreamCredits((prev) => {
+            const existing = prev.cheerers.find((c) => c.name === username)
+            const newBits = (existing?.bits || 0) + bits
+            return {
+              ...prev,
+              cheerers: [
+                ...prev.cheerers.filter((c) => c.name !== username),
+                { name: username, bits: newBits },
+              ],
+            }
+          })
+          console.log("[v0] Cheer recorded:", username, bits, "bits")
+        }
+      }
+
+      // Handle tip events
+      if (listener === "tip-latest" || event.type === "tip") {
+        const username = event.name || event.username
+        const amount = Number.parseFloat(event.amount) || 0
+        if (username && amount > 0) {
+          setRecentTippers((prev) => [
+            { name: username, amount },
+            ...prev.slice(0, 4),
+          ])
+          setStreamCredits((prev) => {
+            const existing = prev.tippers.find((t) => t.name === username)
+            const newAmount = (existing?.amount || 0) + amount
+            return {
+              ...prev,
+              tippers: [
+                ...prev.tippers.filter((t) => t.name !== username),
+                { name: username, amount: newAmount },
+              ],
+            }
+          })
+          console.log("[v0] Tip recorded:", username, amount)
+        }
+      }
+
+      // Handle raid events
+      if (listener === "raid-latest" || event.type === "raid") {
+        const username = event.name || event.username
+        const viewers = event.amount || event.viewers || 0
+        if (username) {
+          setStreamCredits((prev) => ({
+            ...prev,
+            raiders: [...prev.raiders, { name: username, viewers }],
+          }))
+          console.log("[v0] Raid recorded:", username, viewers, "viewers")
+        }
+      }
+
+      // Handle community gift sub events
+      if (listener === "subscriber-latest" && event.gifted && event.sender) {
+        const gifter = event.sender
+        const count = 1
+        setStreamCredits((prev) => {
+          const existing = prev.giftSubs.find((g) => g.gifter === gifter)
+          const newCount = (existing?.count || 0) + count
+          return {
+            ...prev,
+            giftSubs: [
+              ...prev.giftSubs.filter((g) => g.gifter !== gifter),
+              { gifter, count: newCount },
+            ],
+          }
+        })
+        console.log("[v0] Gift sub recorded from:", gifter)
+      }
+
+      // Handle bulk gift sub events
+      if (event.type === "communityGiftPurchase" || event.bulkGifted) {
+        const gifter = event.name || event.username || event.sender
+        const count = event.amount || 1
+        if (gifter) {
+          setStreamCredits((prev) => {
+            const existing = prev.giftSubs.find((g) => g.gifter === gifter)
+            const newCount = (existing?.count || 0) + count
+            return {
+              ...prev,
+              giftSubs: [
+                ...prev.giftSubs.filter((g) => g.gifter !== gifter),
+                { gifter, count: newCount },
+              ],
+            }
+          })
+          console.log("[v0] Bulk gift sub recorded:", gifter, count, "subs")
+        }
       }
     }
 
     fetchTokenAndConnect()
   
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close()
+      if (socketRef.current) {
+        socketRef.current.disconnect()
       }
     }
   }, [])

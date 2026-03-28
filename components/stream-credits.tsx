@@ -88,15 +88,7 @@ export function StreamCreditsComponent({
       >
         {/* Title */}
         <div className="mb-12">
-          <h1
-            className="text-6xl font-bold mb-4"
-            style={{
-              background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
+          <h1 className="text-6xl font-bold mb-4 text-white">
             STREAM CREDITS
           </h1>
           <p className="text-4xl text-white">Thank you for watching!</p>
@@ -216,15 +208,7 @@ export function StreamCreditsComponent({
         {/* All-Time Guild of Guardians */}
         {hasGuardians && (
           <div className="mb-12">
-            <h2
-              className="text-5xl font-bold mb-6"
-              style={{
-                background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
+            <h2 className="text-5xl font-bold mb-6 text-white">
               Guild of Guardians
             </h2>
             <p className="text-3xl text-white mb-4">All-Time (50+ flowers)</p>

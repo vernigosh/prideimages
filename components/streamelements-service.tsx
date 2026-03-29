@@ -60,27 +60,36 @@ export function useStreamElements() {
         })
 
         socket.on("authenticated", (data: any) => {
-          console.log("[v0] StreamElements authenticated:", data)
+          const { channelId } = data
+          console.log("[v0] StreamElements authenticated, channel:", channelId)
         })
 
         socket.on("unauthorized", (error: any) => {
           console.log("[v0] StreamElements auth failed:", error)
         })
 
-        // Listen for all events
+        // Listen for all events - these are the main event handlers
         socket.on("event", (eventData: any) => {
-          console.log("[v0] StreamElements event:", eventData)
+          console.log("[v0] StreamElements EVENT received:", JSON.stringify(eventData))
           handleEvent(eventData)
         })
 
         socket.on("event:test", (eventData: any) => {
-          console.log("[v0] StreamElements test event:", eventData)
+          console.log("[v0] StreamElements TEST EVENT received:", JSON.stringify(eventData))
           handleEvent(eventData)
         })
 
         socket.on("event:update", (eventData: any) => {
-          console.log("[v0] StreamElements event update:", eventData)
-          handleEvent(eventData)
+          console.log("[v0] StreamElements UPDATE received:", JSON.stringify(eventData))
+        })
+
+        socket.on("event:reset", (eventData: any) => {
+          console.log("[v0] StreamElements RESET received:", JSON.stringify(eventData))
+        })
+
+        // Catch-all for debugging
+        socket.onAny((eventName: string, ...args: any[]) => {
+          console.log("[v0] StreamElements ANY event:", eventName, JSON.stringify(args))
         })
 
         socket.on("disconnect", () => {
@@ -89,7 +98,7 @@ export function useStreamElements() {
         })
 
         socket.on("connect_error", (error: any) => {
-          console.log("[v0] StreamElements connection error:", error)
+          console.log("[v0] StreamElements connection error:", error.message)
           setIsConnected(false)
         })
       } catch (error) {

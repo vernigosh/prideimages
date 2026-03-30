@@ -163,20 +163,6 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* New Followers */}
-        {hasFollowers && (
-          <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">New Follows</h2>
-            <div className="space-y-3">
-              {streamCredits.followers.map((follower, i) => (
-                <p key={i} className="text-4xl text-white">
-                  {follower}
-                </p>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Raiders */}
         {hasRaiders && (
           <div className="mb-12">
@@ -185,6 +171,20 @@ export function StreamCreditsComponent({
               {streamCredits.raiders.map((raider, i) => (
                 <p key={i} className="text-4xl text-white">
                   {raider.name} {raider.viewers > 0 && `(${raider.viewers})`}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* New Followers */}
+        {hasFollowers && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">New Follows</h2>
+            <div className="space-y-3">
+              {streamCredits.followers.map((follower, i) => (
+                <p key={i} className="text-4xl text-white">
+                  {follower}
                 </p>
               ))}
             </div>

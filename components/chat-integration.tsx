@@ -323,6 +323,14 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide credits command detected")
           window.dispatchEvent(new CustomEvent("hideCredits", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!startingtimer" && (isMod || isBroadcaster || isVip)) {
+          console.log("Starting timer command detected")
+          window.dispatchEvent(new CustomEvent("showStartingTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidestartingtimer" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide starting timer command detected")
+          window.dispatchEvent(new CustomEvent("hideStartingTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!testflowerboard" && (isMod || isBroadcaster || isVip)) {
           console.log("Test flowerboard command detected")
           window.dispatchEvent(

@@ -24,6 +24,7 @@ import { EasterEggCelebration } from "@/components/easter-egg-celebration" // Im
 import { BoardOfGuardians } from "@/components/board-of-guardians" // Import BoardOfGuardians component
 import { StreamCreditsComponent as StreamCredits } from "@/components/stream-credits" // Import StreamCredits component
 import { useStreamElements } from "@/components/streamelements-service" // Import StreamElements service
+import { StartingTimer } from "@/components/starting-timer" // Import StartingTimer component
 
 interface Trick {
   name: string
@@ -211,6 +212,9 @@ export default function DJRandomizer() {
 
   // Stream Credits settings
   const [showStreamCredits, setShowStreamCredits] = useState(false)
+  
+  // Starting Timer settings
+  const [showStartingTimer, setShowStartingTimer] = useState(false)
   const [flowerLegends, setFlowerLegends] = useState<Array<{ username: string; count: number }>>([])
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
@@ -383,6 +387,14 @@ export default function DJRandomizer() {
       setTestCreditsData(null) // Clear test data when hiding
     }
 
+    const handleShowStartingTimer = () => {
+      setShowStartingTimer(true)
+    }
+
+    const handleHideStartingTimer = () => {
+      setShowStartingTimer(false)
+    }
+
     const handleHideAllCelebrations = () => {
       setShowFlowerCelebration(false)
       setShowBeeParadeCelebration(false)
@@ -420,6 +432,8 @@ export default function DJRandomizer() {
     window.addEventListener("showGuardians", handleShowGuardians as EventListener)
     window.addEventListener("showCredits", handleShowCredits as EventListener)
     window.addEventListener("hideCredits", handleHideCredits as EventListener)
+    window.addEventListener("showStartingTimer", handleShowStartingTimer as EventListener)
+    window.addEventListener("hideStartingTimer", handleHideStartingTimer as EventListener)
 
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -448,6 +462,8 @@ export default function DJRandomizer() {
       window.removeEventListener("showGuardians", handleShowGuardians as EventListener)
       window.removeEventListener("showCredits", handleShowCredits as EventListener)
       window.removeEventListener("hideCredits", handleHideCredits as EventListener)
+      window.removeEventListener("showStartingTimer", handleShowStartingTimer as EventListener)
+      window.removeEventListener("hideStartingTimer", handleHideStartingTimer as EventListener)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -804,16 +820,22 @@ export default function DJRandomizer() {
           onHide={() => setShowBoardOfGuardians(false)}
         />
 
-      {/* Stream Credits */}
-      <StreamCredits
-        isVisible={showStreamCredits}
-        onHide={() => {
-          setShowStreamCredits(false)
-          setTestCreditsData(null)
-        }}
-        streamCredits={activeStreamCredits}
-        flowerLegends={flowerLegends}
-      />
+{/* Stream Credits */}
+        <StreamCredits
+          isVisible={showStreamCredits}
+          onHide={() => {
+            setShowStreamCredits(false)
+            setTestCreditsData(null)
+          }}
+          streamCredits={activeStreamCredits}
+          flowerLegends={flowerLegends}
+        />
+
+        {/* Starting Timer */}
+        <StartingTimer
+          isVisible={showStartingTimer}
+          onHide={() => setShowStartingTimer(false)}
+        />
       </div>
 
       {/* Separator Line */}

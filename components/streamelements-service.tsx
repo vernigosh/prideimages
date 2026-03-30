@@ -107,16 +107,15 @@ export function useStreamElements() {
     }
 
     const handleEvent = (eventData: any) => {
-      const listener = eventData.listener
-      const event = eventData.event
+      // The event structure is: { type: "follow", data: { username, displayName, ... }, ... }
+      const eventType = eventData.type
+      const data = eventData.data || {}
       
-      if (!event) return
-
-      console.log("[v0] Processing event - listener:", listener, "type:", event.type, "data:", JSON.stringify(event))
+      console.log("[v0] Processing event - type:", eventType, "data:", JSON.stringify(data))
 
       // Handle follow events
-      if (listener === "follower-latest" || event.type === "follow") {
-        const username = event.name || event.username
+      if (eventType === "follow") {
+        const username = data.displayName || data.username || data.name
         if (username) {
           setStreamCredits((prev) => ({
             ...prev,
@@ -127,13 +126,13 @@ export function useStreamElements() {
       }
 
       // Handle subscriber events
-      if (listener === "subscriber-latest" || event.type === "subscriber") {
-        const username = event.name || event.username
+      if (eventType === "subscriber") {
+        const username = data.displayName || data.username || data.name
         if (username) {
-          const months = event.amount || 1
-          const tier = event.tier || "1000"
-          const gifted = event.gifted || false
-          const gifter = event.sender || event.gifter
+          const months = data.amount || 1
+          const tier = data.tier || "1000"
+          const gifted = data.gifted || false
+          const gifter = data.sender || data.gifter
           setStreamCredits((prev) => ({
             ...prev,
             subscribers: [
@@ -142,13 +141,29 @@ export function useStreamElements() {
             ],
           }))
           console.log("[v0] Sub recorded:", username, months, "months")
+          
+          // Also track gift subs by gifter
+          if (gifted && gifter) {
+            setStreamCredits((prev) => {
+              const existing = prev.giftSubs.find((g) => g.gifter === gifter)
+              const newCount = (existing?.count || 0) + 1
+              return {
+                ...prev,
+                giftSubs: [
+                  ...prev.giftSubs.filter((g) => g.gifter !== gifter),
+                  { gifter, count: newCount },
+                ],
+              }
+            })
+            console.log("[v0] Gift sub recorded from:", gifter)
+          }
         }
       }
 
       // Handle cheer/bits events
-      if (listener === "cheer-latest" || event.type === "cheer") {
-        const username = event.name || event.username
-        const bits = event.amount || 0
+      if (eventType === "cheer") {
+        const username = data.displayName || data.username || data.name
+        const bits = data.amount || 0
         if (username && bits > 0) {
           setStreamCredits((prev) => {
             const existing = prev.cheerers.find((c) => c.name === username)
@@ -166,9 +181,9 @@ export function useStreamElements() {
       }
 
       // Handle tip events
-      if (listener === "tip-latest" || event.type === "tip") {
-        const username = event.name || event.username
-        const amount = Number.parseFloat(event.amount) || 0
+      if (eventType === "tip") {
+        const username = data.displayName || data.username || data.name
+        const amount = Number.parseFloat(data.amount) || 0
         if (username && amount > 0) {
           setRecentTippers((prev) => [
             { name: username, amount },
@@ -190,9 +205,9 @@ export function useStreamElements() {
       }
 
       // Handle raid events
-      if (listener === "raid-latest" || event.type === "raid") {
-        const username = event.name || event.username
-        const viewers = event.amount || event.viewers || 0
+      if (eventType === "raid") {
+        const username = data.displayName || data.username || data.name
+        const viewers = data.amount || data.viewers || 0
         if (username) {
           setStreamCredits((prev) => ({
             ...prev,
@@ -202,28 +217,10 @@ export function useStreamElements() {
         }
       }
 
-      // Handle community gift sub events
-      if (listener === "subscriber-latest" && event.gifted && event.sender) {
-        const gifter = event.sender
-        const count = 1
-        setStreamCredits((prev) => {
-          const existing = prev.giftSubs.find((g) => g.gifter === gifter)
-          const newCount = (existing?.count || 0) + count
-          return {
-            ...prev,
-            giftSubs: [
-              ...prev.giftSubs.filter((g) => g.gifter !== gifter),
-              { gifter, count: newCount },
-            ],
-          }
-        })
-        console.log("[v0] Gift sub recorded from:", gifter)
-      }
-
-      // Handle bulk gift sub events
-      if (event.type === "communityGiftPurchase" || event.bulkGifted) {
-        const gifter = event.name || event.username || event.sender
-        const count = event.amount || 1
+      // Handle bulk/community gift sub events
+      if (eventType === "communityGiftPurchase") {
+        const gifter = data.displayName || data.username || data.name || data.sender
+        const count = data.amount || 1
         if (gifter) {
           setStreamCredits((prev) => {
             const existing = prev.giftSubs.find((g) => g.gifter === gifter)

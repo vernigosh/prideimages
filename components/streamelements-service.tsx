@@ -10,6 +10,9 @@ export interface StreamCredits {
   tippers: Array<{ name: string; amount: number }>
   cheerers: Array<{ name: string; bits: number }>
   raiders: Array<{ name: string; viewers: number }>
+  merchBuyers: Array<{ name: string; items: string[]; amount: number }>
+  charityDonors: Array<{ name: string; amount: number }>
+  redeemers: Array<{ name: string; redeems: string[] }>
 }
 
 export function useStreamElements() {
@@ -21,6 +24,9 @@ export function useStreamElements() {
     tippers: [],
     cheerers: [],
     raiders: [],
+    merchBuyers: [],
+    charityDonors: [],
+    redeemers: [],
   })
   const [isConnected, setIsConnected] = useState(false)
   const socketRef = useRef<Socket | null>(null)
@@ -234,6 +240,77 @@ export function useStreamElements() {
             }
           })
           console.log("[v0] Bulk gift sub recorded:", gifter, count, "subs")
+        }
+      }
+
+      // Handle merch purchase events
+      if (eventType === "merch") {
+        const username = data.displayName || data.username || data.name
+        const amount = data.amount || 0
+        const items = data.items?.map((item: any) => item.name) || []
+        if (username) {
+          setStreamCredits((prev) => {
+            const existing = prev.merchBuyers.find((m) => m.name === username)
+            if (existing) {
+              return {
+                ...prev,
+                merchBuyers: [
+                  ...prev.merchBuyers.filter((m) => m.name !== username),
+                  { name: username, items: [...existing.items, ...items], amount: existing.amount + amount },
+                ],
+              }
+            }
+            return {
+              ...prev,
+              merchBuyers: [...prev.merchBuyers, { name: username, items, amount }],
+            }
+          })
+          console.log("[v0] Merch purchase recorded:", username, items.join(", "), "$" + amount)
+        }
+      }
+
+      // Handle charity donation events
+      if (eventType === "charityCampaignDonation") {
+        const username = data.displayName || data.username || data.name
+        const amount = data.amount || 0
+        if (username && amount > 0) {
+          setStreamCredits((prev) => {
+            const existing = prev.charityDonors.find((c) => c.name === username)
+            const newAmount = (existing?.amount || 0) + amount
+            return {
+              ...prev,
+              charityDonors: [
+                ...prev.charityDonors.filter((c) => c.name !== username),
+                { name: username, amount: newAmount },
+              ],
+            }
+          })
+          console.log("[v0] Charity donation recorded:", username, "$" + amount)
+        }
+      }
+
+      // Handle channel point redeems
+      if (eventType === "redemption") {
+        const username = data.displayName || data.username || data.name
+        const redeemName = data.redemption || data.title || data.reward || "Unknown Redeem"
+        if (username) {
+          setStreamCredits((prev) => {
+            const existing = prev.redeemers.find((r) => r.name === username)
+            if (existing) {
+              return {
+                ...prev,
+                redeemers: [
+                  ...prev.redeemers.filter((r) => r.name !== username),
+                  { name: username, redeems: [...existing.redeems, redeemName] },
+                ],
+              }
+            }
+            return {
+              ...prev,
+              redeemers: [...prev.redeemers, { name: username, redeems: [redeemName] }],
+            }
+          })
+          console.log("[v0] Redeem recorded:", username, redeemName)
         }
       }
     }

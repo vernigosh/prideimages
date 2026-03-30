@@ -76,6 +76,9 @@ export function StreamCreditsComponent({
   const hasTippers = streamCredits.tippers.length > 0
   const hasCheerers = streamCredits.cheerers.length > 0
   const hasRaiders = streamCredits.raiders.length > 0
+  const hasMerchBuyers = streamCredits.merchBuyers?.length > 0
+  const hasCharityDonors = streamCredits.charityDonors?.length > 0
+  const hasRedeemers = streamCredits.redeemers?.length > 0
   const hasLegends = flowerLegends.length > 0
   const hasGuardians = guardians.length > 0
 
@@ -182,6 +185,52 @@ export function StreamCreditsComponent({
               {streamCredits.raiders.map((raider, i) => (
                 <p key={i} className="text-4xl text-white">
                   {raider.name} {raider.viewers > 0 && `(${raider.viewers})`}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Merch Buyers */}
+        {hasMerchBuyers && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">Merch Supporters</h2>
+            <div className="space-y-3">
+              {streamCredits.merchBuyers
+                .sort((a, b) => b.amount - a.amount)
+                .map((buyer, i) => (
+                  <p key={i} className="text-4xl text-white">
+                    {buyer.name} - {buyer.items.join(", ")}
+                  </p>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Charity Donors */}
+        {hasCharityDonors && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">Charity Donors</h2>
+            <div className="space-y-3">
+              {streamCredits.charityDonors
+                .sort((a, b) => b.amount - a.amount)
+                .map((donor, i) => (
+                  <p key={i} className="text-4xl text-white">
+                    {donor.name} - ${donor.amount}
+                  </p>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Channel Point Redeemers */}
+        {hasRedeemers && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">Channel Redeemers</h2>
+            <div className="space-y-3">
+              {streamCredits.redeemers.map((redeemer, i) => (
+                <p key={i} className="text-4xl text-white">
+                  {redeemer.name} - {redeemer.redeems.length} redeem{redeemer.redeems.length > 1 ? "s" : ""}
                 </p>
               ))}
             </div>

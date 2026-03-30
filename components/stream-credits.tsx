@@ -98,20 +98,6 @@ export function StreamCreditsComponent({
           <p className="text-3xl text-white mt-2">Shout out to these legends for today&apos;s stream!</p>
         </div>
 
-        {/* New Followers */}
-        {hasFollowers && (
-          <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">New Follows</h2>
-            <div className="space-y-3">
-              {streamCredits.followers.map((follower, i) => (
-                <p key={i} className="text-4xl text-white">
-                  {follower}
-                </p>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Subscribers - all subs, gifted marked with asterisk */}
         {hasSubscribers && (
           <div className="mb-12">
@@ -145,6 +131,22 @@ export function StreamCreditsComponent({
           </div>
         )}
 
+        {/* Bits */}
+        {hasCheerers && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">Bits</h2>
+            <div className="space-y-3">
+              {streamCredits.cheerers
+                .sort((a, b) => b.bits - a.bits)
+                .map((cheerer, i) => (
+                  <p key={i} className="text-4xl text-white">
+                    {cheerer.name} - {cheerer.bits} bits
+                  </p>
+                ))}
+            </div>
+          </div>
+        )}
+
         {/* Tippers */}
         {hasTippers && (
           <div className="mb-12">
@@ -161,18 +163,16 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* Bits */}
-        {hasCheerers && (
+        {/* New Followers */}
+        {hasFollowers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Bits</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">New Follows</h2>
             <div className="space-y-3">
-              {streamCredits.cheerers
-                .sort((a, b) => b.bits - a.bits)
-                .map((cheerer, i) => (
-                  <p key={i} className="text-4xl text-white">
-                    {cheerer.name} - {cheerer.bits} bits
-                  </p>
-                ))}
+              {streamCredits.followers.map((follower, i) => (
+                <p key={i} className="text-4xl text-white">
+                  {follower}
+                </p>
+              ))}
             </div>
           </div>
         )}

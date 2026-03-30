@@ -128,7 +128,7 @@ export function StartingTimer({ isVisible, onHide }: StartingTimerProps) {
 
         {/* Text outside the circle */}
         <div className="text-4xl text-white text-center drop-shadow-lg font-bold font-sans">
-          The stream is starting soon
+          STARTING SOON
         </div>
       </div>
     </div>

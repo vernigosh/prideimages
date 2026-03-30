@@ -323,13 +323,23 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide credits command detected")
           window.dispatchEvent(new CustomEvent("hideCredits", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!startingtimer" && (isMod || isBroadcaster || isVip)) {
-          console.log("Starting timer command detected")
+        } else if (command === "!startingsoon" && (isMod || isBroadcaster || isVip)) {
+          console.log("Starting soon command detected")
           window.dispatchEvent(new CustomEvent("showStartingTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!hidestartingtimer" && (isMod || isBroadcaster || isVip)) {
-          console.log("Hide starting timer command detected")
+        } else if (command === "!hidestartingsoon" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide starting soon command detected")
           window.dispatchEvent(new CustomEvent("hideStartingTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!brb" && (isMod || isBroadcaster || isVip)) {
+          console.log("BRB command detected")
+          // Check if there's a duration parameter (e.g., !brb 5 for 5 minutes)
+          const duration = args.length > 0 ? parseInt(args[0], 10) : undefined
+          window.dispatchEvent(new CustomEvent("showBrb", { detail: { username, duration: isNaN(duration as number) ? undefined : duration } }))
+          addRecentCommand(`${command}${duration ? ` ${duration}` : ""} by ${username}`)
+        } else if (command === "!hidebrb" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide BRB command detected")
+          window.dispatchEvent(new CustomEvent("hideBrb", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!testflowerboard" && (isMod || isBroadcaster || isVip)) {
           console.log("Test flowerboard command detected")

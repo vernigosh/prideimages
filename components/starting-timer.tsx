@@ -24,11 +24,17 @@ export function StartingTimer({ isVisible, onHide }: StartingTimerProps) {
     setTimeLeft(calculateTimeToTopOfHour())
 
     const interval = setInterval(() => {
-      setTimeLeft(calculateTimeToTopOfHour())
+      const time = calculateTimeToTopOfHour()
+      setTimeLeft(time)
+      
+      // Auto-hide at top of the hour (when both minutes and seconds are 59, we just hit the top)
+      if (time.minutes === 59 && time.seconds === 59) {
+        onHide()
+      }
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [isVisible])
+  }, [isVisible, onHide])
 
   // Rainbow rotation animation
   useEffect(() => {

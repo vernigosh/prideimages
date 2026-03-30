@@ -94,13 +94,14 @@ export function StreamCreditsComponent({
           <h1 className="text-6xl font-bold mb-4 text-white">
             STREAM CREDITS
           </h1>
-          <p className="text-4xl text-white">Thank you for watching!</p>
+          <p className="text-3xl text-white">Thank you for watching!</p>
+          <p className="text-3xl text-white mt-2">Shout out to these legends for today&apos;s stream!</p>
         </div>
 
         {/* New Followers */}
         {hasFollowers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">New Followers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">New Follows</h2>
             <div className="space-y-3">
               {streamCredits.followers.map((follower, i) => (
                 <p key={i} className="text-4xl text-white">
@@ -114,7 +115,7 @@ export function StreamCreditsComponent({
         {/* Subscribers - only non-gifted subs */}
         {hasSubscribers && streamCredits.subscribers.filter(s => !s.gifted).length > 0 && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Subscribers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Subs</h2>
             <div className="space-y-3">
               {streamCredits.subscribers
                 .filter((sub) => !sub.gifted)
@@ -161,10 +162,10 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* Cheerers */}
+        {/* Bits */}
         {hasCheerers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Bit Cheerers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Bits</h2>
             <div className="space-y-3">
               {streamCredits.cheerers
                 .sort((a, b) => b.bits - a.bits)
@@ -237,11 +238,11 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* Flower Legends (10+ flowers this stream) */}
+        {/* Flowerboard - top pickers this stream */}
         {hasLegends && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Flower Legends</h2>
-            <p className="text-3xl text-white mb-4">10+ flowers this stream</p>
+            <h2 className="text-5xl font-bold text-white mb-6">Flowerboard</h2>
+            <p className="text-3xl text-white mb-4">Top pickers this stream</p>
             <div className="space-y-3">
               {flowerLegends
                 .sort((a, b) => b.count - a.count)
@@ -275,7 +276,8 @@ export function StreamCreditsComponent({
 
         {/* End Credits */}
         <div className="mt-20 mb-24">
-          <p className="text-4xl text-white mb-2">See you next stream!</p>
+          <p className="text-4xl text-white mb-4">Thank you all for your kind support!</p>
+          <p className="text-4xl text-white">See you next stream!</p>
         </div>
       </div>
     </div>

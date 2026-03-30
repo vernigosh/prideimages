@@ -76,6 +76,9 @@ export function StreamCreditsComponent({
   const hasTippers = streamCredits.tippers.length > 0
   const hasCheerers = streamCredits.cheerers.length > 0
   const hasRaiders = streamCredits.raiders.length > 0
+  const hasMerchBuyers = streamCredits.merchBuyers?.length > 0
+  const hasCharityDonors = streamCredits.charityDonors?.length > 0
+  const hasRedeemers = streamCredits.redeemers?.length > 0
   const hasLegends = flowerLegends.length > 0
   const hasGuardians = guardians.length > 0
 
@@ -91,27 +94,31 @@ export function StreamCreditsComponent({
           <h1 className="text-6xl font-bold mb-4 text-white">
             STREAM CREDITS
           </h1>
-          <p className="text-4xl text-white">Thank you for watching!</p>
+          <p className="text-3xl text-white">Thank you for watching!</p>
+          <p className="text-3xl text-white mt-2">Shout out to these legends for today&apos;s stream!</p>
         </div>
 
-        {/* New Followers */}
-        {hasFollowers && (
+        {/* Subscribers - all subs, gifted marked with asterisk */}
+        {hasSubscribers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">New Followers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Subs</h2>
             <div className="space-y-3">
-              {streamCredits.followers.map((follower, i) => (
-                <p key={i} className="text-4xl text-white">
-                  {follower}
-                </p>
-              ))}
+              {streamCredits.subscribers
+                .sort((a, b) => b.months - a.months)
+                .map((sub, i) => (
+                  <p key={i} className="text-4xl text-white">
+                    {sub.gifted ? "*" : ""}{sub.name}
+                    {!sub.gifted && (sub.months > 1 ? ` (${sub.months} months)` : " (New!)")}
+                  </p>
+                ))}
             </div>
           </div>
         )}
 
-        {/* Gift Sub Bombers */}
+        {/* Sub Gifters */}
         {hasGiftSubs && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Gift Sub Bombers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Sub Gifters</h2>
             <div className="space-y-3">
               {streamCredits.giftSubs
                 .sort((a, b) => b.count - a.count)
@@ -124,18 +131,16 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* Subscribers */}
-        {hasSubscribers && (
+        {/* Bits */}
+        {hasCheerers && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Subscribers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Bits</h2>
             <div className="space-y-3">
-              {streamCredits.subscribers
-                .sort((a, b) => b.months - a.months)
-                .map((sub, i) => (
+              {streamCredits.cheerers
+                .sort((a, b) => b.bits - a.bits)
+                .map((cheerer, i) => (
                   <p key={i} className="text-4xl text-white">
-                    {sub.name}
-                    {sub.months > 1 ? ` (${sub.months} months)` : ""}
-                    {sub.gifted && sub.gifter ? ` - gifted by ${sub.gifter}` : ""}
+                    {cheerer.name} - {cheerer.bits} bits
                   </p>
                 ))}
             </div>
@@ -158,22 +163,6 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* Cheerers */}
-        {hasCheerers && (
-          <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Bit Cheerers</h2>
-            <div className="space-y-3">
-              {streamCredits.cheerers
-                .sort((a, b) => b.bits - a.bits)
-                .map((cheerer, i) => (
-                  <p key={i} className="text-4xl text-white">
-                    {cheerer.name} - {cheerer.bits} bits
-                  </p>
-                ))}
-            </div>
-          </div>
-        )}
-
         {/* Raiders */}
         {hasRaiders && (
           <div className="mb-12">
@@ -188,11 +177,71 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* Flower Legends (10+ flowers this stream) */}
+        {/* New Followers */}
+        {hasFollowers && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">New Follows</h2>
+            <div className="space-y-3">
+              {streamCredits.followers.map((follower, i) => (
+                <p key={i} className="text-4xl text-white">
+                  {follower}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Merch Buyers */}
+        {hasMerchBuyers && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">Merch Supporters</h2>
+            <div className="space-y-3">
+              {streamCredits.merchBuyers
+                .sort((a, b) => b.amount - a.amount)
+                .map((buyer, i) => (
+                  <p key={i} className="text-4xl text-white">
+                    {buyer.name} - {buyer.items.join(", ")}
+                  </p>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Charity Donors */}
+        {hasCharityDonors && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">Charity Donors</h2>
+            <div className="space-y-3">
+              {streamCredits.charityDonors
+                .sort((a, b) => b.amount - a.amount)
+                .map((donor, i) => (
+                  <p key={i} className="text-4xl text-white">
+                    {donor.name} - ${donor.amount}
+                  </p>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Channel Point Redeemers */}
+        {hasRedeemers && (
+          <div className="mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">Channel Redeemers</h2>
+            <div className="space-y-3">
+              {streamCredits.redeemers.map((redeemer, i) => (
+                <p key={i} className="text-4xl text-white">
+                  {redeemer.name} - {redeemer.redeems.length} redeem{redeemer.redeems.length > 1 ? "s" : ""}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Flowerboard - top pickers this stream */}
         {hasLegends && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Flower Legends</h2>
-            <p className="text-3xl text-white mb-4">10+ flowers this stream</p>
+            <h2 className="text-5xl font-bold text-white mb-6">Flowerboard</h2>
+            <p className="text-3xl text-white mb-4">Top pickers this stream</p>
             <div className="space-y-3">
               {flowerLegends
                 .sort((a, b) => b.count - a.count)
@@ -226,7 +275,8 @@ export function StreamCreditsComponent({
 
         {/* End Credits */}
         <div className="mt-20 mb-24">
-          <p className="text-4xl text-white mb-2">See you next stream!</p>
+          <p className="text-4xl text-white mb-4">Thank you all for your kind support!</p>
+          <p className="text-4xl text-white">See you next stream!</p>
         </div>
       </div>
     </div>

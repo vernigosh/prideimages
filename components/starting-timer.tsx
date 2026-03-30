@@ -55,36 +55,46 @@ export function StartingTimer({ isVisible, onHide }: StartingTimerProps) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
-      <div className="relative flex flex-col items-center">
-        {/* Rainbow ring */}
-        <div
-          className="relative w-[400px] h-[400px] rounded-full p-2"
-          style={{
-            background: `conic-gradient(from ${rotation}deg, 
-              #ff0000, 
-              #ff8000, 
-              #ffff00, 
-              #00ff00, 
-              #00ffff, 
-              #0080ff, 
-              #8000ff, 
-              #ff0080, 
-              #ff0000
-            )`,
-          }}
-        >
-          {/* Inner black circle */}
-          <div className="w-full h-full rounded-full bg-black/90 flex flex-col items-center justify-center">
-            {/* Countdown */}
-            <div className="text-8xl font-bold text-white font-mono tracking-wider">
-              {formatTime(timeLeft.minutes, timeLeft.seconds)}
-            </div>
-            
-            {/* Text */}
-            <div className="mt-4 text-2xl text-white text-center px-8">
-              The stream is starting soon
+      <div className="flex flex-col items-center justify-center gap-4 font-bold">
+        {/* Rainbow ring with timer */}
+        <div className="relative w-64 h-64">
+          {/* Rainbow ring using SVG */}
+          <svg className="absolute w-full h-full" viewBox="0 0 200 200">
+            <defs>
+              <linearGradient id="rainbowGradient" gradientTransform={`rotate(${rotation})`}>
+                <stop offset="0%" stopColor="#ff0000" />
+                <stop offset="14%" stopColor="#ff8000" />
+                <stop offset="28%" stopColor="#ffff00" />
+                <stop offset="42%" stopColor="#00ff00" />
+                <stop offset="57%" stopColor="#00ffff" />
+                <stop offset="71%" stopColor="#0080ff" />
+                <stop offset="85%" stopColor="#8000ff" />
+                <stop offset="100%" stopColor="#ff0080" />
+              </linearGradient>
+            </defs>
+            {/* Background ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r="85"
+              fill="none"
+              stroke="url(#rainbowGradient)"
+              strokeWidth="12"
+            />
+          </svg>
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-5xl text-white drop-shadow-lg font-bold font-sans">
+                {formatTime(timeLeft.minutes, timeLeft.seconds)}
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Text outside the circle */}
+        <div className="text-4xl text-white text-center drop-shadow-lg font-bold font-sans">
+          The stream is starting soon
         </div>
       </div>
     </div>

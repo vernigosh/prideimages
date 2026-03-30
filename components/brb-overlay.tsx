@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef, useCallback } from "react"
+import { useEffect, useState, useRef } from "react"
 
 interface BrbOverlayProps {
   isVisible: boolean
@@ -23,11 +23,13 @@ const COLORS = [
 
 export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
   const [timeLeft, setTimeLeft] = useState(duration ? duration * 60 : 0)
-  const [position, setPosition] = useState({ x: 100, y: 100 })
-  const [velocity, setVelocity] = useState({ x: 2, y: 1.5 })
+  const [renderTick, setRenderTick] = useState(0)
   const [colorIndex, setColorIndex] = useState(0)
+  
   const animationRef = useRef<number>()
   const containerRef = useRef<HTMLDivElement>(null)
+  const positionRef = useRef({ x: 100, y: 100 })
+  const velocityRef = useRef({ x: 2, y: 1.5 })
 
   // Logo dimensions
   const logoWidth = 300
@@ -53,50 +55,6 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
   }, [isVisible, duration, onHide])
 
   // Bouncing animation
-  const animate = useCallback(() => {
-    if (!containerRef.current) return
-
-    const containerWidth = window.innerWidth
-    const containerHeight = window.innerHeight
-
-    setPosition((prev) => {
-      let newX = prev.x + velocity.x
-      let newY = prev.y + velocity.y
-      let bounced = false
-
-      // Check horizontal bounds
-      if (newX <= 0) {
-        newX = 0
-        setVelocity((v) => ({ ...v, x: Math.abs(v.x) }))
-        bounced = true
-      } else if (newX + logoWidth >= containerWidth) {
-        newX = containerWidth - logoWidth
-        setVelocity((v) => ({ ...v, x: -Math.abs(v.x) }))
-        bounced = true
-      }
-
-      // Check vertical bounds
-      if (newY <= 0) {
-        newY = 0
-        setVelocity((v) => ({ ...v, y: Math.abs(v.y) }))
-        bounced = true
-      } else if (newY + logoHeight >= containerHeight) {
-        newY = containerHeight - logoHeight
-        setVelocity((v) => ({ ...v, y: -Math.abs(v.y) }))
-        bounced = true
-      }
-
-      // Change color on bounce
-      if (bounced) {
-        setColorIndex((prev) => (prev + 1) % COLORS.length)
-      }
-
-      return { x: newX, y: newY }
-    })
-
-    animationRef.current = requestAnimationFrame(animate)
-  }, [velocity])
-
   useEffect(() => {
     if (!isVisible) {
       if (animationRef.current) {
@@ -106,16 +64,61 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
     }
 
     // Initialize random position
-    setPosition({
+    positionRef.current = {
       x: Math.random() * (window.innerWidth - logoWidth),
       y: Math.random() * (window.innerHeight - logoHeight),
-    })
+    }
 
     // Initialize random velocity (direction)
-    setVelocity({
+    velocityRef.current = {
       x: (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random()),
       y: (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random()),
-    })
+    }
+
+    const animate = () => {
+      const containerWidth = window.innerWidth
+      const containerHeight = window.innerHeight
+      const pos = positionRef.current
+      const vel = velocityRef.current
+
+      let newX = pos.x + vel.x
+      let newY = pos.y + vel.y
+      let bounced = false
+
+      // Check horizontal bounds
+      if (newX <= 0) {
+        newX = 0
+        vel.x = Math.abs(vel.x)
+        bounced = true
+      } else if (newX + logoWidth >= containerWidth) {
+        newX = containerWidth - logoWidth
+        vel.x = -Math.abs(vel.x)
+        bounced = true
+      }
+
+      // Check vertical bounds
+      if (newY <= 0) {
+        newY = 0
+        vel.y = Math.abs(vel.y)
+        bounced = true
+      } else if (newY + logoHeight >= containerHeight) {
+        newY = containerHeight - logoHeight
+        vel.y = -Math.abs(vel.y)
+        bounced = true
+      }
+
+      positionRef.current = { x: newX, y: newY }
+
+      // Change color on bounce
+      if (bounced) {
+        setColorIndex((prev) => (prev + 1) % COLORS.length)
+      }
+
+      // Trigger re-render
+      setRenderTick((prev) => prev + 1)
+
+      animationRef.current = requestAnimationFrame(animate)
+    }
 
     animationRef.current = requestAnimationFrame(animate)
 
@@ -124,7 +127,7 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [isVisible, animate])
+  }, [isVisible])
 
   if (!isVisible) return null
 
@@ -148,8 +151,8 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
       <div
         className="absolute flex flex-col items-center justify-center font-bold font-sans"
         style={{
-          left: position.x,
-          top: position.y,
+          left: positionRef.current.x,
+          top: positionRef.current.y,
           width: logoWidth,
           height: logoHeight,
           transition: "color 0.3s ease",

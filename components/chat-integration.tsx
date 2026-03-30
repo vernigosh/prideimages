@@ -323,13 +323,25 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide credits command detected")
           window.dispatchEvent(new CustomEvent("hideCredits", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!startingtimer" && (isMod || isBroadcaster || isVip)) {
-          console.log("Starting timer command detected")
+        } else if (command === "!startingsoon" && (isMod || isBroadcaster || isVip)) {
+          console.log("Starting soon command detected")
           window.dispatchEvent(new CustomEvent("showStartingTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!hidestartingtimer" && (isMod || isBroadcaster || isVip)) {
-          console.log("Hide starting timer command detected")
+        } else if (command === "!hidestartingsoon" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide starting soon command detected")
           window.dispatchEvent(new CustomEvent("hideStartingTimer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command.startsWith("!brb") && isBroadcaster) {
+          console.log("BRB command detected")
+          // Check if there's a duration parameter (e.g., !brb 5 for 5 minutes)
+          const parts = command.split(" ")
+          const durationArg = parts[1] ? parseInt(parts[1], 10) : undefined
+          const duration = isNaN(durationArg as number) ? undefined : durationArg
+          window.dispatchEvent(new CustomEvent("showBrb", { detail: { username, duration } }))
+          addRecentCommand(`!brb${duration ? ` ${duration}` : ""} by ${username}`)
+        } else if (command === "!back" && isBroadcaster) {
+          console.log("Back command detected - hiding BRB")
+          window.dispatchEvent(new CustomEvent("hideBrb", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!testflowerboard" && (isMod || isBroadcaster || isVip)) {
           console.log("Test flowerboard command detected")

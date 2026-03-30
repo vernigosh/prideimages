@@ -25,6 +25,7 @@ import { BoardOfGuardians } from "@/components/board-of-guardians" // Import Boa
 import { StreamCreditsComponent as StreamCredits } from "@/components/stream-credits" // Import StreamCredits component
 import { useStreamElements } from "@/components/streamelements-service" // Import StreamElements service
 import { StartingTimer } from "@/components/starting-timer" // Import StartingTimer component
+import { BrbOverlay } from "@/components/brb-overlay" // Import BRB overlay component
 
 interface Trick {
   name: string
@@ -215,6 +216,10 @@ export default function DJRandomizer() {
   
   // Starting Timer settings
   const [showStartingTimer, setShowStartingTimer] = useState(false)
+  
+  // BRB overlay settings
+  const [showBrb, setShowBrb] = useState(false)
+  const [brbDuration, setBrbDuration] = useState<number | undefined>(undefined)
   const [flowerLegends, setFlowerLegends] = useState<Array<{ username: string; count: number }>>([])
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
@@ -391,10 +396,21 @@ export default function DJRandomizer() {
       setShowStartingTimer(true)
     }
 
-    const handleHideStartingTimer = () => {
-      setShowStartingTimer(false)
+const handleHideStartingTimer = () => {
+  setShowStartingTimer(false)
+  }
+
+    const handleShowBrb = (e: CustomEvent) => {
+      const duration = e.detail?.duration
+      setBrbDuration(duration)
+      setShowBrb(true)
     }
 
+    const handleHideBrb = () => {
+      setShowBrb(false)
+      setBrbDuration(undefined)
+    }
+  
     const handleHideAllCelebrations = () => {
       setShowFlowerCelebration(false)
       setShowBeeParadeCelebration(false)
@@ -432,9 +448,11 @@ export default function DJRandomizer() {
     window.addEventListener("showGuardians", handleShowGuardians as EventListener)
     window.addEventListener("showCredits", handleShowCredits as EventListener)
     window.addEventListener("hideCredits", handleHideCredits as EventListener)
-    window.addEventListener("showStartingTimer", handleShowStartingTimer as EventListener)
+window.addEventListener("showStartingTimer", handleShowStartingTimer as EventListener)
     window.addEventListener("hideStartingTimer", handleHideStartingTimer as EventListener)
-
+    window.addEventListener("showBrb", handleShowBrb as EventListener)
+    window.addEventListener("hideBrb", handleHideBrb as EventListener)
+    
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
       window.removeEventListener("startWorkTimer", handleStartWorkTimer as EventListener)
@@ -464,8 +482,10 @@ export default function DJRandomizer() {
       window.removeEventListener("hideCredits", handleHideCredits as EventListener)
       window.removeEventListener("showStartingTimer", handleShowStartingTimer as EventListener)
       window.removeEventListener("hideStartingTimer", handleHideStartingTimer as EventListener)
+      window.removeEventListener("showBrb", handleShowBrb as EventListener)
+      window.removeEventListener("hideBrb", handleHideBrb as EventListener)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks-exhaustive-deps
   }, [])
 
   // Simulate chat command integration
@@ -835,6 +855,16 @@ export default function DJRandomizer() {
         <StartingTimer
           isVisible={showStartingTimer}
           onHide={() => setShowStartingTimer(false)}
+        />
+
+        {/* BRB Overlay */}
+        <BrbOverlay
+          isVisible={showBrb}
+          onHide={() => {
+            setShowBrb(false)
+            setBrbDuration(undefined)
+          }}
+          duration={brbDuration}
         />
       </div>
 

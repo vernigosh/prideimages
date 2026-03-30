@@ -111,34 +111,34 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* Gift Sub Bombers */}
-        {hasGiftSubs && (
+        {/* Subscribers - only non-gifted subs */}
+        {hasSubscribers && streamCredits.subscribers.filter(s => !s.gifted).length > 0 && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Gift Sub Bombers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Subscribers</h2>
             <div className="space-y-3">
-              {streamCredits.giftSubs
-                .sort((a, b) => b.count - a.count)
-                .map((gifter, i) => (
+              {streamCredits.subscribers
+                .filter((sub) => !sub.gifted)
+                .sort((a, b) => b.months - a.months)
+                .map((sub, i) => (
                   <p key={i} className="text-4xl text-white">
-                    {gifter.gifter} - {gifter.count} gift {gifter.count === 1 ? "sub" : "subs"}
+                    {sub.name}
+                    {sub.months > 1 ? ` (${sub.months} months)` : " (New!)"}
                   </p>
                 ))}
             </div>
           </div>
         )}
 
-        {/* Subscribers */}
-        {hasSubscribers && (
+        {/* Sub Gifters */}
+        {hasGiftSubs && (
           <div className="mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">Subscribers</h2>
+            <h2 className="text-5xl font-bold text-white mb-6">Sub Gifters</h2>
             <div className="space-y-3">
-              {streamCredits.subscribers
-                .sort((a, b) => b.months - a.months)
-                .map((sub, i) => (
+              {streamCredits.giftSubs
+                .sort((a, b) => b.count - a.count)
+                .map((gifter, i) => (
                   <p key={i} className="text-4xl text-white">
-                    {sub.name}
-                    {sub.months > 1 ? ` (${sub.months} months)` : ""}
-                    {sub.gifted && sub.gifter ? ` - gifted by ${sub.gifter}` : ""}
+                    {gifter.gifter} - {gifter.count} gift {gifter.count === 1 ? "sub" : "subs"}
                   </p>
                 ))}
             </div>

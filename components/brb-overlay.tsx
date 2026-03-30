@@ -26,15 +26,30 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
   const [colorIndex, setColorIndex] = useState(0)
   
   const intervalRef = useRef<NodeJS.Timeout>()
+  const autoHideRef = useRef<NodeJS.Timeout>()
   const logoRef = useRef<HTMLDivElement>(null)
   const positionRef = useRef({ x: 100, y: 100 })
   const velocityRef = useRef({ x: 3, y: 2.25 })
 
-  // Logo dimensions
-  const logoWidth = 200
-  const logoHeight = 100
+  // Auto-hide after 2 minutes if no duration specified
+  useEffect(() => {
+    if (!isVisible) return
 
-  // Timer countdown
+    // If no duration specified, auto-hide after 2 minutes
+    if (!duration) {
+      autoHideRef.current = setTimeout(() => {
+        onHide()
+      }, 2 * 60 * 1000) // 2 minutes
+    }
+
+    return () => {
+      if (autoHideRef.current) {
+        clearTimeout(autoHideRef.current)
+      }
+    }
+  }, [isVisible, duration, onHide])
+
+  // Timer countdown (only if duration is specified)
   useEffect(() => {
     if (!isVisible || !duration) return
 
@@ -76,8 +91,13 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
 
     // Update at ~30fps (33ms) for smooth but not frantic movement
     intervalRef.current = setInterval(() => {
+      if (!logoRef.current) return
+      
       const containerWidth = window.innerWidth
       const containerHeight = window.innerHeight
+      const rect = logoRef.current.getBoundingClientRect()
+      const actualWidth = rect.width
+      const actualHeight = rect.height
       const pos = positionRef.current
       const vel = velocityRef.current
 
@@ -90,8 +110,8 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
         newX = 0
         vel.x = Math.abs(vel.x)
         bounced = true
-      } else if (newX + logoWidth >= containerWidth) {
-        newX = containerWidth - logoWidth
+      } else if (newX + actualWidth >= containerWidth) {
+        newX = containerWidth - actualWidth
         vel.x = -Math.abs(vel.x)
         bounced = true
       }
@@ -101,8 +121,8 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
         newY = 0
         vel.y = Math.abs(vel.y)
         bounced = true
-      } else if (newY + logoHeight >= containerHeight) {
-        newY = containerHeight - logoHeight
+      } else if (newY + actualHeight >= containerHeight) {
+        newY = containerHeight - actualHeight
         vel.y = -Math.abs(vel.y)
         bounced = true
       }
@@ -110,9 +130,7 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
       positionRef.current = { x: newX, y: newY }
 
       // Directly update the DOM element position (no React re-render)
-      if (logoRef.current) {
-        logoRef.current.style.transform = `translate(${newX}px, ${newY}px)`
-      }
+      logoRef.current.style.transform = `translate(${newX}px, ${newY}px)`
 
       // Change color on bounce (this triggers a re-render, but only on bounces)
       if (bounced) {
@@ -142,13 +160,11 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
       {/* Bouncing BRB logo */}
       <div
         ref={logoRef}
-        className="absolute flex flex-col items-center justify-center font-bold font-sans"
+        className="absolute font-bold font-sans"
         style={{
           left: 0,
           top: 0,
           transform: `translate(${positionRef.current.x}px, ${positionRef.current.y}px)`,
-          width: logoWidth,
-          height: logoHeight,
         }}
       >
         {/* BRB Text */}
@@ -162,7 +178,7 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
         {/* Timer if duration is set */}
         {duration && (
           <div
-            className="text-2xl font-bold mt-1"
+            className="text-2xl font-bold mt-1 text-center"
             style={{ color: currentColor }}
           >
             {formatTime(timeLeft)}

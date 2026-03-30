@@ -331,7 +331,7 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide starting soon command detected")
           window.dispatchEvent(new CustomEvent("hideStartingTimer", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
-        } else if (command.startsWith("!brb") && (isMod || isBroadcaster || isVip)) {
+        } else if (command.startsWith("!brb") && isBroadcaster) {
           console.log("BRB command detected")
           // Check if there's a duration parameter (e.g., !brb 5 for 5 minutes)
           const parts = command.split(" ")
@@ -339,8 +339,8 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           const duration = isNaN(durationArg as number) ? undefined : durationArg
           window.dispatchEvent(new CustomEvent("showBrb", { detail: { username, duration } }))
           addRecentCommand(`!brb${duration ? ` ${duration}` : ""} by ${username}`)
-        } else if (command === "!hidebrb" && (isMod || isBroadcaster || isVip)) {
-          console.log("Hide BRB command detected")
+        } else if (command === "!back" && isBroadcaster) {
+          console.log("Back command detected - hiding BRB")
           window.dispatchEvent(new CustomEvent("hideBrb", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
         } else if (command === "!testflowerboard" && (isMod || isBroadcaster || isVip)) {

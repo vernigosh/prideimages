@@ -112,18 +112,17 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* Subscribers - only non-gifted subs */}
-        {hasSubscribers && streamCredits.subscribers.filter(s => !s.gifted).length > 0 && (
+        {/* Subscribers - all subs, gifted marked with asterisk */}
+        {hasSubscribers && (
           <div className="mb-12">
             <h2 className="text-5xl font-bold text-white mb-6">Subs</h2>
             <div className="space-y-3">
               {streamCredits.subscribers
-                .filter((sub) => !sub.gifted)
                 .sort((a, b) => b.months - a.months)
                 .map((sub, i) => (
                   <p key={i} className="text-4xl text-white">
-                    {sub.name}
-                    {sub.months > 1 ? ` (${sub.months} months)` : " (New!)"}
+                    {sub.gifted ? "*" : ""}{sub.name}
+                    {!sub.gifted && (sub.months > 1 ? ` (${sub.months} months)` : " (New!)")}
                   </p>
                 ))}
             </div>

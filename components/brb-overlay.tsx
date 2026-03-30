@@ -28,11 +28,11 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
   const intervalRef = useRef<NodeJS.Timeout>()
   const logoRef = useRef<HTMLDivElement>(null)
   const positionRef = useRef({ x: 100, y: 100 })
-  const velocityRef = useRef({ x: 1, y: 0.75 })
+  const velocityRef = useRef({ x: 3, y: 2.25 })
 
   // Logo dimensions
-  const logoWidth = 300
-  const logoHeight = 150
+  const logoWidth = 200
+  const logoHeight = 100
 
   // Timer countdown
   useEffect(() => {
@@ -68,10 +68,10 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
       y: Math.random() * (window.innerHeight - logoHeight),
     }
 
-    // Initialize random velocity (slow speed for DVD effect)
+    // Initialize random velocity (faster like the DVD website)
     velocityRef.current = {
-      x: (Math.random() > 0.5 ? 1 : -1) * 1,
-      y: (Math.random() > 0.5 ? 1 : -1) * 0.75,
+      x: (Math.random() > 0.5 ? 1 : -1) * 3,
+      y: (Math.random() > 0.5 ? 1 : -1) * 2.25,
     }
 
     // Update at ~30fps (33ms) for smooth but not frantic movement
@@ -138,12 +138,7 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
   const currentColor = COLORS[colorIndex]
 
   return (
-    <div 
-      className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden"
-      style={{
-        background: "rgba(0, 0, 0, 0.3)"
-      }}
-    >
+    <div className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden">
       {/* Bouncing BRB logo */}
       <div
         ref={logoRef}
@@ -154,16 +149,12 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
           transform: `translate(${positionRef.current.x}px, ${positionRef.current.y}px)`,
           width: logoWidth,
           height: logoHeight,
-          transition: "color 0.3s ease",
         }}
       >
         {/* BRB Text */}
         <div
-          className="text-8xl font-bold drop-shadow-2xl"
-          style={{
-            color: currentColor,
-            textShadow: `0 0 30px ${currentColor}, 0 0 60px ${currentColor}`,
-          }}
+          className="text-7xl font-bold"
+          style={{ color: currentColor }}
         >
           BRB
         </div>
@@ -171,11 +162,8 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
         {/* Timer if duration is set */}
         {duration && (
           <div
-            className="text-3xl font-bold mt-2"
-            style={{
-              color: currentColor,
-              textShadow: `0 0 20px ${currentColor}`,
-            }}
+            className="text-2xl font-bold mt-1"
+            style={{ color: currentColor }}
           >
             {formatTime(timeLeft)}
           </div>

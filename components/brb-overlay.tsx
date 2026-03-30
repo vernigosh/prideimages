@@ -139,7 +139,6 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
 
   return (
     <div 
-      ref={containerRef}
       className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden"
       style={{
         background: "rgba(0, 0, 0, 0.3)"

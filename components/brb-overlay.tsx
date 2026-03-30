@@ -23,13 +23,12 @@ const COLORS = [
 
 export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
   const [timeLeft, setTimeLeft] = useState(duration ? duration * 60 : 0)
-  const [renderTick, setRenderTick] = useState(0)
   const [colorIndex, setColorIndex] = useState(0)
   
-  const animationRef = useRef<number>()
-  const containerRef = useRef<HTMLDivElement>(null)
+  const intervalRef = useRef<NodeJS.Timeout>()
+  const logoRef = useRef<HTMLDivElement>(null)
   const positionRef = useRef({ x: 100, y: 100 })
-  const velocityRef = useRef({ x: 2, y: 1.5 })
+  const velocityRef = useRef({ x: 1, y: 0.75 })
 
   // Logo dimensions
   const logoWidth = 300
@@ -54,11 +53,11 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
     return () => clearInterval(interval)
   }, [isVisible, duration, onHide])
 
-  // Bouncing animation
+  // Bouncing animation - using setInterval for slower, smoother movement
   useEffect(() => {
     if (!isVisible) {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
       }
       return
     }
@@ -69,13 +68,14 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
       y: Math.random() * (window.innerHeight - logoHeight),
     }
 
-    // Initialize random velocity (direction)
+    // Initialize random velocity (slow speed for DVD effect)
     velocityRef.current = {
-      x: (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random()),
-      y: (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random()),
+      x: (Math.random() > 0.5 ? 1 : -1) * 1,
+      y: (Math.random() > 0.5 ? 1 : -1) * 0.75,
     }
 
-    const animate = () => {
+    // Update at ~30fps (33ms) for smooth but not frantic movement
+    intervalRef.current = setInterval(() => {
       const containerWidth = window.innerWidth
       const containerHeight = window.innerHeight
       const pos = positionRef.current
@@ -109,22 +109,20 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
 
       positionRef.current = { x: newX, y: newY }
 
-      // Change color on bounce
+      // Directly update the DOM element position (no React re-render)
+      if (logoRef.current) {
+        logoRef.current.style.transform = `translate(${newX}px, ${newY}px)`
+      }
+
+      // Change color on bounce (this triggers a re-render, but only on bounces)
       if (bounced) {
         setColorIndex((prev) => (prev + 1) % COLORS.length)
       }
-
-      // Trigger re-render
-      setRenderTick((prev) => prev + 1)
-
-      animationRef.current = requestAnimationFrame(animate)
-    }
-
-    animationRef.current = requestAnimationFrame(animate)
+    }, 33)
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
       }
     }
   }, [isVisible])
@@ -149,10 +147,12 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
     >
       {/* Bouncing BRB logo */}
       <div
+        ref={logoRef}
         className="absolute flex flex-col items-center justify-center font-bold font-sans"
         style={{
-          left: positionRef.current.x,
-          top: positionRef.current.y,
+          left: 0,
+          top: 0,
+          transform: `translate(${positionRef.current.x}px, ${positionRef.current.y}px)`,
           width: logoWidth,
           height: logoHeight,
           transition: "color 0.3s ease",

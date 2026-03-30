@@ -77,10 +77,12 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
       return
     }
 
-    // Initialize random position
+    // Initialize random position (estimate initial size, will adjust on first frame)
+    const estimatedWidth = 200
+    const estimatedHeight = 100
     positionRef.current = {
-      x: Math.random() * (window.innerWidth - logoWidth),
-      y: Math.random() * (window.innerHeight - logoHeight),
+      x: Math.random() * (window.innerWidth - estimatedWidth),
+      y: Math.random() * (window.innerHeight - estimatedHeight),
     }
 
     // Initialize random velocity (faster like the DVD website)

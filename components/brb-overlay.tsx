@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 
 interface BrbOverlayProps {
   isVisible: boolean
@@ -8,18 +8,30 @@ interface BrbOverlayProps {
   duration?: number // Duration in minutes, undefined means no timer
 }
 
-// Ring progress calculation
-function getRingProps(progress: number) {
-  const radius = 85
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference * (1 - progress)
-  return { radius, circumference, strokeDashoffset }
-}
+// Rainbow colors to cycle through on bounce
+const COLORS = [
+  "#ff0000", // Red
+  "#ff8000", // Orange
+  "#ffff00", // Yellow
+  "#00ff00", // Green
+  "#00ffff", // Cyan
+  "#0080ff", // Blue
+  "#8000ff", // Purple
+  "#ff00ff", // Magenta
+  "#ff0080", // Pink
+]
 
 export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
   const [timeLeft, setTimeLeft] = useState(duration ? duration * 60 : 0)
-  const [initialTime] = useState(duration ? duration * 60 : 0)
-  const [pulse, setPulse] = useState(0)
+  const [position, setPosition] = useState({ x: 100, y: 100 })
+  const [velocity, setVelocity] = useState({ x: 2, y: 1.5 })
+  const [colorIndex, setColorIndex] = useState(0)
+  const animationRef = useRef<number>()
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Logo dimensions
+  const logoWidth = 300
+  const logoHeight = 150
 
   // Timer countdown
   useEffect(() => {
@@ -40,16 +52,79 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
     return () => clearInterval(interval)
   }, [isVisible, duration, onHide])
 
-  // Pulse animation for no-timer mode
+  // Bouncing animation
+  const animate = useCallback(() => {
+    if (!containerRef.current) return
+
+    const containerWidth = window.innerWidth
+    const containerHeight = window.innerHeight
+
+    setPosition((prev) => {
+      let newX = prev.x + velocity.x
+      let newY = prev.y + velocity.y
+      let bounced = false
+
+      // Check horizontal bounds
+      if (newX <= 0) {
+        newX = 0
+        setVelocity((v) => ({ ...v, x: Math.abs(v.x) }))
+        bounced = true
+      } else if (newX + logoWidth >= containerWidth) {
+        newX = containerWidth - logoWidth
+        setVelocity((v) => ({ ...v, x: -Math.abs(v.x) }))
+        bounced = true
+      }
+
+      // Check vertical bounds
+      if (newY <= 0) {
+        newY = 0
+        setVelocity((v) => ({ ...v, y: Math.abs(v.y) }))
+        bounced = true
+      } else if (newY + logoHeight >= containerHeight) {
+        newY = containerHeight - logoHeight
+        setVelocity((v) => ({ ...v, y: -Math.abs(v.y) }))
+        bounced = true
+      }
+
+      // Change color on bounce
+      if (bounced) {
+        setColorIndex((prev) => (prev + 1) % COLORS.length)
+      }
+
+      return { x: newX, y: newY }
+    })
+
+    animationRef.current = requestAnimationFrame(animate)
+  }, [velocity])
+
   useEffect(() => {
-    if (!isVisible) return
+    if (!isVisible) {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      return
+    }
 
-    const pulseInterval = setInterval(() => {
-      setPulse((prev) => (prev + 1) % 360)
-    }, 30)
+    // Initialize random position
+    setPosition({
+      x: Math.random() * (window.innerWidth - logoWidth),
+      y: Math.random() * (window.innerHeight - logoHeight),
+    })
 
-    return () => clearInterval(pulseInterval)
-  }, [isVisible])
+    // Initialize random velocity (direction)
+    setVelocity({
+      x: (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random()),
+      y: (Math.random() > 0.5 ? 1 : -1) * (1.5 + Math.random()),
+    })
+
+    animationRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [isVisible, animate])
 
   if (!isVisible) return null
 
@@ -59,111 +134,50 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  const progress = initialTime > 0 ? 1 - (timeLeft / initialTime) : 0
-  const { radius, circumference, strokeDashoffset } = getRingProps(progress)
-
-  // Animated scale for the BRB text
-  const scale = 1 + Math.sin(pulse * 0.05) * 0.05
+  const currentColor = COLORS[colorIndex]
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
-      {/* Gradient background */}
-      <div 
-        className="absolute inset-0"
+    <div 
+      ref={containerRef}
+      className="fixed inset-0 z-[9999] pointer-events-none overflow-hidden"
+      style={{
+        background: "rgba(0, 0, 0, 0.3)"
+      }}
+    >
+      {/* Bouncing BRB logo */}
+      <div
+        className="absolute flex flex-col items-center justify-center font-bold font-sans"
         style={{
-          background: "radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 30%, transparent 60%)"
+          left: position.x,
+          top: position.y,
+          width: logoWidth,
+          height: logoHeight,
+          transition: "color 0.3s ease",
         }}
-      />
-      
-      <div className="relative flex flex-col items-center justify-center gap-4 font-bold">
-        {duration ? (
-          // Timer mode - show ring with countdown
-          <div className="relative w-64 h-64">
-            <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">
-              <defs>
-                <linearGradient id="brbGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ff00ff" />
-                  <stop offset="50%" stopColor="#ff66ff" />
-                  <stop offset="100%" stopColor="#ff00ff" />
-                </linearGradient>
-              </defs>
-              {/* Background ring */}
-              <circle
-                cx="100"
-                cy="100"
-                r={radius}
-                fill="none"
-                stroke="rgba(255, 255, 255, 0.2)"
-                strokeWidth="12"
-              />
-              {/* Progress ring */}
-              <circle
-                cx="100"
-                cy="100"
-                r={radius}
-                fill="none"
-                stroke="url(#brbGradient)"
-                strokeWidth="12"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
-              />
-            </svg>
+      >
+        {/* BRB Text */}
+        <div
+          className="text-8xl font-bold drop-shadow-2xl"
+          style={{
+            color: currentColor,
+            textShadow: `0 0 30px ${currentColor}, 0 0 60px ${currentColor}`,
+          }}
+        >
+          BRB
+        </div>
 
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-5xl text-white drop-shadow-lg font-bold font-sans">
-                {formatTime(timeLeft)}
-              </div>
-            </div>
-          </div>
-        ) : (
-          // No timer mode - animated BRB text with pulsing ring
-          <div className="relative w-64 h-64">
-            <svg className="absolute w-full h-full" viewBox="0 0 200 200">
-              <defs>
-                <linearGradient id="brbPulseGradient" gradientTransform={`rotate(${pulse})`}>
-                  <stop offset="0%" stopColor="#ff00ff" />
-                  <stop offset="25%" stopColor="#ff66ff" />
-                  <stop offset="50%" stopColor="#ffffff" />
-                  <stop offset="75%" stopColor="#ff66ff" />
-                  <stop offset="100%" stopColor="#ff00ff" />
-                </linearGradient>
-              </defs>
-              {/* Animated ring */}
-              <circle
-                cx="100"
-                cy="100"
-                r={radius}
-                fill="none"
-                stroke="url(#brbPulseGradient)"
-                strokeWidth="12"
-                style={{
-                  filter: `drop-shadow(0 0 ${10 + Math.sin(pulse * 0.1) * 5}px rgba(255, 0, 255, 0.5))`
-                }}
-              />
-            </svg>
-
-            <div 
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ transform: `scale(${scale})` }}
-            >
-              <div className="text-6xl text-white drop-shadow-lg font-bold font-sans">
-                BRB
-              </div>
-            </div>
+        {/* Timer if duration is set */}
+        {duration && (
+          <div
+            className="text-3xl font-bold mt-2"
+            style={{
+              color: currentColor,
+              textShadow: `0 0 20px ${currentColor}`,
+            }}
+          >
+            {formatTime(timeLeft)}
           </div>
         )}
-
-        {/* Text below */}
-        <div 
-          className="text-4xl text-white text-center drop-shadow-lg font-bold font-sans"
-          style={!duration ? { 
-            opacity: 0.8 + Math.sin(pulse * 0.05) * 0.2 
-          } : undefined}
-        >
-          {duration ? "BRB" : "BE RIGHT BACK"}
-        </div>
       </div>
     </div>
   )

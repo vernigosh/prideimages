@@ -78,8 +78,8 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
     }
 
     // Initialize random position (estimate initial size, will adjust on first frame)
-    const estimatedWidth = 200
-    const estimatedHeight = 100
+    const estimatedWidth = 400
+    const estimatedHeight = 200
     positionRef.current = {
       x: Math.random() * (window.innerWidth - estimatedWidth),
       y: Math.random() * (window.innerHeight - estimatedHeight),
@@ -171,8 +171,12 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
       >
         {/* BRB Text */}
         <div
-          className="text-7xl font-bold"
-          style={{ color: currentColor }}
+          className="font-black tracking-tight"
+          style={{ 
+            color: currentColor,
+            fontSize: "10rem",
+            lineHeight: 1,
+          }}
         >
           BRB
         </div>
@@ -180,7 +184,7 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
         {/* Timer if duration is set */}
         {duration && (
           <div
-            className="text-2xl font-bold mt-1 text-center"
+            className="text-4xl font-black mt-2 text-center"
             style={{ color: currentColor }}
           >
             {formatTime(timeLeft)}

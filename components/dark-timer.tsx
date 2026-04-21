@@ -7,6 +7,7 @@ interface DarkTimerProps {
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
   workTimerActive?: boolean
+  socialTimerActive?: boolean
 }
 
 const DARK_DURATION = 20 * 60
@@ -19,7 +20,7 @@ function getRingProps(progress: number) {
   return { radius, circumference, strokeDashoffset }
 }
 
-export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false }: DarkTimerProps) {
+export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false, socialTimerActive = false }: DarkTimerProps) {
   const [timeLeft, setTimeLeft] = useState(DARK_DURATION)
   const [isComplete, setIsComplete] = useState(false)
   const rafRef = useRef<number | null>(null)
@@ -114,7 +115,10 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
   const seconds = timeLeft % 60
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
-  // Position on left side if work timer is active, otherwise right side
+  // Position based on which other timers are active:
+  // - Work timer takes right side
+  // - Dark timer takes left side (always left when work is active)
+  // - Social takes center-left when all 3 are active
   const positionClass = workTimerActive ? "left-8" : "right-8"
 
   if (isComplete) {

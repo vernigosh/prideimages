@@ -7,6 +7,7 @@ interface SocialTimerProps {
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
   workTimerActive?: boolean
+  darkTimerActive?: boolean
 }
 
 const SOCIAL_DURATION = 2 * 60
@@ -19,7 +20,7 @@ function getRingProps(progress: number) {
   return { radius, circumference, strokeDashoffset }
 }
 
-export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false }: SocialTimerProps) {
+export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false, darkTimerActive = false }: SocialTimerProps) {
   const [timeLeft, setTimeLeft] = useState(SOCIAL_DURATION)
   const [isComplete, setIsComplete] = useState(false)
   const rafRef = useRef<number | null>(null)
@@ -112,12 +113,20 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
 
-  // Position on left side if work timer is active, otherwise right side
-  const positionClass = workTimerActive ? "left-8" : "right-8"
+  // Position based on which other timers are active:
+  // - Work timer takes right side
+  // - Dark timer takes left side when work is active
+  // - Social goes to center-left when both work and dark are active, otherwise left when work active, right when alone
+  let positionClass = "right-8" // default when alone
+  if (workTimerActive && darkTimerActive) {
+    positionClass = "left-1/3 -translate-x-1/2" // center-left position when all 3 are active
+  } else if (workTimerActive) {
+    positionClass = "left-8" // left side when only work timer is also active
+  }
 
   if (isComplete) {
     return (
-      <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
+      <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`} style={workTimerActive && darkTimerActive ? { left: '33%', transform: 'translate(-50%, -50%)' } : undefined}>
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
@@ -133,7 +142,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
   return (
-    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
+    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`} style={workTimerActive && darkTimerActive ? { left: '33%', transform: 'translate(-50%, -50%)' } : undefined}>
       <div className="flex flex-col items-center justify-center gap-4 font-bold">
         <div className="relative w-64 h-64">
           <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">

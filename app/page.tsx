@@ -668,26 +668,28 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     // Dark timer: left side if work timer is active, otherwise right side
     if (showDarkTimer) {
       elements.push(
-        <DarkTimer
-          key="dark-timer"
-          isVisible={showDarkTimer}
-          onConnectionChange={setDarkTimerConnected}
-          onHide={() => setShowDarkTimer(false)}
-          workTimerActive={showWorkTimer}
-        />
+<DarkTimer
+  key="dark-timer"
+  isVisible={showDarkTimer}
+  onConnectionChange={setDarkTimerConnected}
+  onHide={() => setShowDarkTimer(false)}
+  workTimerActive={showWorkTimer}
+  socialTimerActive={showSocialTimer}
+/>
       )
     }
 
     // Social timer: left side if work timer is active, otherwise right side
     if (showSocialTimer) {
       elements.push(
-        <SocialTimer
-          key="social-timer"
-          isVisible={showSocialTimer}
-          onConnectionChange={setSocialTimerConnected}
-          onHide={() => setShowSocialTimer(false)}
-          workTimerActive={showWorkTimer}
-        />
+<SocialTimer
+  key="social-timer"
+  isVisible={showSocialTimer}
+  onConnectionChange={setSocialTimerConnected}
+  onHide={() => setShowSocialTimer(false)}
+  workTimerActive={showWorkTimer}
+  darkTimerActive={showDarkTimer}
+/>
       )
     }
 

@@ -24,12 +24,18 @@ const COLORS = [
 export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
   const [timeLeft, setTimeLeft] = useState(duration ? duration * 60 : 0)
   const [colorIndex, setColorIndex] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
   
   const intervalRef = useRef<NodeJS.Timeout>()
   const autoHideRef = useRef<NodeJS.Timeout>()
   const logoRef = useRef<HTMLDivElement>(null)
   const positionRef = useRef({ x: 100, y: 100 })
   const velocityRef = useRef({ x: 3, y: 2.25 })
+
+  // Track client-side mounting to avoid hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Auto-hide after 2 minutes if no duration specified
   useEffect(() => {
@@ -147,7 +153,8 @@ export function BrbOverlay({ isVisible, onHide, duration }: BrbOverlayProps) {
     }
   }, [isVisible])
 
-  if (!isVisible) return null
+  // Don't render until mounted on client to avoid hydration mismatch
+  if (!isVisible || !isMounted) return null
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60)

@@ -115,14 +115,15 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
 
   // Position based on which other timers are active:
   // - Work timer takes right side
-  // - Dark timer takes left side when work is active
-  // - Social goes to center-left when both work and dark are active, otherwise left when work active, right when alone
-  let positionClass = "right-8" // default when alone
+  // - Dark timer takes left side when work or social is active
+  // - Social goes to center-left when all 3 are active, right when alone or with dark only
+  let positionClass = "right-8" // default when alone or with dark timer only
   if (workTimerActive && darkTimerActive) {
     positionClass = "left-1/3 -translate-x-1/2" // center-left position when all 3 are active
   } else if (workTimerActive) {
     positionClass = "left-8" // left side when only work timer is also active
   }
+  // When only social + dark are active: social stays right, dark moves to left
 
   if (isComplete) {
     return (

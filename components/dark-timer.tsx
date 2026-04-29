@@ -117,9 +117,12 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
 
   // Position based on which other timers are active:
   // - Work timer takes right side
-  // - Dark timer takes left side (always left when work is active)
-  // - Social takes center-left when all 3 are active
-  const positionClass = workTimerActive ? "left-8" : "right-8"
+  // - Dark timer takes left side when work OR social is active
+  // - Social takes center-left when all 3 are active, or right when alone with dark
+  let positionClass = "right-8" // default when alone
+  if (workTimerActive || socialTimerActive) {
+    positionClass = "left-8" // left side when work or social timer is also active
+  }
 
   if (isComplete) {
     return (

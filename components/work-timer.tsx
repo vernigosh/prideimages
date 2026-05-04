@@ -8,30 +8,29 @@ interface WorkTimerProps {
   onHide: () => void
 }
 
-const WORK_DURATION = 25 * 60
-const SHORT_BREAK = 5 * 60
+const WORK_DURATION = 50 * 60
+const SHORT_BREAK = 10 * 60
 
-// Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
+// Clock-synced timer: work from x:00-x:50, break from x:50-x:00 (full hour blocks)
 function getClockState() {
   const now = new Date()
-  const minutesIntoBlock = now.getMinutes() % 30
-  const totalSecondsIntoBlock = minutesIntoBlock * 60 + now.getSeconds()
+  const minutesIntoHour = now.getMinutes()
+  const totalSecondsIntoHour = minutesIntoHour * 60 + now.getSeconds()
 
   let currentPhase: "work" | "break"
   let remaining: number
 
-  if (totalSecondsIntoBlock < WORK_DURATION) {
+  if (totalSecondsIntoHour < WORK_DURATION) {
     currentPhase = "work"
-    remaining = WORK_DURATION - totalSecondsIntoBlock
+    remaining = WORK_DURATION - totalSecondsIntoHour
   } else {
     currentPhase = "break"
-    const secondsIntoBreak = totalSecondsIntoBlock - WORK_DURATION
+    const secondsIntoBreak = totalSecondsIntoHour - WORK_DURATION
     remaining = Math.max(SHORT_BREAK - secondsIntoBreak, 0)
   }
 
-  // Cycle resets each half-hour block
-  const blockIndex = Math.floor(now.getMinutes() / 30)
-  const cycle = now.getHours() * 2 + blockIndex + 1
+  // Cycle resets each hour
+  const cycle = now.getHours() + 1
 
   return { currentPhase, remaining, cycle }
 }
@@ -39,20 +38,15 @@ function getClockState() {
 function getNextBreakTime() {
   const now = new Date()
   const mins = now.getMinutes()
-  // Next break starts at either x:25 or x:55
-  let nextBreakMin: number
-  if (mins < 25) {
-    nextBreakMin = 25
-  } else if (mins < 55) {
-    nextBreakMin = 55
-  } else {
-    nextBreakMin = 25 // next hour
-  }
+  // Next break starts at x:50
   const target = new Date(now)
-  if (nextBreakMin <= mins) {
+  if (mins < 50) {
+    target.setMinutes(50, 0, 0)
+  } else {
+    // Already in break or past x:50, next break is next hour at x:50
     target.setHours(target.getHours() + 1)
+    target.setMinutes(50, 0, 0)
   }
-  target.setMinutes(nextBreakMin, 0, 0)
   return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
 }
 
@@ -154,11 +148,11 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
             window.dispatchEvent(new CustomEvent("workCycleStart", { detail: { cycle: s.cycle } }))
             setShowPulse(true)
             setTimeout(() => setShowPulse(false), 10000) // 10 second pulse
-            sendChatMessage("FOCUS TIME! 25 minutes of productivity starts now!")
+            sendChatMessage("FOCUS TIME! 50 minutes of productivity starts now!")
           } else {
             // Break started
             window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))
-            sendChatMessage("BREAK TIME! Take 5 minutes to rest and recharge!")
+            sendChatMessage("BREAK TIME! Take 10 minutes to rest and recharge!")
           }
         }
         prevPhaseRef.current = s.currentPhase
@@ -272,12 +266,12 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         <div className="text-4xl text-white text-center drop-shadow-lg font-semibold leading-tight uppercase font-sans">
           {phase === "work" ? (
             <>
-              <div>25 MIN</div>
+              <div>50 MIN</div>
               <div>WORK CHALLENGE</div>
             </>
           ) : (
             <>
-              <div>5 MIN</div>
+              <div>10 MIN</div>
               <div>BREAK TIME</div>
             </>
           )}

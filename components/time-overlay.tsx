@@ -13,6 +13,13 @@ interface TimeOverlayProps {
   fontWeight: "normal" | "bold" | "black"
 }
 
+// Alternating time zones - switches every 45 seconds
+const ALTERNATING_TIMEZONES = [
+  { zone: "Europe/Rome", name: "ROME, ITALY" },
+  { zone: "America/New_York", name: "NEW YORK" },
+]
+const SWITCH_INTERVAL_MS = 45 * 1000
+
 export function TimeOverlay({
   position,
   timeZone,
@@ -24,6 +31,7 @@ export function TimeOverlay({
   fontWeight,
 }: TimeOverlayProps) {
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [activeTimezoneIndex, setActiveTimezoneIndex] = useState(0)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -33,46 +41,27 @@ export function TimeOverlay({
     return () => clearInterval(timer)
   }, [])
 
+  // Switch between Rome and New York every 45 seconds
+  useEffect(() => {
+    const switchTimer = setInterval(() => {
+      setActiveTimezoneIndex((prev) => (prev + 1) % ALTERNATING_TIMEZONES.length)
+    }, SWITCH_INTERVAL_MS)
+
+    return () => clearInterval(switchTimer)
+  }, [])
+
+  // Get the currently active timezone
+  const activeTimezone = ALTERNATING_TIMEZONES[activeTimezoneIndex]
+
   const formatTime = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
-      timeZone,
+      timeZone: activeTimezone.zone,
       hour: "2-digit",
       minute: "2-digit",
       ...(showSeconds && { second: "2-digit" }),
       hour12: false, // Always use 24-hour format
     }
     return date.toLocaleTimeString("en-US", options)
-  }
-
-  const getCityName = (tz: string) => {
-    const cityMap: { [key: string]: string } = {
-      "America/New_York": "NEW YORK",
-      "America/Chicago": "CHICAGO",
-      "America/Denver": "DENVER",
-      "America/Los_Angeles": "LOS ANGELES",
-      "America/Phoenix": "PHOENIX",
-      "America/Anchorage": "ANCHORAGE",
-      "Pacific/Honolulu": "HONOLULU",
-      UTC: "UTC",
-      "Europe/London": "LONDON",
-      "Europe/Paris": "PARIS",
-      "Europe/Rome": "ROME, ITALY",
-      "Europe/Berlin": "BERLIN",
-      "Europe/Madrid": "MADRID",
-      "Europe/Amsterdam": "AMSTERDAM",
-      "Europe/Stockholm": "STOCKHOLM",
-      "Europe/Moscow": "MOSCOW",
-      "Asia/Tokyo": "TOKYO",
-      "Asia/Shanghai": "SHANGHAI",
-      "Asia/Seoul": "SEOUL",
-      "Asia/Mumbai": "MUMBAI",
-      "Asia/Dubai": "DUBAI",
-      "Australia/Sydney": "SYDNEY",
-      "Australia/Melbourne": "MELBOURNE",
-      "Australia/Perth": "PERTH",
-      "Pacific/Auckland": "AUCKLAND",
-    }
-    return cityMap[tz] || tz.split("/").pop()?.replace("_", " ").toUpperCase()
   }
 
   const getPositionClasses = () => {
@@ -114,7 +103,7 @@ export function TimeOverlay({
             textShadow: shadowSize > 0 ? `${shadowSize}px ${shadowSize}px ${shadowSize * 2}px ${shadowColor}` : "none",
           }}
         >
-          {formatTime(currentTime)} {getCityName(timeZone)}
+          {formatTime(currentTime)} {activeTimezone.name}
         </div>
       </div>
     </div>

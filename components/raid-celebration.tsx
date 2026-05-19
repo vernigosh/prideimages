@@ -32,22 +32,22 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
         { id: 2, delay: 5.5, duration: 6 },
         
         // Third wave: 9 fawns in sub-groups (3, then 4, then 2) with irregular spacing
-        // Group of 3 - varied gaps
+        // Group of 3 - staggered, no side-by-side
         { id: 3, delay: 11.0, duration: 6 },
-        { id: 4, delay: 11.2, duration: 6 },
-        { id: 5, delay: 11.8, duration: 6 },
-        // Group of 4 - messy natural spacing
-        { id: 6, delay: 14.0, duration: 6 },
-        { id: 7, delay: 14.15, duration: 6 },
-        { id: 8, delay: 14.6, duration: 6 },
-        { id: 9, delay: 14.75, duration: 6 },
-        // Group of 2 - one close, one trailing
-        { id: 10, delay: 17.5, duration: 6 },
-        { id: 11, delay: 18.1, duration: 6 },
+        { id: 4, delay: 11.5, duration: 6 },
+        { id: 5, delay: 12.2, duration: 6 },
+        // Group of 4 - natural staggered spacing
+        { id: 6, delay: 14.5, duration: 6 },
+        { id: 7, delay: 15.0, duration: 6 },
+        { id: 8, delay: 15.7, duration: 6 },
+        { id: 9, delay: 16.1, duration: 6 },
+        // Group of 2 - good gap between them
+        { id: 10, delay: 18.5, duration: 6 },
+        { id: 11, delay: 19.2, duration: 6 },
         
         // Final straggler - fast fawn catching up after 3 second pause
-        // Last fawn finishes at 17.8 + 6 = 23.8, so start at ~27
-        { id: 12, delay: 27.0, duration: 2.5 }, // Much faster - zooming to catch up!
+        // Last fawn finishes at 19.2 + 6 = 25.2, so start at ~28.5
+        { id: 12, delay: 28.5, duration: 2.5 }, // Much faster - zooming to catch up!
       ]
       setFawns(newFawns)
       setVisibleFawnIds(new Set(newFawns.map(f => f.id)))
@@ -64,13 +64,13 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
         }, (fawn.delay + fawn.duration) * 1000)
       })
 
-      // Auto-complete after all fawns have run off screen (last fawn: 27 + 2.5 = 29.5 seconds)
+      // Auto-complete after all fawns have run off screen (last fawn: 28.5 + 2.5 = 31 seconds)
       const timer = setTimeout(() => {
         onComplete()
         setFawns([])
         setVisibleFawnIds(new Set())
         setShowText(false)
-      }, 31000)
+      }, 33000)
 
       return () => clearTimeout(timer)
     }

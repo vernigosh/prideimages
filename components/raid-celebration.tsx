@@ -19,6 +19,7 @@ interface Fawn {
 export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete }: RaidCelebrationProps) {
   const [fawns, setFawns] = useState<Fawn[]>([])
   const [showText, setShowText] = useState(false)
+  const [visibleFawnIds, setVisibleFawnIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (isVisible) {
@@ -38,12 +39,25 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
         { id: 7, delay: 13.0, duration: 6 },
       ]
       setFawns(newFawns)
+      setVisibleFawnIds(new Set(newFawns.map(f => f.id)))
       setShowText(true)
+
+      // Set up individual timers to hide each fawn after it runs off screen
+      newFawns.forEach((fawn) => {
+        setTimeout(() => {
+          setVisibleFawnIds(prev => {
+            const next = new Set(prev)
+            next.delete(fawn.id)
+            return next
+          })
+        }, (fawn.delay + fawn.duration) * 1000)
+      })
 
       // Auto-complete after all fawns have run off screen
       const timer = setTimeout(() => {
         onComplete()
         setFawns([])
+        setVisibleFawnIds(new Set())
         setShowText(false)
       }, 20000) // 20 seconds total
 
@@ -84,15 +98,15 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
         </div>
       )}
 
-      {/* Running fawns */}
-      {fawns.map((fawn) => (
+      {/* Running fawns - only render if still visible */}
+      {fawns.filter(fawn => visibleFawnIds.has(fawn.id)).map((fawn) => (
         <div
           key={fawn.id}
           className="fixed"
           style={{
             bottom: "48px",
             right: "-360px",
-            animation: `runAcrossScreen ${fawn.duration}s linear ${fawn.delay}s`,
+            animation: `runAcrossScreen ${fawn.duration}s linear ${fawn.delay}s forwards`,
           }}
         >
           <Image

@@ -84,16 +84,16 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
           key={fawn.id}
           className="absolute"
           style={{
-            top: `${fawn.y}%`,
-            right: "-150px",
+            bottom: "80px", // Align with bottom of flowers in garden
+            right: "-200px",
             animation: `runAcrossScreen ${fawn.duration}s linear ${fawn.delay}s forwards`,
           }}
         >
           <Image
             src="/images/fawn-run-transparent.gif"
             alt="Running fawn"
-            width={120}
-            height={120}
+            width={180}
+            height={180}
             unoptimized
             className="pixelated"
           />
@@ -103,10 +103,10 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
       <style jsx>{`
         @keyframes runAcrossScreen {
           0% {
-            right: -150px;
+            right: -200px;
           }
           100% {
-            right: calc(100% + 150px);
+            right: calc(100% + 200px);
           }
         }
         

@@ -12,7 +12,6 @@ interface RaidCelebrationProps {
 
 interface Fawn {
   id: number
-  y: number
   delay: number
   duration: number
 }
@@ -23,13 +22,20 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
 
   useEffect(() => {
     if (isVisible) {
-      // Create 5 fawns running in a line through the garden (bottom of screen)
-      const newFawns: Fawn[] = Array.from({ length: 5 }, (_, i) => ({
-        id: i,
-        y: 78, // All at same height, in the garden area near bottom
-        delay: i * 0.4, // Stagger so they follow behind each other
-        duration: 5, // Same speed for all
-      }))
+      // Create fawns in waves: 1 first, then 2, then 5 with irregular spacing
+      const newFawns: Fawn[] = [
+        // First wave: 1 fawn
+        { id: 0, delay: 0, duration: 5 },
+        // Second wave: 2 fawns with slight offset
+        { id: 1, delay: 1.2, duration: 5 },
+        { id: 2, delay: 1.5, duration: 5 },
+        // Third wave: 5 fawns with irregular spacing
+        { id: 3, delay: 2.8, duration: 5 },
+        { id: 4, delay: 3.0, duration: 5 },
+        { id: 5, delay: 3.4, duration: 5 },
+        { id: 6, delay: 3.5, duration: 5 },
+        { id: 7, delay: 3.9, duration: 5 },
+      ]
       setFawns(newFawns)
       setShowText(true)
 
@@ -52,7 +58,7 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
       {/* Raid announcement text */}
       {showText && (
         <div 
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 text-center animate-pulse"
+          className="fixed top-1/4 left-1/2 -translate-x-1/2 text-center"
           style={{
             animation: "fadeInOut 5s ease-in-out forwards"
           }}
@@ -82,18 +88,18 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
       {fawns.map((fawn) => (
         <div
           key={fawn.id}
-          className="absolute"
+          className="fixed"
           style={{
-            bottom: "80px", // Align with bottom of flowers in garden
-            right: "-200px",
+            bottom: "48px", // Align bottom of fawn with bottom of flowers
+            right: "-360px",
             animation: `runAcrossScreen ${fawn.duration}s linear ${fawn.delay}s forwards`,
           }}
         >
           <Image
             src="/images/fawn-run-transparent.gif"
             alt="Running fawn"
-            width={180}
-            height={180}
+            width={360}
+            height={360}
             unoptimized
             className="pixelated"
           />
@@ -103,10 +109,10 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
       <style jsx>{`
         @keyframes runAcrossScreen {
           0% {
-            right: -200px;
+            right: -360px;
           }
           100% {
-            right: calc(100% + 200px);
+            right: calc(100% + 360px);
           }
         }
         

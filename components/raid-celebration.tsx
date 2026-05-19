@@ -24,17 +24,17 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
     if (isVisible) {
       // Create fawns in waves: 1 first, then 2, then 5 with irregular spacing
       const newFawns: Fawn[] = [
-        // First wave: 1 fawn
+        // First wave: 1 fawn (scout)
         { id: 0, delay: 0, duration: 5 },
-        // Second wave: 2 fawns with slight offset
-        { id: 1, delay: 1.2, duration: 5 },
-        { id: 2, delay: 1.5, duration: 5 },
-        // Third wave: 5 fawns with irregular spacing
-        { id: 3, delay: 2.8, duration: 5 },
-        { id: 4, delay: 3.0, duration: 5 },
-        { id: 5, delay: 3.4, duration: 5 },
-        { id: 6, delay: 3.5, duration: 5 },
-        { id: 7, delay: 3.9, duration: 5 },
+        // Second wave: 2 fawns - bigger gap for surprise
+        { id: 1, delay: 3.0, duration: 5 },
+        { id: 2, delay: 3.4, duration: 5 },
+        // Third wave: 5 fawns - even bigger gap, irregular spacing
+        { id: 3, delay: 6.5, duration: 5 },
+        { id: 4, delay: 6.8, duration: 5 },
+        { id: 5, delay: 7.3, duration: 5 },
+        { id: 6, delay: 7.5, duration: 5 },
+        { id: 7, delay: 8.0, duration: 5 },
       ]
       setFawns(newFawns)
       setShowText(true)
@@ -119,19 +119,19 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
         @keyframes fadeInOut {
           0% {
             opacity: 0;
-            transform: translateX(-50%) scale(0.8);
+            transform: translateX(-50%);
           }
           15% {
             opacity: 1;
-            transform: translateX(-50%) scale(1);
+            transform: translateX(-50%);
           }
           85% {
             opacity: 1;
-            transform: translateX(-50%) scale(1);
+            transform: translateX(-50%);
           }
           100% {
             opacity: 0;
-            transform: translateX(-50%) scale(0.9);
+            transform: translateX(-50%);
           }
         }
         

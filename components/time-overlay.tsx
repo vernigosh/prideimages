@@ -35,44 +35,13 @@ export function TimeOverlay({
 
   const formatTime = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
-      timeZone,
+      timeZone: "Europe/Rome",
       hour: "2-digit",
       minute: "2-digit",
       ...(showSeconds && { second: "2-digit" }),
-      hour12: false, // Always use 24-hour format
+      hour12: false,
     }
     return date.toLocaleTimeString("en-US", options)
-  }
-
-  const getCityName = (tz: string) => {
-    const cityMap: { [key: string]: string } = {
-      "America/New_York": "NEW YORK",
-      "America/Chicago": "CHICAGO",
-      "America/Denver": "DENVER",
-      "America/Los_Angeles": "LOS ANGELES",
-      "America/Phoenix": "PHOENIX",
-      "America/Anchorage": "ANCHORAGE",
-      "Pacific/Honolulu": "HONOLULU",
-      UTC: "UTC",
-      "Europe/London": "LONDON",
-      "Europe/Paris": "PARIS",
-      "Europe/Rome": "ROME, ITALY",
-      "Europe/Berlin": "BERLIN",
-      "Europe/Madrid": "MADRID",
-      "Europe/Amsterdam": "AMSTERDAM",
-      "Europe/Stockholm": "STOCKHOLM",
-      "Europe/Moscow": "MOSCOW",
-      "Asia/Tokyo": "TOKYO",
-      "Asia/Shanghai": "SHANGHAI",
-      "Asia/Seoul": "SEOUL",
-      "Asia/Mumbai": "MUMBAI",
-      "Asia/Dubai": "DUBAI",
-      "Australia/Sydney": "SYDNEY",
-      "Australia/Melbourne": "MELBOURNE",
-      "Australia/Perth": "PERTH",
-      "Pacific/Auckland": "AUCKLAND",
-    }
-    return cityMap[tz] || tz.split("/").pop()?.replace("_", " ").toUpperCase()
   }
 
   const getPositionClasses = () => {
@@ -114,7 +83,7 @@ export function TimeOverlay({
             textShadow: shadowSize > 0 ? `${shadowSize}px ${shadowSize}px ${shadowSize * 2}px ${shadowColor}` : "none",
           }}
         >
-          {formatTime(currentTime)} {getCityName(timeZone)}
+          {formatTime(currentTime)} ROME, ITALY
         </div>
       </div>
     </div>

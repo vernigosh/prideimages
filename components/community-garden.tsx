@@ -83,6 +83,19 @@ const flowerRarity = {
   rose: 5,
 }
 
+// Send chat message via StreamElements bot
+async function sendChatMessage(message: string) {
+  try {
+    await fetch("/api/send-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    })
+  } catch (error) {
+    console.error("Failed to send chat message:", error)
+  }
+}
+
 export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowerLegendsUpdate }: CommunityGardenProps) {
   const [flowers, setFlowers] = useState<Flower[]>([])
   const [gardenStats, setGardenStats] = useState({
@@ -751,6 +764,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       console.log("Page: Received showFlowerCelebration event for", username)
       setCelebrationUsername(username)
       setShowFlowerCelebration(true)
+      sendChatMessage(`Congratulations ${username}! You picked your 10th flower and earned the Budding Gardener achievement!`)
     }
 
     const handleShowGardenLegendCelebration = (event: CustomEvent) => {
@@ -758,6 +772,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       console.log("Page: Received showGardenLegendCelebration event for", username)
       setLegendCelebrationUsername(username)
       setShowGardenLegendCelebration(true)
+      sendChatMessage(`Amazing! ${username} picked 20 flowers and become a Garden Legend!`)
     }
 
     const handleShowBeeParadeCelebration = (event: CustomEvent) => {
@@ -765,6 +780,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       console.log("Page: Received showBeeParadeCelebration event for", username)
       setBeeParadeUsername(username)
       setShowBeeParadeCelebration(true)
+      sendChatMessage(`The garden is FULL! Time for a Bee Parade!`)
     }
 
     const handleShowMasterGardenerCelebration = (event: CustomEvent) => {
@@ -772,6 +788,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       console.log("Page: Received showMasterGardener event for", username)
       setMasterGardenerUsername(username)
       setShowMasterGardenerCelebration(true)
+      sendChatMessage(`Incredible! ${username} picked 30 flowers and become a Master Gardener!`)
     }
 
     const handleShowNaturesGuardianCelebration = (event: CustomEvent) => {
@@ -779,6 +796,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       console.log("Page: Received showNaturesGuardian event for", username)
       setNaturesGuardianUsername(username)
       setShowNaturesGuardianCelebration(true)
+      sendChatMessage(`ALL HAIL ${username}! With 50 flowers picked, they have been inducted into the GUILD OF GUARDIANS! Their name shall be forever honored in the stream credits!`)
     }
 
     const handleShowGardenEliteCelebration = (event: CustomEvent) => {
@@ -786,6 +804,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       console.log("Page: Received showGardenElite event for", username)
       setGardenEliteUsername(username)
       setShowGardenEliteCelebration(true)
+      sendChatMessage(`Outstanding! ${username} picked 40 flowers and joined the Garden Elite!`)
     }
 
     const handleRequestLeaderboard = (event: CustomEvent) => {

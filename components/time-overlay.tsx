@@ -13,13 +13,6 @@ interface TimeOverlayProps {
   fontWeight: "normal" | "bold" | "black"
 }
 
-// Alternating time zones - switches every 45 seconds
-const ALTERNATING_TIMEZONES = [
-  { zone: "Europe/Rome", name: "ROME, ITALY" },
-  { zone: "America/New_York", name: "NEW YORK" },
-]
-const SWITCH_INTERVAL_MS = 45 * 1000
-
 export function TimeOverlay({
   position,
   timeZone,
@@ -31,7 +24,6 @@ export function TimeOverlay({
   fontWeight,
 }: TimeOverlayProps) {
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [activeTimezoneIndex, setActiveTimezoneIndex] = useState(0)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -41,25 +33,13 @@ export function TimeOverlay({
     return () => clearInterval(timer)
   }, [])
 
-  // Switch between Rome and New York every 45 seconds
-  useEffect(() => {
-    const switchTimer = setInterval(() => {
-      setActiveTimezoneIndex((prev) => (prev + 1) % ALTERNATING_TIMEZONES.length)
-    }, SWITCH_INTERVAL_MS)
-
-    return () => clearInterval(switchTimer)
-  }, [])
-
-  // Get the currently active timezone
-  const activeTimezone = ALTERNATING_TIMEZONES[activeTimezoneIndex]
-
   const formatTime = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
-      timeZone: activeTimezone.zone,
+      timeZone: "Europe/Rome",
       hour: "2-digit",
       minute: "2-digit",
       ...(showSeconds && { second: "2-digit" }),
-      hour12: false, // Always use 24-hour format
+      hour12: false,
     }
     return date.toLocaleTimeString("en-US", options)
   }
@@ -103,7 +83,7 @@ export function TimeOverlay({
             textShadow: shadowSize > 0 ? `${shadowSize}px ${shadowSize}px ${shadowSize * 2}px ${shadowColor}` : "none",
           }}
         >
-          {formatTime(currentTime)} {activeTimezone.name}
+          {formatTime(currentTime)} ROME, ITALY
         </div>
       </div>
     </div>

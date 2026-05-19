@@ -26,6 +26,7 @@ import { StreamCreditsComponent as StreamCredits } from "@/components/stream-cre
 import { useStreamElements } from "@/components/streamelements-service" // Import StreamElements service
 import { StartingTimer } from "@/components/starting-timer" // Import StartingTimer component
 import { BrbOverlay } from "@/components/brb-overlay" // Import BRB overlay component
+import { RaidCelebration } from "@/components/raid-celebration" // Import Raid celebration component
 
 interface Trick {
   name: string
@@ -221,6 +222,11 @@ export default function DJRandomizer() {
   const [showBrb, setShowBrb] = useState(false)
   const [brbDuration, setBrbDuration] = useState<number | undefined>(undefined)
   const [flowerLegends, setFlowerLegends] = useState<Array<{ username: string; count: number }>>([])
+  
+  // Raid celebration settings
+  const [showRaidCelebration, setShowRaidCelebration] = useState(false)
+  const [raidData, setRaidData] = useState<{ raiderName?: string; viewerCount?: number }>({})
+  
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
     subscribers: Array<{ name: string; months: number; tier: string; gifted: boolean; gifter?: string }>
@@ -410,6 +416,17 @@ const handleHideStartingTimer = () => {
       setShowBrb(false)
       setBrbDuration(undefined)
     }
+
+    const handleShowRaid = (e: CustomEvent) => {
+      const { raiderName, viewerCount } = e.detail || {}
+      setRaidData({ raiderName, viewerCount })
+      setShowRaidCelebration(true)
+    }
+
+    const handleHideRaid = () => {
+      setShowRaidCelebration(false)
+      setRaidData({})
+    }
   
     const handleHideAllCelebrations = () => {
       setShowFlowerCelebration(false)
@@ -452,6 +469,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     window.addEventListener("hideStartingTimer", handleHideStartingTimer as EventListener)
     window.addEventListener("showBrb", handleShowBrb as EventListener)
     window.addEventListener("hideBrb", handleHideBrb as EventListener)
+    window.addEventListener("showRaid", handleShowRaid as EventListener)
+    window.addEventListener("hideRaid", handleHideRaid as EventListener)
     
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -484,6 +503,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
       window.removeEventListener("hideStartingTimer", handleHideStartingTimer as EventListener)
       window.removeEventListener("showBrb", handleShowBrb as EventListener)
       window.removeEventListener("hideBrb", handleHideBrb as EventListener)
+      window.removeEventListener("showRaid", handleShowRaid as EventListener)
+      window.removeEventListener("hideRaid", handleHideRaid as EventListener)
     }
     // eslint-disable-next-line react-hooks-exhaustive-deps
   }, [])
@@ -867,6 +888,17 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
             setBrbDuration(undefined)
           }}
           duration={brbDuration}
+        />
+
+        {/* Raid Celebration */}
+        <RaidCelebration
+          isVisible={showRaidCelebration}
+          raiderName={raidData.raiderName}
+          viewerCount={raidData.viewerCount}
+          onComplete={() => {
+            setShowRaidCelebration(false)
+            setRaidData({})
+          }}
         />
       </div>
 

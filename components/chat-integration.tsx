@@ -367,6 +367,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Test easter egg command detected")
           window.dispatchEvent(new CustomEvent("showEasterEgg", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!testraid" && (isMod || isBroadcaster || isVip)) {
+          console.log("Test raid command detected")
+          window.dispatchEvent(new CustomEvent("showRaid", { detail: { raiderName: "TestRaider", viewerCount: 42 } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!hidecelebration" && (isMod || isBroadcaster || isVip)) {
           console.log("Hide celebration command detected")
           window.dispatchEvent(new CustomEvent("hideAllCelebrations"))
@@ -402,6 +406,15 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
       client.on("part", (channel, username, self) => {
         console.log("Left channel:", channel, "as", username, "self:", self)
+      })
+
+      // Handle incoming raids
+      client.on("raided", (channel, username, viewers) => {
+        console.log("RAID DETECTED!", username, "with", viewers, "viewers")
+        window.dispatchEvent(new CustomEvent("showRaid", { 
+          detail: { raiderName: username, viewerCount: viewers } 
+        }))
+        addRecentCommand(`RAID from ${username} with ${viewers} viewers!`)
       })
 
       console.log("Connecting to Twitch...")

@@ -23,12 +23,12 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
 
   useEffect(() => {
     if (isVisible) {
-      // Create 5 fawns with different vertical positions and timing
+      // Create 5 fawns running in a line through the garden (bottom of screen)
       const newFawns: Fawn[] = Array.from({ length: 5 }, (_, i) => ({
         id: i,
-        y: 15 + i * 15, // Spread vertically from 15% to 75% of screen height
-        delay: i * 0.3, // Stagger the start times
-        duration: 4 + Math.random() * 1, // 4-5 seconds to cross screen
+        y: 78, // All at same height, in the garden area near bottom
+        delay: i * 0.4, // Stagger so they follow behind each other
+        duration: 5, // Same speed for all
       }))
       setFawns(newFawns)
       setShowText(true)
@@ -87,7 +87,6 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
             top: `${fawn.y}%`,
             right: "-150px",
             animation: `runAcrossScreen ${fawn.duration}s linear ${fawn.delay}s forwards`,
-            transform: "scaleX(-1)", // Flip to face left (running direction)
           }}
         >
           <Image

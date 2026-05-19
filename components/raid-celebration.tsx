@@ -47,7 +47,7 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
         
         // Final straggler - fast fawn catching up after 3 second pause
         // Last fawn finishes at 17.8 + 6 = 23.8, so start at ~27
-        { id: 12, delay: 27.0, duration: 4 }, // Faster!
+        { id: 12, delay: 27.0, duration: 2.5 }, // Much faster - zooming to catch up!
       ]
       setFawns(newFawns)
       setVisibleFawnIds(new Set(newFawns.map(f => f.id)))
@@ -64,13 +64,13 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
         }, (fawn.delay + fawn.duration) * 1000)
       })
 
-      // Auto-complete after all fawns have run off screen (last fawn: 27 + 4 = 31 seconds)
+      // Auto-complete after all fawns have run off screen (last fawn: 27 + 2.5 = 29.5 seconds)
       const timer = setTimeout(() => {
         onComplete()
         setFawns([])
         setVisibleFawnIds(new Set())
         setShowText(false)
-      }, 32000)
+      }, 31000)
 
       return () => clearTimeout(timer)
     }

@@ -94,10 +94,10 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
           0% {
             opacity: 0;
           }
-          15% {
+          5% {
             opacity: 1;
           }
-          85% {
+          90% {
             opacity: 1;
           }
           100% {
@@ -112,22 +112,23 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
             className="fixed top-1/4 left-1/2 text-center"
             style={{
               transform: "translateX(-50%)",
-              animation: "raidFadeInOut 5s ease-in-out forwards"
+              animation: "raidFadeInOut 30s ease-in-out forwards",
+              fontFamily: "Roboto, sans-serif",
             }}
           >
             <div 
               className="text-5xl font-black text-white uppercase tracking-wider"
               style={{
-                textShadow: "0 0 20px #ff6b9d, 0 0 40px #ff6b9d, 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000"
+                textShadow: "3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000"
               }}
             >
               RAID INCOMING!
             </div>
             {raiderName && (
               <div 
-                className="text-3xl font-bold text-yellow-300 mt-2"
+                className="text-3xl font-bold text-white mt-2"
                 style={{
-                  textShadow: "2px 2px 0 #000, -2px -2px 0 #000"
+                  textShadow: "3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000"
                 }}
               >
                 {raiderName} {viewerCount ? `with ${viewerCount} viewers!` : "has arrived!"}

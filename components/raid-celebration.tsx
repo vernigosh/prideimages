@@ -23,29 +23,29 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
   useEffect(() => {
     if (isVisible) {
       // Create fawns in waves: 1 first, then 2, then 5 with irregular spacing
+      // Total animation ~20 seconds
       const newFawns: Fawn[] = [
         // First wave: 1 fawn (scout)
-        { id: 0, delay: 0, duration: 5 },
-        // Second wave: 2 fawns - bigger gap for surprise
-        { id: 1, delay: 3.0, duration: 5 },
-        { id: 2, delay: 3.4, duration: 5 },
+        { id: 0, delay: 0, duration: 6 },
+        // Second wave: 2 fawns - big gap for surprise
+        { id: 1, delay: 5.0, duration: 6 },
+        { id: 2, delay: 5.5, duration: 6 },
         // Third wave: 5 fawns - even bigger gap, irregular spacing
-        { id: 3, delay: 6.5, duration: 5 },
-        { id: 4, delay: 6.8, duration: 5 },
-        { id: 5, delay: 7.3, duration: 5 },
-        { id: 6, delay: 7.5, duration: 5 },
-        { id: 7, delay: 8.0, duration: 5 },
+        { id: 3, delay: 11.0, duration: 6 },
+        { id: 4, delay: 11.4, duration: 6 },
+        { id: 5, delay: 12.0, duration: 6 },
+        { id: 6, delay: 12.3, duration: 6 },
+        { id: 7, delay: 13.0, duration: 6 },
       ]
       setFawns(newFawns)
       setShowText(true)
 
-      // Auto-complete after animation finishes
-      const maxDuration = Math.max(...newFawns.map(f => (f.delay + f.duration) * 1000))
+      // Auto-complete after all fawns have run off screen
       const timer = setTimeout(() => {
         onComplete()
         setFawns([])
         setShowText(false)
-      }, maxDuration + 1000) // Extra second for text fade
+      }, 20000) // 20 seconds total
 
       return () => clearTimeout(timer)
     }
@@ -90,9 +90,9 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
           key={fawn.id}
           className="fixed"
           style={{
-            bottom: "48px", // Align bottom of fawn with bottom of flowers
+            bottom: "48px",
             right: "-360px",
-            animation: `runAcrossScreen ${fawn.duration}s linear ${fawn.delay}s forwards`,
+            animation: `runAcrossScreen ${fawn.duration}s linear ${fawn.delay}s`,
           }}
         >
           <Image

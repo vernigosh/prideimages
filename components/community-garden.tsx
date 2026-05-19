@@ -796,7 +796,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       console.log("Page: Received showNaturesGuardian event for", username)
       setNaturesGuardianUsername(username)
       setShowNaturesGuardianCelebration(true)
-      sendChatMessage(`WOW! ${username} picked 50 flowers and is now Nature's Guardian!`)
+      sendChatMessage(`ALL HAIL ${username}! With 50 flowers picked, they have been inducted into the GUILD OF GUARDIANS! Their name shall be forever honored in the stream credits!`)
     }
 
     const handleShowGardenEliteCelebration = (event: CustomEvent) => {

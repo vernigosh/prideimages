@@ -36,8 +36,7 @@ const BOX_HIDDEN_DURATION = 2 * 60 * 1000 // 2 minutes hidden
 // Cooldown for !trivia chat messages
 const CHAT_COOLDOWN = 60 * 1000 // 60 seconds cooldown
 
-// How long each slide shows (question gets more time)
-const QUESTION_SLIDE_DURATION = 8 * 1000 // 8 seconds for question
+// How long each answer option slide shows
 const OPTION_SLIDE_DURATION = 5 * 1000 // 5 seconds per option
 
 // Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
@@ -160,10 +159,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     }
     
     const scheduleNextSlide = () => {
-      const duration = currentSlide === 0 ? QUESTION_SLIDE_DURATION : OPTION_SLIDE_DURATION
       slideTimerRef.current = setTimeout(() => {
-        setCurrentSlide(prev => (prev + 1) % 5) // 0-4 cycle
-      }, duration)
+        setCurrentSlide(prev => (prev + 1) % 4) // 0-3 cycle (A, B, C, D)
+      }, OPTION_SLIDE_DURATION)
     }
     
     scheduleNextSlide()
@@ -498,12 +496,13 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         >
           <div className="p-6">
           {phase === "work" ? (
-            /* WORK PHASE - Animated slides: Question -> A -> B -> C -> D */
+            /* WORK PHASE - Question in header, cycle through A/B/C/D */
             <div className="flex flex-col gap-4">
-              {/* Header */}
-              <div className="flex items-center justify-center">
-                <h2 className="text-2xl font-bold text-black uppercase font-sans">
-                  Pride Trivia
+              {/* Header with question */}
+              <div className="flex items-start gap-2">
+                <span className="text-2xl">🏳️‍🌈</span>
+                <h2 className="text-xl font-bold text-black font-sans leading-relaxed">
+                  Pride Trivia: {currentQuestion.question}
                 </h2>
               </div>
               
@@ -514,17 +513,14 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                   className="w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white"
                 >
                   <span className="text-4xl font-bold text-black font-sans">
-                    {["?", "A", "B", "C", "D"][currentSlide]}
+                    {["A", "B", "C", "D"][currentSlide % 4]}
                   </span>
                 </div>
                 
-                {/* Text content */}
+                {/* Text content - just the answer option */}
                 <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
                   <p className="text-xl font-bold text-black font-sans leading-relaxed">
-                    {currentSlide === 0 
-                      ? currentQuestion.question
-                      : currentQuestion[["a", "b", "c", "d"][currentSlide - 1] as keyof TriviaQuestion] as string
-                    }
+                    {currentQuestion[["a", "b", "c", "d"][currentSlide % 4] as keyof TriviaQuestion] as string}
                   </p>
                 </div>
               </div>

@@ -109,8 +109,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   // Chat cooldown tracking
   const lastChatTimeRef = useRef<number>(0)
   
-  // Slide animation state (0 = question, 1 = A, 2 = B, 3 = C, 4 = D)
+  // Slide animation state (0-3 for A, B, C, D)
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [isSlideTransitioning, setIsSlideTransitioning] = useState(false)
   const slideTimerRef = useRef<NodeJS.Timeout | null>(null)
   
   // Trivia state
@@ -160,7 +161,13 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     
     const scheduleNextSlide = () => {
       slideTimerRef.current = setTimeout(() => {
-        setCurrentSlide(prev => (prev + 1) % 4) // 0-3 cycle (A, B, C, D)
+        // Start fade out
+        setIsSlideTransitioning(true)
+        // After fade out, change slide and fade in
+        setTimeout(() => {
+          setCurrentSlide(prev => (prev + 1) % 4) // 0-3 cycle (A, B, C, D)
+          setIsSlideTransitioning(false)
+        }, 300) // 300ms for fade out
       }, OPTION_SLIDE_DURATION)
     }
     
@@ -490,36 +497,37 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           style={{
             backgroundColor: "#ffb8ad",
             width: "600px",
+            height: "280px", // Fixed height to prevent jumping
             opacity: (boxVisible && !isFading) ? 1 : 0,
             pointerEvents: boxVisible ? "auto" : "none"
           }}
         >
-          <div className="p-6">
+          <div className="p-6 h-full flex flex-col">
           {phase === "work" ? (
             /* WORK PHASE - Question in header, cycle through A/B/C/D */
-            <div className="flex flex-col gap-4">
-              {/* Header with question */}
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">🏳️‍🌈</span>
-                <h2 className="text-xl font-bold text-black font-sans leading-relaxed">
+            <div className="flex flex-col gap-4 h-full">
+              {/* Header with question - fixed height */}
+              <div className="flex items-start gap-2 min-h-[60px]">
+                <span className="text-2xl flex-shrink-0">🏳️‍🌈</span>
+                <h2 className="text-xl font-bold text-black font-sans leading-relaxed line-clamp-2">
                   Pride Trivia: {currentQuestion.question}
                 </h2>
               </div>
               
               {/* Main content area with large letter indicator on left */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-1">
                 {/* Large letter indicator */}
                 <div 
-                  className="w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white"
+                  className={`w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white transition-opacity duration-300 ${isSlideTransitioning ? 'opacity-0' : 'opacity-100'}`}
                 >
                   <span className="text-4xl font-bold text-black font-sans">
                     {["A", "B", "C", "D"][currentSlide % 4]}
                   </span>
                 </div>
                 
-                {/* Text content - just the answer option */}
-                <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
-                  <p className="text-xl font-bold text-black font-sans leading-relaxed">
+                {/* Text content - just the answer option with fade transition */}
+                <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 h-[80px] flex items-center overflow-hidden">
+                  <p className={`text-xl font-bold text-black font-sans leading-relaxed transition-all duration-300 ${isSlideTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
                     {currentQuestion[["a", "b", "c", "d"][currentSlide % 4] as keyof TriviaQuestion] as string}
                   </p>
                 </div>

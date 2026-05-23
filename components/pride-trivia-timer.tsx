@@ -29,6 +29,10 @@ interface PrideTriviaTimerProps {
 const WORK_DURATION = 25 * 60
 const SHORT_BREAK = 5 * 60
 
+// How long the box stays visible/hidden during work phase
+const BOX_VISIBLE_DURATION = 30 * 1000 // 30 seconds visible
+const BOX_HIDDEN_DURATION = 2 * 60 * 1000 // 2 minutes hidden
+
 // Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
 function getClockState() {
   const now = new Date()
@@ -91,6 +95,11 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const [cycleCount, setCycleCount] = useState(1)
   const [showPulse, setShowPulse] = useState(false)
   
+  // Box visibility state (fades in/out during work phase)
+  const [boxVisible, setBoxVisible] = useState(true)
+  const [isFading, setIsFading] = useState(false)
+  const boxVisibilityTimerRef = useRef<NodeJS.Timeout | null>(null)
+  
   // Trivia state
   const [shuffledQuestions, setShuffledQuestions] = useState<TriviaQuestion[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -120,6 +129,67 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     const questions: TriviaQuestion[] = triviaData.questions
     setShuffledQuestions(shuffleArray(questions))
   }, [shuffleArray])
+
+  // Handle !trivia command to toggle box visibility
+  useEffect(() => {
+    const handleToggle = () => {
+      setIsFading(true)
+      setTimeout(() => {
+        setBoxVisible(prev => !prev)
+        setIsFading(false)
+      }, 300) // Match fade duration
+      
+      // Reset the auto-cycle timer when manually toggled
+      if (boxVisibilityTimerRef.current) {
+        clearTimeout(boxVisibilityTimerRef.current)
+      }
+      // Set up next auto-toggle
+      boxVisibilityTimerRef.current = setTimeout(() => {
+        setIsFading(true)
+        setTimeout(() => {
+          setBoxVisible(prev => !prev)
+          setIsFading(false)
+        }, 300)
+      }, boxVisible ? BOX_HIDDEN_DURATION : BOX_VISIBLE_DURATION)
+    }
+    
+    window.addEventListener("toggleTriviaBox", handleToggle)
+    return () => window.removeEventListener("toggleTriviaBox", handleToggle)
+  }, [boxVisible])
+
+  // Auto-cycle box visibility during work phase
+  useEffect(() => {
+    if (!isVisible || phase !== "work") {
+      // During break, always show the box
+      if (phase === "break" && !boxVisible) {
+        setBoxVisible(true)
+      }
+      if (boxVisibilityTimerRef.current) {
+        clearTimeout(boxVisibilityTimerRef.current)
+        boxVisibilityTimerRef.current = null
+      }
+      return
+    }
+    
+    const scheduleToggle = () => {
+      const duration = boxVisible ? BOX_VISIBLE_DURATION : BOX_HIDDEN_DURATION
+      boxVisibilityTimerRef.current = setTimeout(() => {
+        setIsFading(true)
+        setTimeout(() => {
+          setBoxVisible(prev => !prev)
+          setIsFading(false)
+        }, 300)
+      }, duration)
+    }
+    
+    scheduleToggle()
+    
+    return () => {
+      if (boxVisibilityTimerRef.current) {
+        clearTimeout(boxVisibilityTimerRef.current)
+      }
+    }
+  }, [isVisible, phase, boxVisible])
 
   const currentQuestion = shuffledQuestions[currentQuestionIndex]
 
@@ -313,7 +383,14 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         </div>
       )}
       
-      <div className="absolute left-8 top-1/2 transform -translate-y-1/2">
+      {/* Main trivia box - fades in/out during work phase */}
+      <div 
+        className="absolute left-8 top-1/2 transform -translate-y-1/2 transition-opacity duration-300"
+        style={{ 
+          opacity: (boxVisible && !isFading) ? 1 : 0,
+          pointerEvents: boxVisible ? "auto" : "none"
+        }}
+      >
         {/* Timer progress bar above the box */}
         <div 
           className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"

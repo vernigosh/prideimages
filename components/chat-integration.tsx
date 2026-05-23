@@ -387,6 +387,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Pride trivia timer command detected")
           window.dispatchEvent(new CustomEvent("startPrideTrivia", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!trivia") {
+          console.log("Toggle trivia box visibility command detected")
+          window.dispatchEvent(new CustomEvent("toggleTriviaBox", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!hidepridetimer" && (isMod || isBroadcaster || isVip)) {
           console.log("Hide pride trivia timer command detected")
           window.dispatchEvent(new CustomEvent("hidePrideTrivia", { detail: { username } }))

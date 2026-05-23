@@ -121,6 +121,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const [guesses, setGuesses] = useState<Map<string, string>>(new Map()) // username -> answer
   const [correctGuessers, setCorrectGuessers] = useState<string[]>([])
   const [recentGuessNotification, setRecentGuessNotification] = useState<{ username: string; answer: string } | null>(null)
+  const [triviaScores, setTriviaScores] = useState<Map<string, number>>(new Map()) // cumulative scores
   
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
@@ -323,6 +324,21 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     return () => window.removeEventListener("triviaGuess", handleGuess as EventListener)
   }, [handleGuess])
 
+  // Listen for scoreboard request
+  useEffect(() => {
+    const handleScoreboardRequest = () => {
+      // Convert Map to object for the event
+      const scoresObj: Record<string, number> = {}
+      triviaScores.forEach((score, username) => {
+        scoresObj[username] = score
+      })
+      window.dispatchEvent(new CustomEvent("triviaScoreboardData", { detail: { scores: scoresObj } }))
+    }
+    
+    window.addEventListener("requestTriviaScoreboard", handleScoreboardRequest)
+    return () => window.removeEventListener("requestTriviaScoreboard", handleScoreboardRequest)
+  }, [triviaScores])
+
   // Main timer effect
   useEffect(() => {
     if (!isVisible) {
@@ -420,6 +436,17 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 }
               })
               setCorrectGuessers(winners)
+              
+              // Update cumulative scores
+              if (winners.length > 0) {
+                setTriviaScores(prev => {
+                  const newScores = new Map(prev)
+                  winners.forEach(username => {
+                    newScores.set(username, (newScores.get(username) || 0) + 1)
+                  })
+                  return newScores
+                })
+              }
               
               const correctLetter = correctAnswer.toLowerCase()
               const correctText = currentQuestion[correctAnswer as keyof TriviaQuestion] as string

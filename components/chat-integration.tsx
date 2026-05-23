@@ -317,6 +317,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Flowerboard command detected")
           window.dispatchEvent(new CustomEvent("requestLeaderboard", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!scoreboard") {
+          console.log("Trivia scoreboard command detected")
+          window.dispatchEvent(new CustomEvent("requestTriviaScoreboard", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!guardians" || command === "!boardofguardians" || command === "!guildofguardians") {
           console.log("Guild of Guardians command detected")
           window.dispatchEvent(new CustomEvent("showGuardians", { detail: { username } }))
@@ -942,12 +946,17 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
                 <code className="bg-black text-pink-400 px-2 py-1 rounded">!celebrate</code>
                 <span className="ml-2 text-black bg-pink-200 px-1 rounded">Trigger flower celebration (mods only)</span>
               </div>
-              {/* Added command for flowerboard */}
-              <div>
-                <code className="bg-black text-purple-400 px-2 py-1 rounded">!flowerboard</code>
-                <span className="ml-2 text-black bg-pink-200 px-1 rounded">Show top 4 flower pickers 🏆</span>
-              </div>
-              {/* Added command for test flowerboard */}
+                    {/* Added command for flowerboard */}
+                    <div>
+                      <code className="bg-black text-purple-400 px-2 py-1 rounded">!flowerboard</code>
+                      <span className="ml-2 text-black bg-pink-200 px-1 rounded">Show top 4 flower pickers</span>
+                    </div>
+                    {/* Added command for trivia scoreboard */}
+                    <div>
+                      <code className="bg-black text-pink-400 px-2 py-1 rounded">!scoreboard</code>
+                      <span className="ml-2 text-black bg-pink-200 px-1 rounded">Show top 4 trivia champions</span>
+                    </div>
+                    {/* Added command for test flowerboard */}
               <div>
                 <code className="bg-black text-red-400 px-2 py-1 rounded">!testflowerboard</code>
                 <span className="ml-2 text-black bg-pink-200 px-1 rounded">

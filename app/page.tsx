@@ -15,6 +15,7 @@ import { CommunityGarden } from "@/components/community-garden"
 import { FlowerShop } from "@/components/flower-shop"
 import { FlowerCelebration } from "@/components/flower-celebration" // Import FlowerCelebration component
 import { FlowerLeaderboard } from "@/components/flower-leaderboard" // Import FlowerLeaderboard component
+import { TriviaScoreboard } from "@/components/trivia-scoreboard" // Import TriviaScoreboard component
 import BeeParadeCelebration from "@/components/bee-parade-celebration" // Import BeeParadeCelebration component
 import { GardenLegendCelebration } from "@/components/garden-legend-celebration" // Import GardenLegendCelebration component
 import { MasterGardenerCelebration } from "@/components/master-gardener-celebration" // Import MasterGardenerCelebration component
@@ -185,6 +186,7 @@ export default function DJRandomizer() {
   const [celebrationUsername, setCelebrationUsername] = useState("")
 
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showTriviaScoreboard, setShowTriviaScoreboard] = useState(false)
 
   // Bee Parade Celebration settings
   const [showBeeParadeCelebration, setShowBeeParadeCelebration] = useState(false)
@@ -337,6 +339,11 @@ export default function DJRandomizer() {
       }, 100)
     }
 
+    const handleRequestTriviaScoreboard = () => {
+      console.log("Page: Received requestTriviaScoreboard event")
+      setShowTriviaScoreboard(true)
+    }
+
     const handleShowBeeParade = (event: CustomEvent) => {
       console.log("Page: Received showBeeParade event", event.detail)
       setBeeParadeUsername("Garden Community")
@@ -470,6 +477,7 @@ const handleHideStartingTimer = () => {
     window.addEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
     window.addEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
     window.addEventListener("showLeaderboard", handleShowLeaderboard as EventListener)
+    window.addEventListener("requestTriviaScoreboard", handleRequestTriviaScoreboard as EventListener)
     window.addEventListener("showBeeParade", handleShowBeeParade as EventListener)
     window.addEventListener("showGardenLegend", handleShowGardenLegend as EventListener)
     window.addEventListener("hideGardenLegend", handleHideGardenLegend as EventListener)
@@ -506,6 +514,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
       window.removeEventListener("manualShowFlowerCelebration", handleShowFlowerCelebration as EventListener)
       window.removeEventListener("requestLeaderboard", handleRequestLeaderboard as EventListener)
       window.removeEventListener("showLeaderboard", handleShowLeaderboard as EventListener)
+      window.removeEventListener("requestTriviaScoreboard", handleRequestTriviaScoreboard as EventListener)
       window.removeEventListener("showBeeParade", handleShowBeeParade as EventListener)
       window.removeEventListener("showGardenLegend", handleShowGardenLegend as EventListener)
       window.removeEventListener("hideGardenLegend", handleHideGardenLegend as EventListener)
@@ -874,6 +883,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         )}
 
         {showLeaderboard && <FlowerLeaderboard isVisible={showLeaderboard} onHide={() => setShowLeaderboard(false)} />}
+      
+      {showTriviaScoreboard && <TriviaScoreboard isVisible={showTriviaScoreboard} onHide={() => setShowTriviaScoreboard(false)} />}
 
         {/* Easter Egg Celebration - 60 flowers */}
         {showEasterEgg && (

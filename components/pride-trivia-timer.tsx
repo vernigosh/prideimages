@@ -523,36 +523,32 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute left-8 top-[calc(50%-265px)]" style={{ marginTop: "25px" }}>
-        {/* Timer progress bar - always visible */}
-        <div 
-          className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"
-          style={{ backgroundColor: "#ffffff", width: "600px" }}
-        >
-          {/* Progress fill */}
+      <div className="absolute left-8 top-[calc(50%-265px)]" style={{ marginTop: "25px", width: "600px" }}>
+        {/* Timer text and progress bar */}
+        <div className="mb-4 flex flex-col items-center">
+          {/* Main timer text */}
+          <div className="text-3xl font-black text-white drop-shadow-lg font-sans uppercase mb-1">
+            {phase === "work" ? "25 MIN WORK TIME" : "5 MIN BREAK"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+          </div>
+          
+          {/* Subtitle */}
+          <div className="text-lg text-white drop-shadow-lg font-sans uppercase mb-3">
+            Type !trivia to view question
+          </div>
+          
+          {/* Progress bar - thin with pride gradient */}
           <div 
-            className="absolute inset-0 transition-all duration-1000 ease-linear"
-            style={{ 
-              backgroundColor: "#f8a5a8",
-              width: `${progressPercent}%`,
-            }}
-          />
-          {/* Text overlay */}
-          <div className="relative z-10 px-6 py-3">
-            {phase === "work" && !boxVisible ? (
-              <div className="flex flex-col items-center">
-                <div className="text-2xl font-bold text-black font-sans">
-                  Type !trivia to view question
-                </div>
-                <div className="text-4xl font-bold text-black font-sans">
-                  WORK TIME — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-                </div>
-              </div>
-            ) : (
-              <div className="text-4xl font-bold text-black font-sans">
-                {phase === "work" ? "WORK TIME" : "BREAK TIME"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-              </div>
-            )}
+            className="w-full h-3 rounded-full overflow-hidden relative"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+          >
+            {/* Pride gradient fill for remaining time */}
+            <div 
+              className="absolute top-0 right-0 h-full rounded-full transition-all duration-1000 ease-linear"
+              style={{ 
+                background: "linear-gradient(90deg, #ff6b6b, #ffa500, #ffff00, #4caf50, #2196f3, #9c27b0)",
+                width: `${progressPercent}%`,
+              }}
+            />
           </div>
         </div>
         

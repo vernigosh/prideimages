@@ -561,16 +561,6 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               }}
             />
           </div>
-          <style jsx>{`
-            @keyframes gradientFlow {
-              0% {
-                background-position: 0% 50%;
-              }
-              100% {
-                background-position: 200% 50%;
-              }
-            }
-          `}</style>
         </div>
         
         {/* Question box - fades in/out */}
@@ -716,6 +706,15 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       
       {/* CSS for animations */}
       <style jsx>{`
+        @keyframes gradientFlow {
+          0% {
+            background-position: 0% 50%;
+          }
+          100% {
+            background-position: 200% 50%;
+          }
+        }
+        
         @keyframes fadeInOut {
           0% { opacity: 0; transform: translate(-50%, -20px); }
           15% { opacity: 1; transform: translate(-50%, 0); }

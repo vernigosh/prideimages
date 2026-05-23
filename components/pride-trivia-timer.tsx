@@ -527,13 +527,13 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         {/* Timer progress bar - always visible */}
         <div 
           className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"
-          style={{ backgroundColor: "#ffffff", width: "600px" }}
+          style={{ backgroundColor: "#fbcccd", width: "600px" }}
         >
           {/* Progress fill */}
           <div 
             className="absolute inset-0 transition-all duration-1000 ease-linear"
             style={{ 
-              backgroundColor: "#ffb8ad",
+              backgroundColor: "#f8a5a8",
               width: `${progressPercent}%`,
             }}
           />
@@ -558,9 +558,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         
         {/* Question box - fades in/out */}
         <div
-          className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden transition-opacity duration-300"
+            className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden transition-opacity duration-300"
           style={{
-            backgroundColor: "#ffb8ad",
+            backgroundColor: "#fbcccd",
             width: "600px",
             opacity: (boxVisible && !isFading) ? 1 : 0,
             pointerEvents: boxVisible ? "auto" : "none"

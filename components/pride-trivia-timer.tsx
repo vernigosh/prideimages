@@ -124,6 +124,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     return shuffled
   }, [])
 
+  // Derive current question from shuffled questions
+  const currentQuestion = shuffledQuestions[currentQuestionIndex]
+
   // Initialize shuffled questions on mount
   useEffect(() => {
     const questions: TriviaQuestion[] = triviaData.questions
@@ -198,9 +201,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       }
     }
   }, [isVisible, phase, boxVisible])
-
-  const currentQuestion = shuffledQuestions[currentQuestionIndex]
-
+  
   // Handle guess commands from chat
   const handleGuess = useCallback((event: CustomEvent) => {
     const { username, answer } = event.detail

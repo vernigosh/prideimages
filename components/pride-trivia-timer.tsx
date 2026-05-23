@@ -560,7 +560,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         <div
             className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden transition-opacity duration-300"
           style={{
-            backgroundColor: "#fbcccd",
+            background: "linear-gradient(135deg, #ffe5e5 0%, #fff5e5 20%, #fffde5 40%, #e5ffe5 60%, #e5f5ff 80%, #f0e5ff 100%)",
             width: "600px",
             opacity: (boxVisible && !isFading) ? 1 : 0,
             pointerEvents: boxVisible ? "auto" : "none"
@@ -582,7 +582,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               <div className="flex items-center gap-4">
                 {/* Large letter indicator */}
                 <div 
-                  className={`w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white transition-opacity duration-500 ${isSlideTransitioning ? 'opacity-0' : 'opacity-100'}`}
+                  className={`w-20 h-20 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0 bg-white transition-opacity duration-500 ${isSlideTransitioning ? 'opacity-0' : 'opacity-100'}`}
                 >
                   <span className="text-4xl font-black text-black font-sans">
                     {["A", "B", "C", "D"][currentSlide % 4]}
@@ -631,13 +631,19 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               
               {/* Correct Answer - with letter circle like work phase */}
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-green-500">
-                  <span className="text-4xl font-black text-white font-sans">
+                <div 
+                  className="w-20 h-20 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: "#c8f7dc" }}
+                >
+                  <span className="text-4xl font-black text-black font-sans">
                     {currentQuestion.answer.toUpperCase()}
                   </span>
                 </div>
-                <div className="bg-green-500 rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
-                  <p className="text-2xl font-black text-white font-sans leading-relaxed uppercase">
+                <div 
+                  className="rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center"
+                  style={{ backgroundColor: "#c8f7dc" }}
+                >
+                  <p className="text-2xl font-black text-black font-sans leading-relaxed uppercase">
                     {currentQuestion[currentQuestion.answer as keyof TriviaQuestion] as string}
                   </p>
                 </div>

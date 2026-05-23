@@ -408,7 +408,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute left-8 top-1/2 transform -translate-y-1/2">
+      <div className="absolute left-8 top-1/2 transform -translate-y-1/2" style={{ marginTop: "25px" }}>
         {/* Timer progress bar - always visible */}
         <div 
           className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"

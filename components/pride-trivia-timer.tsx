@@ -536,7 +536,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           
           {/* Subtitle */}
           <div 
-            className="text-lg text-white font-sans uppercase mb-3"
+            className="text-xl text-white font-sans uppercase mb-3"
             style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
           >
             Type !trivia to view question
@@ -544,7 +544,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           
           {/* Progress bar - thin with animated gradient */}
           <div 
-            className="w-full h-3 rounded-full overflow-hidden relative"
+            className="w-full h-4 rounded-full overflow-hidden relative"
             style={{ backgroundColor: "rgba(255, 255, 255, 0.35)" }}
           >
             {/* Animated gradient fill for remaining time - pink/magenta for work, blue/teal for break */}

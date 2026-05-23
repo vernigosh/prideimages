@@ -384,14 +384,8 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div 
-        className="absolute left-8 top-1/2 transform -translate-y-1/2 transition-opacity duration-300"
-        style={{ 
-          opacity: (boxVisible && !isFading) ? 1 : 0,
-          pointerEvents: boxVisible ? "auto" : "none"
-        }}
-      >
-        {/* Timer progress bar above the box */}
+      <div className="absolute left-8 top-1/2 transform -translate-y-1/2">
+        {/* Timer progress bar - always visible */}
         <div 
           className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"
           style={{ backgroundColor: "#ffffff", width: "600px" }}
@@ -407,16 +401,21 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           {/* Text overlay */}
           <div className="relative z-10 px-6 py-3">
             <div className="text-4xl font-bold text-black font-sans">
-              {phase === "work" ? "WORK TIME" : "BREAK TIME"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+              {phase === "work" 
+                ? (boxVisible ? "WORK TIME" : "Type !trivia to view question")
+                : "BREAK TIME"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
             </div>
           </div>
         </div>
         
+        {/* Question box - fades in/out */}
         <div
-          className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden"
+          className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden transition-opacity duration-300"
           style={{
             backgroundColor: "#ffb8ad",
             width: "600px",
+            opacity: (boxVisible && !isFading) ? 1 : 0,
+            pointerEvents: boxVisible ? "auto" : "none"
           }}
         >
           <div className="p-6">

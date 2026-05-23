@@ -536,16 +536,18 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             Type !trivia to view question
           </div>
           
-          {/* Progress bar - thin with pride gradient */}
+          {/* Progress bar - thin with gradient */}
           <div 
             className="w-full h-3 rounded-full overflow-hidden relative"
             style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
           >
-            {/* Pride gradient fill for remaining time */}
+            {/* Gradient fill for remaining time - pink/magenta for work, blue/teal for break */}
             <div 
               className="absolute top-0 right-0 h-full rounded-full transition-all duration-1000 ease-linear"
               style={{ 
-                background: "linear-gradient(90deg, #ff6b6b, #ffa500, #ffff00, #4caf50, #2196f3, #9c27b0)",
+                background: phase === "work" 
+                  ? "linear-gradient(90deg, #ff6b9d, #e040fb)" 
+                  : "linear-gradient(90deg, #26c6da, #42a5f5)",
                 width: `${progressPercent}%`,
               }}
             />

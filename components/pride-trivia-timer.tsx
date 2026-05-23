@@ -196,7 +196,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         lastChatTimeRef.current = now
         sendChatMessage(`CURRENT QUESTION: ${currentQuestion.question}`)
         setTimeout(() => {
-          sendChatMessage(`A) ${currentQuestion.a} | B) ${currentQuestion.b} | C) ${currentQuestion.c} | D) ${currentQuestion.d}`)
+          sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d}`)
         }, 1000)
       }
       
@@ -248,7 +248,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   useEffect(() => {
     const handleShowAnswer = () => {
       if (previousQuestion) {
-        const correctLetter = previousQuestion.answer.toUpperCase()
+        const correctLetter = previousQuestion.answer.toLowerCase()
         const correctText = previousQuestion[previousQuestion.answer as keyof TriviaQuestion] as string
         sendChatMessage(`PREVIOUS QUESTION: ${previousQuestion.question}`)
         setTimeout(() => {
@@ -395,7 +395,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             if (nextQuestion) {
               sendChatMessage(`PRIDE TRIVIA: ${nextQuestion.question}`)
               setTimeout(() => {
-                sendChatMessage(`A) ${nextQuestion.a} | B) ${nextQuestion.b} | C) ${nextQuestion.c} | D) ${nextQuestion.d} — Type !a !b !c or !d to guess!`)
+                sendChatMessage(`a) ${nextQuestion.a} | b) ${nextQuestion.b} | c) ${nextQuestion.c} | d) ${nextQuestion.d} — Type !a !b !c or !d to guess!`)
               }, 1500)
             }
           } else {
@@ -413,7 +413,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               })
               setCorrectGuessers(winners)
               
-              const correctLetter = correctAnswer.toUpperCase()
+              const correctLetter = correctAnswer.toLowerCase()
               const correctText = currentQuestion[correctAnswer as keyof TriviaQuestion] as string
               
               // Post question first

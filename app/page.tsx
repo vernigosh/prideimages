@@ -434,6 +434,7 @@ const handleHideStartingTimer = () => {
     }
 
     const handleStartPrideTrivia = () => {
+      console.log("[v0] handleStartPrideTrivia called - setting showPrideTrivia to true")
       setShowPrideTrivia(true)
       // Hide regular work timer when pride trivia starts
       setShowWorkTimer(false)

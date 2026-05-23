@@ -258,6 +258,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
   const guessCount = guesses.size
+  
+  // Calculate progress bar percentage
+  const totalDuration = phase === "work" ? WORK_DURATION : SHORT_BREAK
+  const progressPercent = (timeLeft / totalDuration) * 100
 
   return (
     <>
@@ -291,12 +295,24 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       
       <div className="absolute left-8 top-1/2 transform -translate-y-1/2">
         <div
-          className="rounded-3xl p-6 shadow-2xl border-2 border-black"
+          className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden"
           style={{
             backgroundColor: "#ffb8ad",
             width: "600px",
           }}
         >
+          {/* Progress bar at top */}
+          <div className="h-3 w-full bg-black/20">
+            <div 
+              className="h-full transition-all duration-1000 ease-linear"
+              style={{
+                width: `${progressPercent}%`,
+                backgroundColor: phase === "work" ? "#ffffff" : "#22c55e",
+              }}
+            />
+          </div>
+          
+          <div className="p-6">
           {phase === "work" ? (
             /* WORK PHASE - Show question */
             <div className="flex flex-col gap-4">
@@ -415,6 +431,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
       

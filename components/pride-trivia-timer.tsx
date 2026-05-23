@@ -545,15 +545,15 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           {/* Progress bar - thin with gradient */}
           <div 
             className="w-full h-3 rounded-full overflow-hidden relative"
-            style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.35)" }}
           >
             {/* Gradient fill for remaining time - pink/magenta for work, blue/teal for break */}
             <div 
-              className="absolute top-0 right-0 h-full rounded-full transition-all duration-1000 ease-linear"
+              className="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-linear"
               style={{ 
                 background: phase === "work" 
-                  ? "linear-gradient(90deg, #ff6b9d, #e040fb)" 
-                  : "linear-gradient(90deg, #26c6da, #42a5f5)",
+                  ? "linear-gradient(90deg, #e040fb, #ff6b9d)" 
+                  : "linear-gradient(90deg, #42a5f5, #26c6da)",
                 width: `${progressPercent}%`,
               }}
             />

@@ -30,8 +30,14 @@ const WORK_DURATION = 25 * 60
 const SHORT_BREAK = 5 * 60
 
 // How long the box stays visible/hidden during work phase
-const BOX_VISIBLE_DURATION = 30 * 1000 // 30 seconds visible
+const BOX_VISIBLE_DURATION = 60 * 1000 // 60 seconds visible (enough for 2 full Q&A cycles)
 const BOX_HIDDEN_DURATION = 2 * 60 * 1000 // 2 minutes hidden
+
+// Cooldown for !trivia chat messages
+const CHAT_COOLDOWN = 60 * 1000 // 60 seconds cooldown
+
+// How long each answer option slide shows
+const OPTION_SLIDE_DURATION = 10 * 1000 // 10 seconds per option
 
 // Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
 function getClockState() {
@@ -100,6 +106,14 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const [isFading, setIsFading] = useState(false)
   const boxVisibilityTimerRef = useRef<NodeJS.Timeout | null>(null)
   
+  // Chat cooldown tracking
+  const lastChatTimeRef = useRef<number>(0)
+  
+  // Slide animation state (0-3 for A, B, C, D)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isSlideTransitioning, setIsSlideTransitioning] = useState(false)
+  const slideTimerRef = useRef<NodeJS.Timeout | null>(null)
+  
   // Trivia state
   const [shuffledQuestions, setShuffledQuestions] = useState<TriviaQuestion[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -133,6 +147,39 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     setShuffledQuestions(shuffleArray(questions))
   }, [shuffleArray])
 
+  // Cycle through slides (question -> A -> B -> C -> D -> question...)
+  useEffect(() => {
+    if (!isVisible || !boxVisible || phase !== "work") {
+      // Reset to question when not showing
+      setCurrentSlide(0)
+      if (slideTimerRef.current) {
+        clearTimeout(slideTimerRef.current)
+        slideTimerRef.current = null
+      }
+      return
+    }
+    
+    const scheduleNextSlide = () => {
+      slideTimerRef.current = setTimeout(() => {
+        // Start fade out
+        setIsSlideTransitioning(true)
+        // After fade out, change slide and fade in
+        setTimeout(() => {
+          setCurrentSlide(prev => (prev + 1) % 4) // 0-3 cycle (A, B, C, D)
+          setIsSlideTransitioning(false)
+        }, 500) // 500ms for fade out
+      }, OPTION_SLIDE_DURATION)
+    }
+    
+    scheduleNextSlide()
+    
+    return () => {
+      if (slideTimerRef.current) {
+        clearTimeout(slideTimerRef.current)
+      }
+    }
+  }, [isVisible, boxVisible, phase, currentSlide])
+
   // Handle !trivia command to toggle box visibility and send question to chat
   useEffect(() => {
     const handleToggle = () => {
@@ -142,8 +189,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         setIsFading(false)
       }, 300) // Match fade duration
       
-      // Send current question to chat for mobile viewers
-      if (currentQuestion && phase === "work") {
+      // Send current question to chat for mobile viewers (with cooldown)
+      const now = Date.now()
+      if (currentQuestion && phase === "work" && (now - lastChatTimeRef.current) >= CHAT_COOLDOWN) {
+        lastChatTimeRef.current = now
         sendChatMessage(`CURRENT QUESTION: ${currentQuestion.question}`)
         setTimeout(() => {
           sendChatMessage(`A) ${currentQuestion.a} | B) ${currentQuestion.b} | C) ${currentQuestion.c} | D) ${currentQuestion.d}`)
@@ -167,6 +216,28 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     window.addEventListener("toggleTriviaBox", handleToggle)
     return () => window.removeEventListener("toggleTriviaBox", handleToggle)
   }, [boxVisible, currentQuestion, phase])
+
+  // Handle !nextq command to skip to next question
+  useEffect(() => {
+    const handleNextQuestion = () => {
+      // Advance to next question
+      setCurrentQuestionIndex(prev => {
+        const next = prev + 1
+        if (next >= shuffledQuestions.length) {
+          // Reshuffle and start from beginning
+          setShuffledQuestions(shuffleArray(triviaData.questions))
+          return 0
+        }
+        return next
+      })
+      // Reset guesses and slide
+      setGuesses(new Map())
+      setCurrentSlide(0)
+    }
+    
+    window.addEventListener("nextTriviaQuestion", handleNextQuestion)
+    return () => window.removeEventListener("nextTriviaQuestion", handleNextQuestion)
+  }, [shuffledQuestions.length, shuffleArray])
 
   // Auto-cycle box visibility during work phase
   useEffect(() => {
@@ -409,7 +480,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute left-8 top-1/2 transform -translate-y-1/2" style={{ marginTop: "25px" }}>
+      <div className="absolute left-8 top-[calc(50%-140px)]" style={{ marginTop: "25px" }}>
         {/* Timer progress bar - always visible */}
         <div 
           className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"
@@ -454,37 +525,33 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         >
           <div className="p-6">
           {phase === "work" ? (
-            /* WORK PHASE - Show question */
+            /* WORK PHASE - Question in header, cycle through A/B/C/D */
             <div className="flex flex-col gap-4">
-              {/* Header */}
-              <div className="flex items-center justify-center">
-                <h2 className="text-2xl font-bold text-black uppercase font-sans">
-                  ✨🏳️‍🌈 Pride Trivia 🏳️‍🌈✨
+              {/* Header with question */}
+              <div className="flex items-start gap-2">
+                <span className="text-2xl flex-shrink-0">🏳️‍🌈</span>
+                <h2 className="text-xl font-bold text-black font-sans leading-relaxed">
+                  Pride Trivia: {currentQuestion.question}
                 </h2>
               </div>
               
-              {/* Question */}
-              <div className="bg-white rounded-xl p-4 border-2 border-black">
-                <p className="text-xl font-bold text-black font-sans leading-relaxed">
-                  {currentQuestion.question}
-                </p>
-              </div>
-              
-              {/* Options */}
-              <div className="grid grid-cols-2 gap-3">
-                {["a", "b", "c", "d"].map((letter) => (
-                  <div 
-                    key={letter}
-                    className="bg-white rounded-xl p-3 border-2 border-black flex items-start gap-2"
-                  >
-                    <span className="text-lg font-bold text-black font-sans uppercase flex-shrink-0">
-                      {letter})
-                    </span>
-                    <span className="text-lg text-black font-sans">
-                      {currentQuestion[letter as keyof TriviaQuestion] as string}
-                    </span>
-                  </div>
-                ))}
+              {/* Main content area with large letter indicator on left */}
+              <div className="flex items-center gap-4">
+                {/* Large letter indicator */}
+                <div 
+                  className={`w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white transition-opacity duration-500 ${isSlideTransitioning ? 'opacity-0' : 'opacity-100'}`}
+                >
+                  <span className="text-4xl font-bold text-black font-sans">
+                    {["A", "B", "C", "D"][currentSlide % 4]}
+                  </span>
+                </div>
+                
+                {/* Text content - just the answer option with fade transition */}
+                <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
+                  <p className={`text-xl font-bold text-black font-sans leading-relaxed transition-all duration-500 ${isSlideTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
+                    {currentQuestion[["a", "b", "c", "d"][currentSlide % 4] as keyof TriviaQuestion] as string}
+                  </p>
+                </div>
               </div>
               
               {/* Footer */}
@@ -500,25 +567,26 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           ) : (
             /* BREAK PHASE - Show answer and context */
             <div className="flex flex-col gap-4">
-              {/* Header */}
-              <div className="flex items-center justify-center">
-                <h2 className="text-2xl font-bold text-black uppercase font-sans">
-                  Answer Revealed!
+              {/* Header with question - same style as work phase */}
+              <div className="flex items-start gap-2">
+                <span className="text-2xl flex-shrink-0">🏳️‍🌈</span>
+                <h2 className="text-xl font-bold text-black font-sans leading-relaxed">
+                  Pride Trivia: {currentQuestion.question}
                 </h2>
               </div>
               
-              {/* Question reminder */}
-              <div className="bg-white/50 rounded-xl p-3 border-2 border-black">
-                <p className="text-lg text-black font-sans">
-                  {currentQuestion.question}
-                </p>
-              </div>
-              
-              {/* Correct Answer */}
-              <div className="bg-green-500 rounded-xl p-4 border-2 border-black">
-                <p className="text-2xl font-bold text-white font-sans">
-                  {currentQuestion.answer.toUpperCase()}) {currentQuestion[currentQuestion.answer as keyof TriviaQuestion] as string}
-                </p>
+              {/* Correct Answer - with letter circle like work phase */}
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-green-500">
+                  <span className="text-4xl font-bold text-white font-sans">
+                    {currentQuestion.answer.toUpperCase()}
+                  </span>
+                </div>
+                <div className="bg-green-500 rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
+                  <p className="text-xl font-bold text-white font-sans leading-relaxed">
+                    {currentQuestion[currentQuestion.answer as keyof TriviaQuestion] as string}
+                  </p>
+                </div>
               </div>
               
               {/* Context */}

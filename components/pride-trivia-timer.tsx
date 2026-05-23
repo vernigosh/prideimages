@@ -545,25 +545,26 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           ) : (
             /* BREAK PHASE - Show answer and context */
             <div className="flex flex-col gap-4">
-              {/* Header */}
-              <div className="flex items-center justify-center">
-                <h2 className="text-2xl font-bold text-black uppercase font-sans">
-                  Answer Revealed!
+              {/* Header with question - same style as work phase */}
+              <div className="flex items-start gap-2">
+                <span className="text-2xl flex-shrink-0">🏳️‍🌈</span>
+                <h2 className="text-xl font-bold text-black font-sans leading-relaxed">
+                  Pride Trivia: {currentQuestion.question}
                 </h2>
               </div>
               
-              {/* Question reminder */}
-              <div className="bg-white/50 rounded-xl p-3 border-2 border-black">
-                <p className="text-lg text-black font-sans">
-                  {currentQuestion.question}
-                </p>
-              </div>
-              
-              {/* Correct Answer */}
-              <div className="bg-green-500 rounded-xl p-4 border-2 border-black">
-                <p className="text-2xl font-bold text-white font-sans">
-                  {currentQuestion.answer.toUpperCase()}) {currentQuestion[currentQuestion.answer as keyof TriviaQuestion] as string}
-                </p>
+              {/* Correct Answer - with letter circle like work phase */}
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-green-500">
+                  <span className="text-4xl font-bold text-white font-sans">
+                    {currentQuestion.answer.toUpperCase()}
+                  </span>
+                </div>
+                <div className="bg-green-500 rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
+                  <p className="text-xl font-bold text-white font-sans leading-relaxed">
+                    {currentQuestion[currentQuestion.answer as keyof TriviaQuestion] as string}
+                  </p>
+                </div>
               </div>
               
               {/* Context */}

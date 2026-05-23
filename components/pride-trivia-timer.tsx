@@ -400,11 +400,20 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           />
           {/* Text overlay */}
           <div className="relative z-10 px-6 py-3">
-            <div className="text-4xl font-bold text-black font-sans">
-              {phase === "work" 
-                ? (boxVisible ? "WORK TIME" : "Type !trivia to view question")
-                : "BREAK TIME"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-            </div>
+            {phase === "work" && !boxVisible ? (
+              <div className="flex flex-col items-center">
+                <div className="text-2xl font-bold text-black font-sans">
+                  Type !trivia to view question
+                </div>
+                <div className="text-4xl font-bold text-black font-sans">
+                  WORK TIME — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+                </div>
+              </div>
+            ) : (
+              <div className="text-4xl font-bold text-black font-sans">
+                {phase === "work" ? "WORK TIME" : "BREAK TIME"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+              </div>
+            )}
           </div>
         </div>
         

@@ -30,7 +30,7 @@ const WORK_DURATION = 25 * 60
 const SHORT_BREAK = 5 * 60
 
 // How long the box stays visible/hidden during work phase
-const BOX_VISIBLE_DURATION = 30 * 1000 // 30 seconds visible
+const BOX_VISIBLE_DURATION = 60 * 1000 // 60 seconds visible (enough for 2 full Q&A cycles)
 const BOX_HIDDEN_DURATION = 2 * 60 * 1000 // 2 minutes hidden
 
 // Cooldown for !trivia chat messages

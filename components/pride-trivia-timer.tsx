@@ -126,6 +126,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
   const prevPhaseRef = useRef<"work" | "break" | null>(null)
+  const hasCompletedFirstCycleRef = useRef(false) // Track if we've completed at least one full cycle
   
   isVisibleRef.current = isVisible
 
@@ -166,7 +167,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         setIsSlideTransitioning(true)
         // After fade out, change slide and fade in
         setTimeout(() => {
-          setCurrentSlide(prev => (prev + 1) % 4) // 0-3 cycle (A, B, C, D)
+          setCurrentSlide(prev => (prev + 1) % 8) // 0-7 cycle (A, B, C, D twice)
           setIsSlideTransitioning(false)
         }, 500) // 500ms for fade out
       }, OPTION_SLIDE_DURATION)
@@ -333,6 +334,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       setPhase("work")
       setTimeLeft(WORK_DURATION)
       setCycleCount(1)
+      hasCompletedFirstCycleRef.current = false // Reset on hide
       onConnectionChange(false)
       return
     }
@@ -390,20 +392,26 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             setGuesses(new Map())
             
             // Send question to chat (use next question since we just advanced)
-            const nextIndex = (currentQuestionIndex + 1) >= shuffledQuestions.length ? 0 : (currentQuestionIndex + 1)
-            const nextQuestion = shuffledQuestions[nextIndex]
-            if (nextQuestion) {
-              sendChatMessage(`PRIDE TRIVIA: ${nextQuestion.question}`)
-              setTimeout(() => {
-                sendChatMessage(`a) ${nextQuestion.a} | b) ${nextQuestion.b} | c) ${nextQuestion.c} | d) ${nextQuestion.d} — Type !a !b !c or !d to guess!`)
-              }, 1500)
+            // Only send if we've completed at least one cycle (not on initial startup)
+            if (hasCompletedFirstCycleRef.current) {
+              const nextIndex = (currentQuestionIndex + 1) >= shuffledQuestions.length ? 0 : (currentQuestionIndex + 1)
+              const nextQuestion = shuffledQuestions[nextIndex]
+              if (nextQuestion) {
+                sendChatMessage(`PRIDE TRIVIA: ${nextQuestion.question}`)
+                setTimeout(() => {
+                  sendChatMessage(`a) ${nextQuestion.a} | b) ${nextQuestion.b} | c) ${nextQuestion.c} | d) ${nextQuestion.d} — Type !a !b !c or !d to guess!`)
+                }, 1500)
+              }
             }
           } else {
             // Break started - reveal answer
             window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))
             
-            // Calculate correct guessers
-            if (currentQuestion) {
+            // Mark that we've completed at least one cycle (break means work phase completed)
+            hasCompletedFirstCycleRef.current = true
+            
+            // Calculate correct guessers and send chat messages only if we have guesses
+            if (currentQuestion && guesses.size > 0) {
               const correctAnswer = currentQuestion.answer.toLowerCase()
               const winners: string[] = []
               guesses.forEach((answer, username) => {
@@ -523,7 +531,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute left-8 top-[calc(50%-290px)]" style={{ width: "600px" }}>
+      <div className="absolute left-8 top-[calc(50%-190px)]" style={{ width: "600px" }}>
         {/* Question box - fades in/out */}
         <div
             className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden transition-opacity duration-300"
@@ -665,8 +673,8 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         </div>
       </div>
       
-      {/* Circular Progress Timer - Right Side */}
-      <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+      {/* Circular Progress Timer - Right Side (centered when quiz not visible) */}
+      <div className={`absolute top-1/2 transform -translate-y-1/2 ${(boxVisible && !isFading && phase === "work") ? "right-8" : "left-1/2 -translate-x-1/2"}`}>
         <div className="flex flex-col items-center justify-center gap-4">
           <div className="relative w-72 h-72">
             <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">

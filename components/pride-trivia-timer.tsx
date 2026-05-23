@@ -573,7 +573,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               {/* Header with question */}
               <div className="flex items-start gap-2">
                 <span className="text-3xl flex-shrink-0">🏳️‍🌈</span>
-                <h2 className="text-2xl font-black text-black font-sans leading-relaxed">
+                <h2 className="text-2xl font-black text-black font-sans leading-relaxed uppercase">
                   Pride Trivia: {currentQuestion.question}
                 </h2>
               </div>
@@ -591,7 +591,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 
                 {/* Text content - just the answer option with fade transition */}
                 <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
-                  <p className={`text-2xl font-black text-black font-sans leading-relaxed transition-all duration-500 ${isSlideTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
+                  <p className={`text-2xl font-black text-black font-sans leading-relaxed uppercase transition-all duration-500 ${isSlideTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
                     {currentQuestion[["a", "b", "c", "d"][currentSlide % 4] as keyof TriviaQuestion] as string}
                   </p>
                 </div>
@@ -599,10 +599,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               
               {/* Footer */}
               <div className="flex items-center justify-between text-black">
-                <div className="text-xl font-black font-sans">
+                <div className="text-xl font-black font-sans uppercase">
                   {guessCount} {guessCount === 1 ? "person has" : "people have"} guessed
                 </div>
-                <div className="text-xl font-sans">
+                <div className="text-xl font-sans uppercase">
                   Type !a !b !c or !d
                 </div>
               </div>
@@ -611,10 +611,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             /* BREAK PHASE - Last minute: Get ready message */
             <div className="flex flex-col items-center justify-center gap-6 py-12">
               <span className="text-6xl">🏳️‍🌈</span>
-              <h2 className="text-4xl font-black text-black font-sans text-center">
+              <h2 className="text-4xl font-black text-black font-sans text-center uppercase">
                 Get ready for the next question!
               </h2>
-              <p className="text-2xl text-black font-sans">
+              <p className="text-2xl text-black font-sans uppercase">
                 Work cycle starting soon...
               </p>
             </div>
@@ -624,7 +624,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               {/* Header with question - same style as work phase */}
               <div className="flex items-start gap-2">
                 <span className="text-3xl flex-shrink-0">🏳️‍🌈</span>
-                <h2 className="text-2xl font-black text-black font-sans leading-relaxed">
+                <h2 className="text-2xl font-black text-black font-sans leading-relaxed uppercase">
                   Pride Trivia: {currentQuestion.question}
                 </h2>
               </div>
@@ -637,7 +637,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                   </span>
                 </div>
                 <div className="bg-green-500 rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
-                  <p className="text-2xl font-black text-white font-sans leading-relaxed">
+                  <p className="text-2xl font-black text-white font-sans leading-relaxed uppercase">
                     {currentQuestion[currentQuestion.answer as keyof TriviaQuestion] as string}
                   </p>
                 </div>
@@ -645,7 +645,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               
               {/* Context */}
               <div className="bg-white rounded-xl p-4 border-2 border-black">
-                <p className="text-xl text-black font-sans leading-relaxed">
+                <p className="text-xl text-black font-sans leading-relaxed uppercase">
                   {currentQuestion.context}
                 </p>
               </div>

@@ -130,7 +130,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     setShuffledQuestions(shuffleArray(questions))
   }, [shuffleArray])
 
-  // Handle !trivia command to toggle box visibility
+  // Handle !trivia command to toggle box visibility and send question to chat
   useEffect(() => {
     const handleToggle = () => {
       setIsFading(true)
@@ -138,6 +138,14 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         setBoxVisible(prev => !prev)
         setIsFading(false)
       }, 300) // Match fade duration
+      
+      // Send current question to chat for mobile viewers
+      if (currentQuestion && phase === "work") {
+        sendChatMessage(`CURRENT QUESTION: ${currentQuestion.question}`)
+        setTimeout(() => {
+          sendChatMessage(`A) ${currentQuestion.a} | B) ${currentQuestion.b} | C) ${currentQuestion.c} | D) ${currentQuestion.d}`)
+        }, 1000)
+      }
       
       // Reset the auto-cycle timer when manually toggled
       if (boxVisibilityTimerRef.current) {
@@ -155,7 +163,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     
     window.addEventListener("toggleTriviaBox", handleToggle)
     return () => window.removeEventListener("toggleTriviaBox", handleToggle)
-  }, [boxVisible])
+  }, [boxVisible, currentQuestion, phase])
 
   // Auto-cycle box visibility during work phase
   useEffect(() => {
@@ -282,7 +290,15 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             // Reset guesses for new question
             setGuesses(new Map())
             
-            sendChatMessage("PRIDE TRIVIA! Type !a !b !c or !d to guess! 25 minutes to answer!")
+            // Send question to chat (use next question since we just advanced)
+            const nextIndex = (currentQuestionIndex + 1) >= shuffledQuestions.length ? 0 : (currentQuestionIndex + 1)
+            const nextQuestion = shuffledQuestions[nextIndex]
+            if (nextQuestion) {
+              sendChatMessage(`PRIDE TRIVIA: ${nextQuestion.question}`)
+              setTimeout(() => {
+                sendChatMessage(`A) ${nextQuestion.a} | B) ${nextQuestion.b} | C) ${nextQuestion.c} | D) ${nextQuestion.d} — Type !a !b !c or !d to guess!`)
+              }, 1500)
+            }
           } else {
             // Break started - reveal answer
             window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))
@@ -300,7 +316,15 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               
               const correctLetter = correctAnswer.toUpperCase()
               const correctText = currentQuestion[correctAnswer as keyof TriviaQuestion] as string
-              sendChatMessage(`ANSWER: ${correctLetter}) ${correctText} | ${winners.length} got it right!`)
+              
+              if (winners.length > 0) {
+                const winnerList = winners.length <= 5 
+                  ? winners.map(w => `@${w}`).join(", ")
+                  : `${winners.slice(0, 5).map(w => `@${w}`).join(", ")} and ${winners.length - 5} more`
+                sendChatMessage(`ANSWER: ${correctLetter}) ${correctText} — Congrats ${winnerList}!`)
+              } else {
+                sendChatMessage(`ANSWER: ${correctLetter}) ${correctText} — No one got it this time!`)
+              }
             }
           }
         }

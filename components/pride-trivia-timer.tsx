@@ -523,7 +523,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute left-8 top-[calc(50%-265px)]" style={{ marginTop: "25px", width: "600px" }}>
+      <div className="absolute right-8 top-[calc(50%-390px)]" style={{ width: "600px" }}>
         {/* Timer text and progress bar */}
         <div className="mb-4 flex flex-col items-center">
           {/* Main timer text */}
@@ -536,28 +536,41 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           
           {/* Subtitle */}
           <div 
-            className="text-lg text-white font-sans uppercase mb-3"
+            className="text-xl text-white font-sans uppercase mb-3"
             style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
           >
             Type !trivia to view question
           </div>
           
-          {/* Progress bar - thin with gradient */}
+          {/* Progress bar - thin with animated gradient */}
           <div 
-            className="w-full h-3 rounded-full overflow-hidden relative"
+            className="w-full h-4 rounded-full overflow-hidden relative"
             style={{ backgroundColor: "rgba(255, 255, 255, 0.35)" }}
           >
-            {/* Gradient fill for remaining time - pink/magenta for work, blue/teal for break */}
+            {/* Animated gradient fill for remaining time - pink/magenta for work, blue/teal for break */}
             <div 
-              className="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-linear"
+              className="absolute top-0 left-0 h-full rounded-full transition-[width] duration-1000 ease-linear"
               style={{ 
-                background: phase === "work" 
-                  ? "linear-gradient(90deg, #e040fb, #ff6b9d)" 
-                  : "linear-gradient(90deg, #42a5f5, #26c6da)",
+                backgroundImage: phase === "work" 
+                  ? "linear-gradient(90deg, #e040fb, #ff6b9d, #e040fb, #ff6b9d, #e040fb)" 
+                  : "linear-gradient(90deg, #42a5f5, #26c6da, #42a5f5, #26c6da, #42a5f5)",
+                backgroundSize: "200% 100%",
+                backgroundPosition: "0% 50%",
                 width: `${progressPercent}%`,
+                animation: "gradientFlow 2s linear infinite",
               }}
             />
           </div>
+          <style jsx>{`
+            @keyframes gradientFlow {
+              0% {
+                background-position: 0% 50%;
+              }
+              100% {
+                background-position: 200% 50%;
+              }
+            }
+          `}</style>
         </div>
         
         {/* Question box - fades in/out */}

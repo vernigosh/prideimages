@@ -262,13 +262,13 @@
     },
     {
       "id": 27,
-      "question": "The 1990 documentary 'Paris Is Burning' documented ballroom culture. What happened to its director Jennie Livingston's relationship with the community?",
-      "a": "She became a ballroom judge",
-      "b": "She faced criticism for profiting from a culture she wasn't part of",
-      "c": "She opened a ballroom venue",
-      "d": "She became a house mother",
+      "question": "The 1990 documentary 'Paris Is Burning' introduced the world to ballroom culture. Which iconic phrase from the film became a mainstream expression of praise?",
+      "a": "Work it out",
+      "b": "Legendary",
+      "c": "Serving realness",
+      "d": "Slay",
       "answer": "b",
-      "context": "While \"Paris Is Burning\" introduced ballroom to the world, many subjects felt exploited - Livingston, a white lesbian, profited while the Black and Latino trans women in the film struggled with poverty. It raised important questions about who tells whose stories."
+      "context": "Ballroom culture gave us countless phrases now used everywhere - 'legendary,' 'iconic,' 'serving realness,' 'reading,' and 'shade.' The film preserved the creativity and resilience of Black and Latino LGBTQ+ communities who created an entire vocabulary of affirmation."
     },
     {
       "id": 28,
@@ -342,13 +342,13 @@
     },
     {
       "id": 35,
-      "question": "The avant-garde vocalist Diamanda Galas recorded 'Plague Mass' (1991) as a response to AIDS. Her brother's death from the disease inspired what confrontational aspect of her performances?",
-      "a": "She only performed in hospitals",
-      "b": "She covered herself in fake blood and confronted audiences with grief and rage",
-      "c": "She refused to perform in the United States",
-      "d": "She only sang gospel music",
+      "question": "Sylvester's 1978 hit 'You Make Me Feel (Mighty Real)' was groundbreaking because it was one of the first disco songs to do what?",
+      "a": "Feature a live orchestra",
+      "b": "Be performed by an openly gay Black artist celebrating queer joy",
+      "c": "Use a drum machine exclusively",
+      "d": "Be released on a major label",
       "answer": "b",
-      "context": "Galas' performances were acts of mourning and protest against government inaction. Her three-octave voice channeled the agony of a community abandoned to die. While not strictly dance music, her work influenced industrial and dark electronic artists."
+      "context": "Sylvester was unapologetically himself - a gender-nonconforming Black gay man singing about ecstatic joy and desire. His falsetto and the song's electronic production pioneered Hi-NRG. He left his estate to AIDS charities and remains an icon of authentic self-expression."
     },
     {
       "id": 36,
@@ -392,23 +392,23 @@
     },
     {
       "id": 40,
-      "question": "Gloria Gaynor's 'I Will Survive' (1978) was originally the B-side to another song but became a defining anthem for what reason?",
-      "a": "A radio DJ played it by accident",
-      "b": "LGBTQ+ communities and women embraced its message of resilience",
-      "c": "It was featured in a hit movie",
-      "d": "A famous DJ remixed it",
+      "question": "Martha Wash, the powerhouse vocalist behind 'Gonna Make You Sweat (Everybody Dance Now)' and many Black Box hits, fought for what important recognition in the music industry?",
+      "a": "Higher royalty rates for all artists",
+      "b": "Credit and visibility after her vocals were used without attribution",
+      "c": "A dedicated dance music Grammy category",
+      "d": "Equal pay for backup singers",
       "answer": "b",
-      "context": "\"I Will Survive\" was embraced as an anthem of empowerment - first by women, then by the gay community, and especially during the AIDS crisis when survival was literal. It remains a Pride staple because its message never stopped being needed."
+      "context": "Martha Wash's voice powered countless dance hits, but she was often uncredited while thinner models lip-synced in videos. Her legal battles changed the industry - she won the right to be credited and seen. Her story is one of a Black queer woman demanding her rightful place."
     },
     {
       "id": 41,
-      "question": "Donna Summer, the 'Queen of Disco,' faced a complicated legacy with the LGBTQ+ community in the 1980s due to what reported incident?",
-      "a": "She refused to perform at gay clubs",
-      "b": "She allegedly made homophobic comments about AIDS, which she later denied",
-      "c": "She sued a gay club for playing her music",
-      "d": "She left the music industry entirely",
+      "question": "Donna Summer's 1977 song 'I Feel Love' revolutionized dance music because producer Giorgio Moroder did what unprecedented thing?",
+      "a": "Recorded it entirely live in one take",
+      "b": "Created an almost entirely synthesized backing track",
+      "c": "Used a 100-piece orchestra",
+      "d": "Recorded it underwater for unique acoustics",
       "answer": "b",
-      "context": "Reports surfaced that Summer made homophobic remarks calling AIDS \"God's punishment.\" She denied this repeatedly until her death, and opinions remain divided. It highlights how even icons from queer spaces could reflect the era's homophobia."
+      "context": "Brian Eno famously said 'I Feel Love' was the sound of the future. Its pulsing synthesizer backing was revolutionary - nearly all electronic, with Donna's ethereal vocals floating above. It directly influenced techno, house, and every electronic genre that followed."
     },
     {
       "id": 42,
@@ -432,13 +432,13 @@
     },
     {
       "id": 44,
-      "question": "The Village People were intentionally created by producer Jacques Morali to appeal to what audience?",
-      "a": "Rock music fans",
-      "b": "Gay men in Greenwich Village",
-      "c": "Country music audiences",
-      "d": "Children's entertainment market",
+      "question": "Loleatta Holloway's vocals on 'Love Sensation' (1980) became one of the most sampled in dance music history. Which iconic 90s hit prominently featured her voice?",
+      "a": "Show Me Love by Robin S.",
+      "b": "Ride on Time by Black Box",
+      "c": "Finally by CeCe Peniston",
+      "d": "100% Pure Love by Crystal Waters",
       "answer": "b",
-      "context": "French producer Jacques Morali was inspired by the gay club scene in Greenwich Village and created a group with gay archetypes (cop, construction worker, cowboy, etc.). The campy appeal was intentional, even if mainstream audiences missed the subtext."
+      "context": "Loleatta Holloway's powerful gospel-influenced voice defined countless dance tracks. 'Ride on Time' used her vocals without initial credit - like Martha Wash, she fought for recognition. Her voice represents the Black women whose artistry built dance music."
     },
     {
       "id": 45,

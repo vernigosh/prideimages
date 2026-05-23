@@ -523,46 +523,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute right-8 top-[calc(50%-290px)]" style={{ width: "600px" }}>
-        {/* Timer text and progress bar */}
-        <div className="mb-4 flex flex-col items-center">
-          {/* Main timer text */}
-          <div 
-            className="text-3xl font-black text-white font-sans uppercase mb-1"
-            style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
-          >
-            {phase === "work" ? "25 MIN WORK TIME" : "5 MIN BREAK"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-          </div>
-          
-          {/* Subtitle */}
-          <div 
-            className="text-xl text-white font-sans uppercase mb-3"
-            style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
-          >
-            Type !trivia to view question
-          </div>
-          
-          {/* Progress bar - thin with animated gradient */}
-          <div 
-            className="w-full h-4 rounded-full overflow-hidden relative"
-            style={{ backgroundColor: "rgba(255, 255, 255, 0.35)" }}
-          >
-            {/* Animated gradient fill for remaining time - pink/magenta for work, blue/teal for break */}
-            <div 
-              className="absolute top-0 left-0 h-full rounded-full transition-[width] duration-1000 ease-linear"
-              style={{ 
-                backgroundImage: phase === "work" 
-                  ? "linear-gradient(90deg, #e040fb, #ff6b9d, #e040fb, #ff6b9d, #e040fb)" 
-                  : "linear-gradient(90deg, #42a5f5, #26c6da, #42a5f5, #26c6da, #42a5f5)",
-                backgroundSize: "200% 100%",
-                backgroundPosition: "0% 50%",
-                width: `${progressPercent}%`,
-                animation: "gradientFlow 2s linear infinite",
-              }}
-            />
-          </div>
-        </div>
-        
+      <div className="absolute left-8 top-[calc(50%-290px)]" style={{ width: "600px" }}>
         {/* Question box - fades in/out */}
         <div
             className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden transition-opacity duration-300"
@@ -700,6 +661,77 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               )}
             </div>
           )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Circular Progress Timer - Right Side */}
+      <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="relative w-72 h-72">
+            <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">
+              {/* Background ring */}
+              <circle
+                cx="100"
+                cy="100"
+                r="85"
+                fill="none"
+                stroke="rgba(255, 255, 255, 0.35)"
+                strokeWidth="12"
+              />
+              {/* Progress ring with gradient */}
+              <defs>
+                <linearGradient id="prideGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  {phase === "work" ? (
+                    <>
+                      <stop offset="0%" stopColor="#e040fb" />
+                      <stop offset="50%" stopColor="#ff6b9d" />
+                      <stop offset="100%" stopColor="#e040fb" />
+                    </>
+                  ) : (
+                    <>
+                      <stop offset="0%" stopColor="#42a5f5" />
+                      <stop offset="50%" stopColor="#26c6da" />
+                      <stop offset="100%" stopColor="#42a5f5" />
+                    </>
+                  )}
+                </linearGradient>
+              </defs>
+              <circle
+                cx="100"
+                cy="100"
+                r="85"
+                fill="none"
+                stroke="url(#prideGradient)"
+                strokeWidth="12"
+                strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 85}
+                strokeDashoffset={2 * Math.PI * 85 * (1 - progressPercent / 100)}
+                className="transition-[stroke-dashoffset] duration-1000 ease-linear"
+              />
+            </svg>
+            {/* Center content */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div 
+                className="text-5xl font-black text-white font-sans"
+                style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
+              >
+                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+              </div>
+              <div 
+                className="text-xl font-bold text-white font-sans uppercase mt-1"
+                style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
+              >
+                {phase === "work" ? "WORK TIME" : "BREAK"}
+              </div>
+            </div>
+          </div>
+          {/* Subtitle below ring */}
+          <div 
+            className="text-lg text-white font-sans uppercase text-center"
+            style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
+          >
+            Type !trivia to view question
           </div>
         </div>
       </div>

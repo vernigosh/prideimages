@@ -527,12 +527,18 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         {/* Timer text and progress bar */}
         <div className="mb-4 flex flex-col items-center">
           {/* Main timer text */}
-          <div className="text-3xl font-black text-white drop-shadow-lg font-sans uppercase mb-1">
+          <div 
+            className="text-3xl font-black text-white font-sans uppercase mb-1"
+            style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
+          >
             {phase === "work" ? "25 MIN WORK TIME" : "5 MIN BREAK"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
           </div>
           
           {/* Subtitle */}
-          <div className="text-lg text-white drop-shadow-lg font-sans uppercase mb-3">
+          <div 
+            className="text-lg text-white font-sans uppercase mb-3"
+            style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
+          >
             Type !trivia to view question
           </div>
           
@@ -558,7 +564,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         <div
             className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden transition-opacity duration-300"
           style={{
-            background: "linear-gradient(135deg, #ffe5e5 0%, #fff5e5 20%, #fffde5 40%, #e5ffe5 60%, #e5f5ff 80%, #f0e5ff 100%)",
+            background: "linear-gradient(135deg, #ffe5e5 0%, #ffe5e5 15%, #fff5e5 25%, #fffde5 35%, #f0ffe5 45%, #e5f5ff 55%, #e5e5ff 70%, #f0e5ff 85%, #ffe5f5 100%)",
             width: "600px",
             opacity: (boxVisible && !isFading) ? 1 : 0,
             pointerEvents: boxVisible ? "auto" : "none"

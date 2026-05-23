@@ -258,10 +258,6 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
   const guessCount = guesses.size
-  
-  // Calculate progress bar percentage
-  const totalDuration = phase === "work" ? WORK_DURATION : SHORT_BREAK
-  const progressPercent = (timeLeft / totalDuration) * 100
 
   return (
     <>
@@ -294,6 +290,16 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       <div className="absolute left-8 top-1/2 transform -translate-y-1/2">
+        {/* Timer display above the box */}
+        <div 
+          className="mb-4 rounded-2xl px-6 py-3 border-2 border-black text-center"
+          style={{ backgroundColor: "#ffb8ad", width: "600px" }}
+        >
+          <div className="text-4xl font-bold text-black font-sans">
+            {phase === "work" ? "WORK TIME" : "BREAK TIME"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+          </div>
+        </div>
+        
         <div
           className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden"
           style={{
@@ -301,29 +307,15 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             width: "600px",
           }}
         >
-          {/* Progress bar at top */}
-          <div className="h-3 w-full bg-black/20">
-            <div 
-              className="h-full transition-all duration-1000 ease-linear"
-              style={{
-                width: `${progressPercent}%`,
-                backgroundColor: phase === "work" ? "#ffffff" : "#22c55e",
-              }}
-            />
-          </div>
-          
           <div className="p-6">
           {phase === "work" ? (
             /* WORK PHASE - Show question */
             <div className="flex flex-col gap-4">
               {/* Header */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-center">
                 <h2 className="text-2xl font-bold text-black uppercase font-sans">
                   Pride Trivia
                 </h2>
-                <div className="text-xl font-bold text-black font-sans">
-                  {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-                </div>
               </div>
               
               {/* Question */}
@@ -364,13 +356,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             /* BREAK PHASE - Show answer and context */
             <div className="flex flex-col gap-4">
               {/* Header */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-center">
                 <h2 className="text-2xl font-bold text-black uppercase font-sans">
                   Answer Revealed!
                 </h2>
-                <div className="text-xl font-bold text-black font-sans">
-                  Break: {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-                </div>
               </div>
               
               {/* Question reminder */}

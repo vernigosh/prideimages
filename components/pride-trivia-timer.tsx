@@ -564,6 +564,17 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 </div>
               </div>
             </div>
+          ) : timeLeft <= 60 ? (
+            /* BREAK PHASE - Last minute: Get ready message */
+            <div className="flex flex-col items-center justify-center gap-4 py-8">
+              <span className="text-4xl">🏳️‍🌈</span>
+              <h2 className="text-2xl font-bold text-black font-sans text-center">
+                Get ready for the next question!
+              </h2>
+              <p className="text-lg text-black font-sans">
+                Work cycle starting soon...
+              </p>
+            </div>
           ) : (
             /* BREAK PHASE - Show answer and context */
             <div className="flex flex-col gap-4">

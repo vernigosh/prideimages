@@ -31,7 +31,7 @@ const SHORT_BREAK = 5 * 60
 
 // How long the box stays visible/hidden during work phase
 const BOX_VISIBLE_DURATION = 60 * 1000 // 60 seconds visible (enough for 2 full Q&A cycles)
-const BOX_HIDDEN_DURATION = 2 * 60 * 1000 // 2 minutes hidden
+const BOX_HIDDEN_DURATION = 4 * 60 * 1000 // 4 minutes hidden (5 min total cycle)
 
 // Cooldown for !trivia chat messages
 const CHAT_COOLDOWN = 60 * 1000 // 60 seconds cooldown
@@ -117,6 +117,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   // Trivia state
   const [shuffledQuestions, setShuffledQuestions] = useState<TriviaQuestion[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [previousQuestion, setPreviousQuestion] = useState<TriviaQuestion | null>(null)
   const [guesses, setGuesses] = useState<Map<string, string>>(new Map()) // username -> answer
   const [correctGuessers, setCorrectGuessers] = useState<string[]>([])
   const [recentGuessNotification, setRecentGuessNotification] = useState<{ username: string; answer: string } | null>(null)
@@ -220,6 +221,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   // Handle !nextq command to skip to next question
   useEffect(() => {
     const handleNextQuestion = () => {
+      // Save current question as previous before advancing
+      if (currentQuestion) {
+        setPreviousQuestion(currentQuestion)
+      }
       // Advance to next question
       setCurrentQuestionIndex(prev => {
         const next = prev + 1
@@ -237,7 +242,26 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     
     window.addEventListener("nextTriviaQuestion", handleNextQuestion)
     return () => window.removeEventListener("nextTriviaQuestion", handleNextQuestion)
-  }, [shuffledQuestions.length, shuffleArray])
+  }, [shuffledQuestions.length, shuffleArray, currentQuestion])
+
+  // Handle !answer command to show previous question's answer
+  useEffect(() => {
+    const handleShowAnswer = () => {
+      if (previousQuestion) {
+        const correctLetter = previousQuestion.answer.toUpperCase()
+        const correctText = previousQuestion[previousQuestion.answer as keyof TriviaQuestion] as string
+        sendChatMessage(`PREVIOUS QUESTION: ${previousQuestion.question}`)
+        setTimeout(() => {
+          sendChatMessage(`ANSWER: ${correctLetter}) ${correctText}`)
+        }, 1000)
+      } else {
+        sendChatMessage(`No previous question yet!`)
+      }
+    }
+    
+    window.addEventListener("showPreviousAnswer", handleShowAnswer)
+    return () => window.removeEventListener("showPreviousAnswer", handleShowAnswer)
+  }, [previousQuestion])
 
   // Auto-cycle box visibility during work phase
   useEffect(() => {
@@ -346,6 +370,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 }
               })
               setCorrectGuessers(winners)
+              
+              // Save current question as previous before advancing
+              setPreviousQuestion(currentQuestion)
             }
             
             // Advance to next question (or reshuffle if we've gone through all)
@@ -563,6 +590,17 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                   Type !a !b !c or !d
                 </div>
               </div>
+            </div>
+          ) : timeLeft <= 60 ? (
+            /* BREAK PHASE - Last minute: Get ready message */
+            <div className="flex flex-col items-center justify-center gap-4 py-8">
+              <span className="text-4xl">🏳️‍🌈</span>
+              <h2 className="text-2xl font-bold text-black font-sans text-center">
+                Get ready for the next question!
+              </h2>
+              <p className="text-lg text-black font-sans">
+                Work cycle starting soon...
+              </p>
             </div>
           ) : (
             /* BREAK PHASE - Show answer and context */

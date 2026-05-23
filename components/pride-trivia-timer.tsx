@@ -92,6 +92,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const [showPulse, setShowPulse] = useState(false)
   
   // Trivia state
+  const [shuffledQuestions, setShuffledQuestions] = useState<TriviaQuestion[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [guesses, setGuesses] = useState<Map<string, string>>(new Map()) // username -> answer
   const [correctGuessers, setCorrectGuessers] = useState<string[]>([])
@@ -104,9 +105,23 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   
   isVisibleRef.current = isVisible
 
-  const questions: TriviaQuestion[] = triviaData.questions
+  // Shuffle function using Fisher-Yates algorithm
+  const shuffleArray = useCallback(<T,>(array: T[]): T[] => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }, [])
 
-  const currentQuestion = questions[currentQuestionIndex]
+  // Initialize shuffled questions on mount
+  useEffect(() => {
+    const questions: TriviaQuestion[] = triviaData.questions
+    setShuffledQuestions(shuffleArray(questions))
+  }, [shuffleArray])
+
+  const currentQuestion = shuffledQuestions[currentQuestionIndex]
 
   // Handle guess commands from chat
   const handleGuess = useCallback((event: CustomEvent) => {
@@ -183,10 +198,15 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               setCorrectGuessers(winners)
             }
             
-            // Advance to next question
+            // Advance to next question (or reshuffle if we've gone through all)
             setCurrentQuestionIndex(prev => {
               const next = prev + 1
-              return next >= questions.length ? 0 : next
+              if (next >= shuffledQuestions.length) {
+                // Reshuffle and start from beginning
+                setShuffledQuestions(shuffleArray(triviaData.questions))
+                return 0
+              }
+              return next
             })
             
             // Reset guesses for new question
@@ -251,7 +271,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       }
       document.removeEventListener("visibilitychange", handleVisibility)
     }
-  }, [isVisible, currentQuestion, guesses, questions.length, onConnectionChange])
+  }, [isVisible, currentQuestion, guesses, shuffledQuestions.length, shuffleArray, onConnectionChange])
 
   if (!isVisible || !currentQuestion) return null
 

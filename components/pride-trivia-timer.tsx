@@ -551,10 +551,11 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             <div 
               className="absolute top-0 left-0 h-full rounded-full transition-[width] duration-1000 ease-linear"
               style={{ 
-                background: phase === "work" 
+                backgroundImage: phase === "work" 
                   ? "linear-gradient(90deg, #e040fb, #ff6b9d, #e040fb, #ff6b9d, #e040fb)" 
                   : "linear-gradient(90deg, #42a5f5, #26c6da, #42a5f5, #26c6da, #42a5f5)",
                 backgroundSize: "200% 100%",
+                backgroundPosition: "0% 50%",
                 width: `${progressPercent}%`,
                 animation: "gradientFlow 2s linear infinite",
               }}

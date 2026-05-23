@@ -458,7 +458,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute left-8 top-1/2 transform -translate-y-1/2" style={{ marginTop: "25px" }}>
+      <div className="absolute left-8 top-[calc(50%-140px)]" style={{ marginTop: "25px" }}>
         {/* Timer progress bar - always visible */}
         <div 
           className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"
@@ -497,25 +497,24 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           style={{
             backgroundColor: "#ffb8ad",
             width: "600px",
-            height: "280px", // Fixed height to prevent jumping
             opacity: (boxVisible && !isFading) ? 1 : 0,
             pointerEvents: boxVisible ? "auto" : "none"
           }}
         >
-          <div className="p-6 h-full flex flex-col">
+          <div className="p-6">
           {phase === "work" ? (
             /* WORK PHASE - Question in header, cycle through A/B/C/D */
-            <div className="flex flex-col gap-4 h-full">
-              {/* Header with question - fixed height */}
-              <div className="flex items-start gap-2 min-h-[60px]">
+            <div className="flex flex-col gap-4">
+              {/* Header with question */}
+              <div className="flex items-start gap-2">
                 <span className="text-2xl flex-shrink-0">🏳️‍🌈</span>
-                <h2 className="text-xl font-bold text-black font-sans leading-relaxed line-clamp-2">
+                <h2 className="text-xl font-bold text-black font-sans leading-relaxed">
                   Pride Trivia: {currentQuestion.question}
                 </h2>
               </div>
               
               {/* Main content area with large letter indicator on left */}
-              <div className="flex items-center gap-4 flex-1">
+              <div className="flex items-center gap-4">
                 {/* Large letter indicator */}
                 <div 
                   className={`w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white transition-opacity duration-300 ${isSlideTransitioning ? 'opacity-0' : 'opacity-100'}`}
@@ -526,7 +525,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 </div>
                 
                 {/* Text content - just the answer option with fade transition */}
-                <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 h-[80px] flex items-center overflow-hidden">
+                <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
                   <p className={`text-xl font-bold text-black font-sans leading-relaxed transition-all duration-300 ${isSlideTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
                     {currentQuestion[["a", "b", "c", "d"][currentSlide % 4] as keyof TriviaQuestion] as string}
                   </p>

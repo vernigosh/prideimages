@@ -217,6 +217,28 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     return () => window.removeEventListener("toggleTriviaBox", handleToggle)
   }, [boxVisible, currentQuestion, phase])
 
+  // Handle !nextq command to skip to next question
+  useEffect(() => {
+    const handleNextQuestion = () => {
+      // Advance to next question
+      setCurrentQuestionIndex(prev => {
+        const next = prev + 1
+        if (next >= shuffledQuestions.length) {
+          // Reshuffle and start from beginning
+          setShuffledQuestions(shuffleArray(triviaData.questions))
+          return 0
+        }
+        return next
+      })
+      // Reset guesses and slide
+      setGuesses(new Map())
+      setCurrentSlide(0)
+    }
+    
+    window.addEventListener("nextTriviaQuestion", handleNextQuestion)
+    return () => window.removeEventListener("nextTriviaQuestion", handleNextQuestion)
+  }, [shuffledQuestions.length, shuffleArray])
+
   // Auto-cycle box visibility during work phase
   useEffect(() => {
     if (!isVisible || phase !== "work") {

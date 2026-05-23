@@ -24,10 +24,11 @@ export function AdminInterface({ tricks, onAddTrick, onRemoveTrick, onUpdateTric
   const [seConfigured, setSeConfigured] = useState<boolean | null>(null)
 
   useEffect(() => {
+    // Check if StreamElements is configured without actually sending a message
     fetch("/api/post-trick", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ trick: { name: "test", definition: "test" } }),
+      body: JSON.stringify({ trick: { name: "test", definition: "test" }, dryRun: true }),
     })
       .then((res) => {
         setSeConfigured(res.status !== 500)

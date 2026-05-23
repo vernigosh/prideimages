@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { trick } = await request.json()
+    const { trick, dryRun } = await request.json()
 
     if (!trick || !trick.name || !trick.definition) {
       return NextResponse.json({ error: "Invalid trick data" }, { status: 400 })
@@ -14,6 +14,11 @@ export async function POST(request: NextRequest) {
     if (!channelId || !jwtToken) {
       console.log("[v0] StreamElements credentials not configured on server")
       return NextResponse.json({ error: "StreamElements not configured" }, { status: 500 })
+    }
+
+    // If dryRun is true, just check credentials are configured without sending
+    if (dryRun) {
+      return NextResponse.json({ success: true, configured: true })
     }
 
     const message = `DJ Challenge: ${trick.name} - ${trick.definition}`

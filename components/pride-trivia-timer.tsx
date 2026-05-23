@@ -167,7 +167,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         setIsSlideTransitioning(true)
         // After fade out, change slide and fade in
         setTimeout(() => {
-          setCurrentSlide(prev => (prev + 1) % 4) // 0-3 cycle (A, B, C, D)
+          setCurrentSlide(prev => (prev + 1) % 8) // 0-7 cycle (A, B, C, D twice)
           setIsSlideTransitioning(false)
         }, 500) // 500ms for fade out
       }, OPTION_SLIDE_DURATION)

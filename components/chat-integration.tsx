@@ -57,6 +57,12 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
     addRecentCommand("!startgarden by Manual Test (manual)")
   }
 
+  const testPrideTrivia = () => {
+    console.log("Manual test: Starting pride trivia timer")
+    window.dispatchEvent(new CustomEvent("startPrideTrivia", { detail: { username: "Manual Test" } }))
+    addRecentCommand("!pridetimer by Manual Test (manual)")
+  }
+
   const connectToTwitch = async () => {
     if (!channel.trim()) return
 
@@ -375,6 +381,22 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide celebration command detected")
           window.dispatchEvent(new CustomEvent("hideAllCelebrations"))
           addRecentCommand(`${command} by ${username}`)
+        } 
+        // PRIDE TRIVIA COMMANDS
+        else if (command === "!pridetimer" && (isMod || isBroadcaster || isVip)) {
+          console.log("Pride trivia timer command detected")
+          window.dispatchEvent(new CustomEvent("startPrideTrivia", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!hidepridetimer" && (isMod || isBroadcaster || isVip)) {
+          console.log("Hide pride trivia timer command detected")
+          window.dispatchEvent(new CustomEvent("hidePrideTrivia", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!a" || command === "!b" || command === "!c" || command === "!d") {
+          // Trivia guess commands - anyone can use
+          const answer = command.replace("!", "")
+          console.log(`Trivia guess detected: ${answer} from ${username}`)
+          window.dispatchEvent(new CustomEvent("triviaGuess", { detail: { username, answer } }))
+          // Don't add to recent commands to avoid spam
         } else {
           console.log("Unknown command:", command)
         }

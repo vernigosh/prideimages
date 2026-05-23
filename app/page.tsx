@@ -27,6 +27,7 @@ import { useStreamElements } from "@/components/streamelements-service" // Impor
 import { StartingTimer } from "@/components/starting-timer" // Import StartingTimer component
 import { BrbOverlay } from "@/components/brb-overlay" // Import BRB overlay component
 import { RaidCelebration } from "@/components/raid-celebration" // Import Raid celebration component
+import { PrideTriviaTimer } from "@/components/pride-trivia-timer" // Import Pride Trivia Timer component
 
 interface Trick {
   name: string
@@ -226,6 +227,10 @@ export default function DJRandomizer() {
   // Raid celebration settings
   const [showRaidCelebration, setShowRaidCelebration] = useState(false)
   const [raidData, setRaidData] = useState<{ raiderName?: string; viewerCount?: number }>({})
+  
+  // Pride Trivia Timer settings
+  const [showPrideTrivia, setShowPrideTrivia] = useState(false)
+  const [prideTriviaConnected, setPrideTriviaConnected] = useState(false))
   
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
@@ -427,6 +432,16 @@ const handleHideStartingTimer = () => {
       setShowRaidCelebration(false)
       setRaidData({})
     }
+
+    const handleStartPrideTrivia = () => {
+      setShowPrideTrivia(true)
+      // Hide regular work timer when pride trivia starts
+      setShowWorkTimer(false)
+    }
+
+    const handleHidePrideTrivia = () => {
+      setShowPrideTrivia(false)
+    }
   
     const handleHideAllCelebrations = () => {
       setShowFlowerCelebration(false)
@@ -471,6 +486,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     window.addEventListener("hideBrb", handleHideBrb as EventListener)
     window.addEventListener("showRaid", handleShowRaid as EventListener)
     window.addEventListener("hideRaid", handleHideRaid as EventListener)
+    window.addEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
+    window.addEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
     
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -505,6 +522,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
       window.removeEventListener("hideBrb", handleHideBrb as EventListener)
       window.removeEventListener("showRaid", handleShowRaid as EventListener)
       window.removeEventListener("hideRaid", handleHideRaid as EventListener)
+      window.removeEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
+      window.removeEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
     }
     // eslint-disable-next-line react-hooks-exhaustive-deps
   }, [])
@@ -760,6 +779,15 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
 
 {/* Timer Elements */}
           {getTimerElements()}
+
+        {/* Pride Trivia Timer - Left side when visible */}
+        {showPrideTrivia && (
+          <PrideTriviaTimer
+            isVisible={showPrideTrivia}
+            onConnectionChange={setPrideTriviaConnected}
+            onHide={() => setShowPrideTrivia(false)}
+          />
+        )}
 
         {/* Community Garden - Always at bottom when visible */}
         {showGarden && (

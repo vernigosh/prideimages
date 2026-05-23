@@ -329,7 +329,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               {/* Header */}
               <div className="flex items-center justify-center">
                 <h2 className="text-2xl font-bold text-black uppercase font-sans">
-                  Pride Trivia
+                  Pride Trivia 🏳️‍🌈✨
                 </h2>
               </div>
               

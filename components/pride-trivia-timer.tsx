@@ -531,7 +531,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute left-8 top-[calc(50%-190px)]" style={{ width: "600px" }}>
+      <div className="absolute left-8 top-[calc(50%-240px)]" style={{ width: "600px" }}>
         {/* Question box - fades in/out */}
         <div
             className="rounded-3xl shadow-2xl border-2 border-black overflow-hidden transition-opacity duration-300"
@@ -673,8 +673,8 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         </div>
       </div>
       
-      {/* Circular Progress Timer - Right Side (centered when quiz not visible) */}
-      <div className={`absolute top-1/2 transform -translate-y-1/2 ${(boxVisible && !isFading && phase === "work") ? "right-8" : "left-1/2 -translate-x-1/2"}`}>
+      {/* Circular Progress Timer - Right Side */}
+      <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
         <div className="flex flex-col items-center justify-center gap-4">
           <div className="relative w-72 h-72">
             <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">

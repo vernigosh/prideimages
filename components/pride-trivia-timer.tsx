@@ -33,6 +33,12 @@ const SHORT_BREAK = 5 * 60
 const BOX_VISIBLE_DURATION = 30 * 1000 // 30 seconds visible
 const BOX_HIDDEN_DURATION = 2 * 60 * 1000 // 2 minutes hidden
 
+// Cooldown for !trivia chat messages
+const CHAT_COOLDOWN = 60 * 1000 // 60 seconds cooldown
+
+// How long each slide shows (question, A, B, C, D)
+const SLIDE_DURATION = 4 * 1000 // 4 seconds per slide
+
 // Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
 function getClockState() {
   const now = new Date()
@@ -100,6 +106,13 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const [isFading, setIsFading] = useState(false)
   const boxVisibilityTimerRef = useRef<NodeJS.Timeout | null>(null)
   
+  // Chat cooldown tracking
+  const lastChatTimeRef = useRef<number>(0)
+  
+  // Slide animation state (0 = question, 1 = A, 2 = B, 3 = C, 4 = D)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const slideTimerRef = useRef<NodeJS.Timeout | null>(null)
+  
   // Trivia state
   const [shuffledQuestions, setShuffledQuestions] = useState<TriviaQuestion[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -133,6 +146,29 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     setShuffledQuestions(shuffleArray(questions))
   }, [shuffleArray])
 
+  // Cycle through slides (question -> A -> B -> C -> D -> question...)
+  useEffect(() => {
+    if (!isVisible || !boxVisible || phase !== "work") {
+      // Reset to question when not showing
+      setCurrentSlide(0)
+      if (slideTimerRef.current) {
+        clearInterval(slideTimerRef.current)
+        slideTimerRef.current = null
+      }
+      return
+    }
+    
+    slideTimerRef.current = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % 5) // 0-4 cycle
+    }, SLIDE_DURATION)
+    
+    return () => {
+      if (slideTimerRef.current) {
+        clearInterval(slideTimerRef.current)
+      }
+    }
+  }, [isVisible, boxVisible, phase])
+
   // Handle !trivia command to toggle box visibility and send question to chat
   useEffect(() => {
     const handleToggle = () => {
@@ -142,8 +178,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         setIsFading(false)
       }, 300) // Match fade duration
       
-      // Send current question to chat for mobile viewers
-      if (currentQuestion && phase === "work") {
+      // Send current question to chat for mobile viewers (with cooldown)
+      const now = Date.now()
+      if (currentQuestion && phase === "work" && (now - lastChatTimeRef.current) >= CHAT_COOLDOWN) {
+        lastChatTimeRef.current = now
         sendChatMessage(`CURRENT QUESTION: ${currentQuestion.question}`)
         setTimeout(() => {
           sendChatMessage(`A) ${currentQuestion.a} | B) ${currentQuestion.b} | C) ${currentQuestion.c} | D) ${currentQuestion.d}`)
@@ -454,35 +492,45 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         >
           <div className="p-6">
           {phase === "work" ? (
-            /* WORK PHASE - Show question */
+            /* WORK PHASE - Animated slides: Question -> A -> B -> C -> D */
             <div className="flex flex-col gap-4">
               {/* Header */}
               <div className="flex items-center justify-center">
                 <h2 className="text-2xl font-bold text-black uppercase font-sans">
-                  ✨🏳️‍🌈 Pride Trivia 🏳️‍🌈✨
+                  Pride Trivia
                 </h2>
               </div>
               
-              {/* Question */}
-              <div className="bg-white rounded-xl p-4 border-2 border-black">
-                <p className="text-xl font-bold text-black font-sans leading-relaxed">
-                  {currentQuestion.question}
-                </p>
+              {/* Animated content area */}
+              <div className="bg-white rounded-xl p-4 border-2 border-black min-h-[100px] flex items-center justify-center">
+                <div className="text-center transition-opacity duration-300">
+                  {currentSlide === 0 ? (
+                    <p className="text-xl font-bold text-black font-sans leading-relaxed">
+                      {currentQuestion.question}
+                    </p>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="text-3xl font-bold text-black font-sans uppercase">
+                        {["A", "B", "C", "D"][currentSlide - 1]})
+                      </span>
+                      <span className="text-xl text-black font-sans">
+                        {currentQuestion[["a", "b", "c", "d"][currentSlide - 1] as keyof TriviaQuestion] as string}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
               
-              {/* Options */}
-              <div className="grid grid-cols-2 gap-3">
-                {["a", "b", "c", "d"].map((letter) => (
+              {/* Slide indicators */}
+              <div className="flex items-center justify-center gap-2">
+                {["Q", "A", "B", "C", "D"].map((label, idx) => (
                   <div 
-                    key={letter}
-                    className="bg-white rounded-xl p-3 border-2 border-black flex items-start gap-2"
+                    key={label}
+                    className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center text-sm font-bold font-sans transition-colors duration-300 ${
+                      currentSlide === idx ? "bg-black text-white" : "bg-white text-black"
+                    }`}
                   >
-                    <span className="text-lg font-bold text-black font-sans uppercase flex-shrink-0">
-                      {letter})
-                    </span>
-                    <span className="text-lg text-black font-sans">
-                      {currentQuestion[letter as keyof TriviaQuestion] as string}
-                    </span>
+                    {label}
                   </div>
                 ))}
               </div>

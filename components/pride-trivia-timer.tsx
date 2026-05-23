@@ -258,6 +258,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
   const guessCount = guesses.size
+  
+  // Calculate progress percentage for the timer bar
+  const totalDuration = phase === "work" ? WORK_DURATION : SHORT_BREAK
+  const progressPercent = (timeLeft / totalDuration) * 100
 
   return (
     <>
@@ -290,13 +294,24 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       <div className="absolute left-8 top-1/2 transform -translate-y-1/2">
-        {/* Timer display above the box */}
+        {/* Timer progress bar above the box */}
         <div 
-          className="mb-4 rounded-2xl px-6 py-3 border-2 border-black text-center"
-          style={{ backgroundColor: "#ffb8ad", width: "600px" }}
+          className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"
+          style={{ backgroundColor: "#4a4a4a", width: "600px" }}
         >
-          <div className="text-4xl font-bold text-black font-sans">
-            {phase === "work" ? "WORK TIME" : "BREAK TIME"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+          {/* Progress fill */}
+          <div 
+            className="absolute inset-0 transition-all duration-1000 ease-linear"
+            style={{ 
+              backgroundColor: "#ffb8ad",
+              width: `${progressPercent}%`,
+            }}
+          />
+          {/* Text overlay */}
+          <div className="relative z-10 px-6 py-3">
+            <div className="text-4xl font-bold text-black font-sans">
+              {phase === "work" ? "WORK TIME" : "BREAK TIME"} — {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </div>
           </div>
         </div>
         

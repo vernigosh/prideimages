@@ -523,7 +523,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       )}
       
       {/* Main trivia box - fades in/out during work phase */}
-      <div className="absolute right-8 top-[calc(50%-390px)]" style={{ width: "600px" }}>
+      <div className="absolute right-8 top-[calc(50%-290px)]" style={{ width: "600px" }}>
         {/* Timer text and progress bar */}
         <div className="mb-4 flex flex-col items-center">
           {/* Main timer text */}

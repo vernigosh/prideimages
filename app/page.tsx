@@ -730,6 +730,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
   onHide={() => setShowSocialTimer(false)}
   workTimerActive={showWorkTimer}
   darkTimerActive={showDarkTimer}
+  prideTimerActive={showPrideTrivia}
 />
       )
     }

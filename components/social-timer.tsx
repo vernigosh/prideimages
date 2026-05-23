@@ -8,6 +8,7 @@ interface SocialTimerProps {
   onHide: () => void
   workTimerActive?: boolean
   darkTimerActive?: boolean
+  prideTimerActive?: boolean
 }
 
 const SOCIAL_DURATION = 2 * 60
@@ -20,7 +21,7 @@ function getRingProps(progress: number) {
   return { radius, circumference, strokeDashoffset }
 }
 
-export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false, darkTimerActive = false }: SocialTimerProps) {
+export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false, darkTimerActive = false, prideTimerActive = false }: SocialTimerProps) {
   const [timeLeft, setTimeLeft] = useState(SOCIAL_DURATION)
   const [isComplete, setIsComplete] = useState(false)
   const rafRef = useRef<number | null>(null)
@@ -116,9 +117,12 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
   // Position based on which other timers are active:
   // - Work timer takes right side
   // - Dark timer takes left side when work or social is active
-  // - Social goes to center-left when all 3 are active, right when alone or with dark only
+  // - Pride trivia timer takes right side with its circular progress
+  // - Social goes to center when pride timer is active, right when alone or with dark only
   let positionClass = "right-8" // default when alone or with dark timer only
-  if (workTimerActive && darkTimerActive) {
+  if (prideTimerActive) {
+    positionClass = "left-1/2 -translate-x-1/2" // center when pride timer is active (it uses right side)
+  } else if (workTimerActive && darkTimerActive) {
     positionClass = "left-1/3 -translate-x-1/2" // center-left position when all 3 are active
   } else if (workTimerActive) {
     positionClass = "left-8" // left side when only work timer is also active

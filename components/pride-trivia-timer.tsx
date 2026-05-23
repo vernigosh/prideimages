@@ -416,14 +416,30 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               const correctLetter = correctAnswer.toUpperCase()
               const correctText = currentQuestion[correctAnswer as keyof TriviaQuestion] as string
               
-              if (winners.length > 0) {
-                const winnerList = winners.length <= 5 
-                  ? winners.map(w => `@${w}`).join(", ")
-                  : `${winners.slice(0, 5).map(w => `@${w}`).join(", ")} and ${winners.length - 5} more`
-                sendChatMessage(`ANSWER: ${correctLetter}) ${correctText} — Congrats ${winnerList}!`)
-              } else {
-                sendChatMessage(`ANSWER: ${correctLetter}) ${correctText} — No one got it this time!`)
-              }
+              // Post question first
+              sendChatMessage(`QUESTION: ${currentQuestion.question}`)
+              
+              // Post answer after a delay
+              setTimeout(() => {
+                sendChatMessage(`ANSWER: ${correctLetter}) ${correctText}`)
+              }, 1500)
+              
+              // Post context after another delay
+              setTimeout(() => {
+                sendChatMessage(`FUN FACT: ${currentQuestion.context}`)
+              }, 3000)
+              
+              // Post winners after final delay
+              setTimeout(() => {
+                if (winners.length > 0) {
+                  const winnerList = winners.length <= 5 
+                    ? winners.map(w => `@${w}`).join(", ")
+                    : `${winners.slice(0, 5).map(w => `@${w}`).join(", ")} and ${winners.length - 5} more`
+                  sendChatMessage(`WINNERS: Congrats ${winnerList}!`)
+                } else {
+                  sendChatMessage(`No one got it this time! Better luck next question!`)
+                }
+              }, 4500)
             }
           }
         }

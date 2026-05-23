@@ -399,6 +399,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Next trivia question command detected")
           window.dispatchEvent(new CustomEvent("nextTriviaQuestion", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!answer") {
+          console.log("Previous answer command detected")
+          window.dispatchEvent(new CustomEvent("showPreviousAnswer", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!a" || command === "!b" || command === "!c" || command === "!d") {
           // Trivia guess commands - anyone can use
           const answer = command.replace("!", "")

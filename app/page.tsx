@@ -230,7 +230,7 @@ export default function DJRandomizer() {
   
   // Pride Trivia Timer settings
   const [showPrideTrivia, setShowPrideTrivia] = useState(false)
-  const [prideTriviaConnected, setPrideTriviaConnected] = useState(false))
+  const [prideTriviaConnected, setPrideTriviaConnected] = useState(false)
   
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]

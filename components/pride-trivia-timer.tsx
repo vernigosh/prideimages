@@ -37,7 +37,7 @@ const BOX_HIDDEN_DURATION = 2 * 60 * 1000 // 2 minutes hidden
 const CHAT_COOLDOWN = 60 * 1000 // 60 seconds cooldown
 
 // How long each answer option slide shows
-const OPTION_SLIDE_DURATION = 5 * 1000 // 5 seconds per option
+const OPTION_SLIDE_DURATION = 10 * 1000 // 10 seconds per option
 
 // Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
 function getClockState() {
@@ -167,7 +167,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         setTimeout(() => {
           setCurrentSlide(prev => (prev + 1) % 4) // 0-3 cycle (A, B, C, D)
           setIsSlideTransitioning(false)
-        }, 300) // 300ms for fade out
+        }, 500) // 500ms for fade out
       }, OPTION_SLIDE_DURATION)
     }
     
@@ -517,7 +517,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               <div className="flex items-center gap-4">
                 {/* Large letter indicator */}
                 <div 
-                  className={`w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white transition-opacity duration-300 ${isSlideTransitioning ? 'opacity-0' : 'opacity-100'}`}
+                  className={`w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white transition-opacity duration-500 ${isSlideTransitioning ? 'opacity-0' : 'opacity-100'}`}
                 >
                   <span className="text-4xl font-bold text-black font-sans">
                     {["A", "B", "C", "D"][currentSlide % 4]}
@@ -526,7 +526,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 
                 {/* Text content - just the answer option with fade transition */}
                 <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
-                  <p className={`text-xl font-bold text-black font-sans leading-relaxed transition-all duration-300 ${isSlideTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
+                  <p className={`text-xl font-bold text-black font-sans leading-relaxed transition-all duration-500 ${isSlideTransitioning ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}>
                     {currentQuestion[["a", "b", "c", "d"][currentSlide % 4] as keyof TriviaQuestion] as string}
                   </p>
                 </div>

@@ -12,6 +12,7 @@ const config: Config = {
     extend: {
       colors: {
         // Suppress deprecated color warnings
+        lightBlue: colors.sky,
         warmGray: colors.stone,
         trueGray: colors.neutral,
         coolGray: colors.gray,

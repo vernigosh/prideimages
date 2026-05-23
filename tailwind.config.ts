@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss"
-import colors from "tailwindcss/colors"
 
 const config: Config = {
   content: [
@@ -11,12 +10,6 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Suppress deprecated color warnings
-        lightBlue: colors.sky,
-        warmGray: colors.stone,
-        trueGray: colors.neutral,
-        coolGray: colors.gray,
-        blueGray: colors.slate,
         coral: "#ffb8ad",
         lime: "#32cd32",
         border: "hsl(var(--border))",

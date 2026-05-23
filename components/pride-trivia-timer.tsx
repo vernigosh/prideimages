@@ -297,7 +297,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         {/* Timer progress bar above the box */}
         <div 
           className="mb-4 rounded-2xl border-2 border-black text-center overflow-hidden relative"
-          style={{ backgroundColor: "#4a4a4a", width: "600px" }}
+          style={{ backgroundColor: "#ffffff", width: "600px" }}
         >
           {/* Progress fill */}
           <div 

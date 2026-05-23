@@ -36,8 +36,9 @@ const BOX_HIDDEN_DURATION = 2 * 60 * 1000 // 2 minutes hidden
 // Cooldown for !trivia chat messages
 const CHAT_COOLDOWN = 60 * 1000 // 60 seconds cooldown
 
-// How long each slide shows (question, A, B, C, D)
-const SLIDE_DURATION = 4 * 1000 // 4 seconds per slide
+// How long each slide shows (question gets more time)
+const QUESTION_SLIDE_DURATION = 8 * 1000 // 8 seconds for question
+const OPTION_SLIDE_DURATION = 5 * 1000 // 5 seconds per option
 
 // Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
 function getClockState() {
@@ -152,22 +153,27 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       // Reset to question when not showing
       setCurrentSlide(0)
       if (slideTimerRef.current) {
-        clearInterval(slideTimerRef.current)
+        clearTimeout(slideTimerRef.current)
         slideTimerRef.current = null
       }
       return
     }
     
-    slideTimerRef.current = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % 5) // 0-4 cycle
-    }, SLIDE_DURATION)
+    const scheduleNextSlide = () => {
+      const duration = currentSlide === 0 ? QUESTION_SLIDE_DURATION : OPTION_SLIDE_DURATION
+      slideTimerRef.current = setTimeout(() => {
+        setCurrentSlide(prev => (prev + 1) % 5) // 0-4 cycle
+      }, duration)
+    }
+    
+    scheduleNextSlide()
     
     return () => {
       if (slideTimerRef.current) {
-        clearInterval(slideTimerRef.current)
+        clearTimeout(slideTimerRef.current)
       }
     }
-  }, [isVisible, boxVisible, phase])
+  }, [isVisible, boxVisible, phase, currentSlide])
 
   // Handle !trivia command to toggle box visibility and send question to chat
   useEffect(() => {
@@ -501,38 +507,26 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 </h2>
               </div>
               
-              {/* Animated content area */}
-              <div className="bg-white rounded-xl p-4 border-2 border-black min-h-[100px] flex items-center justify-center">
-                <div className="text-center transition-opacity duration-300">
-                  {currentSlide === 0 ? (
-                    <p className="text-xl font-bold text-black font-sans leading-relaxed">
-                      {currentQuestion.question}
-                    </p>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-3xl font-bold text-black font-sans uppercase">
-                        {["A", "B", "C", "D"][currentSlide - 1]})
-                      </span>
-                      <span className="text-xl text-black font-sans">
-                        {currentQuestion[["a", "b", "c", "d"][currentSlide - 1] as keyof TriviaQuestion] as string}
-                      </span>
-                    </div>
-                  )}
+              {/* Main content area with large letter indicator on left */}
+              <div className="flex items-center gap-4">
+                {/* Large letter indicator */}
+                <div 
+                  className="w-20 h-20 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0 bg-white"
+                >
+                  <span className="text-4xl font-bold text-black font-sans">
+                    {["?", "A", "B", "C", "D"][currentSlide]}
+                  </span>
                 </div>
-              </div>
-              
-              {/* Slide indicators */}
-              <div className="flex items-center justify-center gap-2">
-                {["Q", "A", "B", "C", "D"].map((label, idx) => (
-                  <div 
-                    key={label}
-                    className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center text-sm font-bold font-sans transition-colors duration-300 ${
-                      currentSlide === idx ? "bg-black text-white" : "bg-white text-black"
-                    }`}
-                  >
-                    {label}
-                  </div>
-                ))}
+                
+                {/* Text content */}
+                <div className="bg-white rounded-xl p-4 border-2 border-black flex-1 min-h-[80px] flex items-center">
+                  <p className="text-xl font-bold text-black font-sans leading-relaxed">
+                    {currentSlide === 0 
+                      ? currentQuestion.question
+                      : currentQuestion[["a", "b", "c", "d"][currentSlide - 1] as keyof TriviaQuestion] as string
+                    }
+                  </p>
+                </div>
               </div>
               
               {/* Footer */}

@@ -843,13 +843,13 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                   {phase === "work" ? (
                     <>
                       <stop offset="0%" stopColor="#e040fb" />
-                      <stop offset="50%" stopColor="#ff6b9d" />
+                      <stop offset="50%" stopColor="#ffa5c5" />
                       <stop offset="100%" stopColor="#e040fb" />
                     </>
                   ) : (
                     <>
                       <stop offset="0%" stopColor="#42a5f5" />
-                      <stop offset="50%" stopColor="#26c6da" />
+                      <stop offset="50%" stopColor="#6ee4f2" />
                       <stop offset="100%" stopColor="#42a5f5" />
                     </>
                   )}

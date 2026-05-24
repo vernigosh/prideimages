@@ -719,6 +719,26 @@
       "d": "Rock venues in Los Angeles",
       "answer": "a",
       "context": "Disco was born in underground gay clubs in NYC where DJs blended funk, soul, and gospel for crowds who had nowhere else to dance freely. These were some of the first spaces where LGBTQ+ people could gather and celebrate - disco was the sound of liberation before house music even existed."
+    },
+    {
+      "id": 73,
+      "question": "The ballroom scene was one of the few spaces in 1980s NYC where which community could find acceptance, celebration, and family?",
+      "a": "Trans women of color",
+      "b": "College students",
+      "c": "European tourists",
+      "d": "Record executives",
+      "answer": "a",
+      "context": "While mainstream society rejected them, the ballroom scene embraced Black and Latino trans women as legends, icons, and mothers. These spaces offered radical joy and loud love when the outside world offered none - they were sanctuaries of self-expression and belonging."
+    },
+    {
+      "id": 74,
+      "question": "Many pioneers of ballroom and early house were Black and Latino trans women. Which legendary house, founded in 1977, was one of the first?",
+      "a": "House of LaBeija",
+      "b": "House of Gucci",
+      "c": "House of Blues",
+      "d": "House of Pain",
+      "answer": "a",
+      "context": "Crystal LaBeija founded the House of LaBeija after experiencing racism at mainstream drag pageants. Houses became found families - providing mentorship, support, and unconditional love to LGBTQ+ youth rejected by their biological families. This tradition of chosen family continues today."
     }
   ]
 }

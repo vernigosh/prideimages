@@ -237,7 +237,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         lastChatTimeRef.current = now
         sendChatMessage(`CURRENT QUESTION: ${currentQuestion.question}`)
         setTimeout(() => {
-          sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d} — Type !a !b !c or !d to guess!`)
+          sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d} — Type !a !b !c or !d to guess! Answer revealed at 5 min break!`)
         }, 1000)
       }
       
@@ -498,7 +498,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               if (nextQuestion) {
                 sendChatMessage(`PRIDE TRIVIA: ${nextQuestion.question}`)
                 setTimeout(() => {
-                  sendChatMessage(`a) ${nextQuestion.a} | b) ${nextQuestion.b} | c) ${nextQuestion.c} | d) ${nextQuestion.d} — Type !a !b !c or !d to guess!`)
+                  sendChatMessage(`a) ${nextQuestion.a} | b) ${nextQuestion.b} | c) ${nextQuestion.c} | d) ${nextQuestion.d} — Type !a !b !c or !d to guess! Answer revealed at 5 min break!`)
                 }, 1500)
               }
             }

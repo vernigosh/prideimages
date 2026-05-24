@@ -185,7 +185,7 @@ export default function DJRandomizer() {
   const [celebrationUsername, setCelebrationUsername] = useState("")
 
   const [showLeaderboard, setShowLeaderboard] = useState(false)
-
+  
   // Bee Parade Celebration settings
   const [showBeeParadeCelebration, setShowBeeParadeCelebration] = useState(false)
   const [beeParadeUsername, setBeeParadeUsername] = useState("")
@@ -873,9 +873,9 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           />
         )}
 
-        {showLeaderboard && <FlowerLeaderboard isVisible={showLeaderboard} onHide={() => setShowLeaderboard(false)} />}
-
-        {/* Easter Egg Celebration - 60 flowers */}
+      {showLeaderboard && <FlowerLeaderboard isVisible={showLeaderboard} onHide={() => setShowLeaderboard(false)} />}
+      
+      {/* Easter Egg Celebration - 60 flowers */}
         {showEasterEgg && (
           <EasterEggCelebration
             isVisible={showEasterEgg}

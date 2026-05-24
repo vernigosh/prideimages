@@ -122,6 +122,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const [correctGuessers, setCorrectGuessers] = useState<string[]>([])
   const [recentGuessNotification, setRecentGuessNotification] = useState<{ username: string; answer: string } | null>(null)
   const [triviaScores, setTriviaScores] = useState<Map<string, number>>(new Map()) // cumulative scores
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [allTimeScores, setAllTimeScores] = useState<{ username: string; score: number }[]>([])
+  const leaderboardCooldownRef = useRef<number>(0)
+  const LEADERBOARD_COOLDOWN = 60000 // 1 minute cooldown
   
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
@@ -324,19 +328,36 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     return () => window.removeEventListener("triviaGuess", handleGuess as EventListener)
   }, [handleGuess])
 
-  // Listen for scoreboard request
+  // Listen for leaderboard request (with flip animation)
   useEffect(() => {
-    const handleScoreboardRequest = () => {
-      // Convert Map to object for the event
-      const scoresObj: Record<string, number> = {}
-      triviaScores.forEach((score, username) => {
-        scoresObj[username] = score
-      })
-      window.dispatchEvent(new CustomEvent("triviaScoreboardData", { detail: { scores: scoresObj } }))
+    const handleLeaderboardRequest = () => {
+      const now = Date.now()
+      if (now - leaderboardCooldownRef.current < LEADERBOARD_COOLDOWN) {
+        console.log("[v0] Leaderboard on cooldown")
+        return
+      }
+      leaderboardCooldownRef.current = now
+      
+      // Fetch all-time scores
+      fetch("/api/trivia-scores")
+        .then(res => res.json())
+        .then(data => {
+          if (data.scores) {
+            setAllTimeScores(data.scores)
+          }
+        })
+        .catch(err => console.error("[v0] Error fetching all-time scores:", err))
+      
+      setShowLeaderboard(true)
+      
+      // Hide after 30 seconds
+      setTimeout(() => {
+        setShowLeaderboard(false)
+      }, 30000)
     }
     
-    window.addEventListener("requestTriviaScoreboard", handleScoreboardRequest)
-    return () => window.removeEventListener("requestTriviaScoreboard", handleScoreboardRequest)
+    window.addEventListener("requestTriviaLeaderboard", handleLeaderboardRequest)
+    return () => window.removeEventListener("requestTriviaLeaderboard", handleLeaderboardRequest)
   }, [triviaScores])
 
   // Main timer effect
@@ -446,6 +467,13 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                   })
                   return newScores
                 })
+                
+                // Save to database for all-time scores
+                fetch("/api/trivia-scores", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ winners })
+                }).catch(err => console.error("[v0] Error saving trivia scores:", err))
               }
               
               const correctLetter = correctAnswer.toLowerCase()
@@ -700,9 +728,23 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         </div>
       </div>
       
-      {/* Circular Progress Timer - Right Side */}
-      <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
-        <div className="flex flex-col items-center justify-center gap-4">
+      {/* Circular Progress Timer - Right Side with Flip Animation */}
+      <div className="absolute right-8 top-1/2 transform -translate-y-1/2" style={{ perspective: "1000px" }}>
+        <div 
+          className="relative transition-transform duration-700 ease-in-out"
+          style={{ 
+            transformStyle: "preserve-3d",
+            transform: showLeaderboard ? "rotateY(180deg)" : "rotateY(0deg)",
+            width: "320px",
+            height: "420px"
+          }}
+        >
+          {/* Front - Timer */}
+          <div 
+            className="absolute w-full h-full"
+            style={{ backfaceVisibility: "hidden" }}
+          >
+            <div className="flex flex-col items-center justify-center gap-4 h-full">
           <div className="relative w-72 h-72">
             <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">
               {/* Background ring */}
@@ -767,6 +809,73 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
           >
             Type !trivia to view question
+          </div>
+            </div>
+          </div>
+          
+          {/* Back - Leaderboard */}
+          <div 
+            className="absolute w-full h-full"
+            style={{ 
+              backfaceVisibility: "hidden",
+              transform: "rotateY(180deg)"
+            }}
+          >
+            <div 
+              className="rounded-lg p-4 border-2 border-black h-full"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,229,229,0.95) 0%, rgba(255,245,229,0.95) 25%, rgba(240,255,229,0.95) 50%, rgba(229,245,255,0.95) 75%, rgba(240,229,255,0.95) 100%)",
+              }}
+            >
+              <div className="text-center mb-3">
+                <h2 className="text-xl font-black text-black font-sans uppercase tracking-wider">TRIVIA LEADERS</h2>
+              </div>
+              
+              {/* This Stream */}
+              <div className="mb-4">
+                <div className="text-sm font-bold text-black/70 font-sans uppercase mb-2">This Stream</div>
+                <div className="space-y-1">
+                  {Array.from(triviaScores.entries())
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([username, score], index) => (
+                      <div key={username} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-black font-sans">
+                            {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
+                          </span>
+                          <span className="font-bold text-black font-sans uppercase truncate max-w-[140px]">{username}</span>
+                        </div>
+                        <span className="font-black text-black font-sans">{score}</span>
+                      </div>
+                    ))}
+                  {triviaScores.size === 0 && (
+                    <div className="text-center text-sm font-bold text-black/50 font-sans">No scores yet</div>
+                  )}
+                </div>
+              </div>
+              
+              {/* All Time */}
+              <div>
+                <div className="text-sm font-bold text-black/70 font-sans uppercase mb-2">All Time</div>
+                <div className="space-y-1">
+                  {allTimeScores.slice(0, 5).map((user, index) => (
+                    <div key={user.username} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-black font-sans">
+                          {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
+                        </span>
+                        <span className="font-bold text-black font-sans uppercase truncate max-w-[140px]">{user.username}</span>
+                      </div>
+                      <span className="font-black text-black font-sans">{user.score}</span>
+                    </div>
+                  ))}
+                  {allTimeScores.length === 0 && (
+                    <div className="text-center text-sm font-bold text-black/50 font-sans">No scores yet</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

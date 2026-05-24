@@ -262,13 +262,13 @@
     },
     {
       "id": 27,
-      "question": "The 1990 documentary 'Paris Is Burning' introduced the world to ballroom culture. Which iconic phrase from the film became a mainstream expression of praise?",
-      "a": "Work it out",
+      "question": "In 'Paris Is Burning,' Dorian Corey explains that being called this means 'you've done something that will never be forgotten.' What is the word?",
+      "a": "Fierce",
       "b": "Legendary",
-      "c": "Serving realness",
-      "d": "Slay",
+      "c": "Iconic",
+      "d": "Sickening",
       "answer": "b",
-      "context": "Ballroom culture gave us countless phrases now used everywhere - 'legendary,' 'iconic,' 'serving realness,' 'reading,' and 'shade.' The film preserved the creativity and resilience of Black and Latino LGBTQ+ communities who created an entire vocabulary of affirmation."
+      "context": "Dorian Corey's iconic monologue explains the ballroom hierarchy: 'If you're a star, that's good. But if you're a legend, that's something else... You've done something that will never be forgotten.' Ballroom culture gave us countless phrases now used everywhere."
     },
     {
       "id": 28,

@@ -689,6 +689,36 @@
       "d": "Ibiza beach parties",
       "answer": "c",
       "context": "While these scenes contributed to dance music's evolution, the foundation was laid in LGBTQ+ clubs in Chicago, NYC, and Detroit. Frankie Knuckles, Larry Levan, and the Detroit techno pioneers created the sounds that became a global phenomenon."
+    },
+    {
+      "id": 70,
+      "question": "Which DJ is known as 'The Godfather of House Music' and was the first DJ to have a street named after him?",
+      "a": "Frankie Knuckles",
+      "b": "Larry Levan",
+      "c": "David Mancuso",
+      "d": "Ron Hardy",
+      "answer": "a",
+      "context": "In 2004, Chicago renamed a section of Jefferson Street to 'Frankie Knuckles Way.' He earned the title 'Godfather of House' for creating the genre at The Warehouse, a gay Black club where he transformed disco, funk, and soul into something entirely new."
+    },
+    {
+      "id": 71,
+      "question": "In 1997, house music made history when Frankie Knuckles won the first-ever Grammy for which category?",
+      "a": "Remixer of the Year, Non-Classical",
+      "b": "Best Dance Recording",
+      "c": "Best Electronic Album",
+      "d": "Best New Artist",
+      "answer": "a",
+      "context": "The Recording Academy created the Remixer of the Year category largely because of Frankie's influence. A genre born in underground gay clubs had achieved mainstream industry recognition - a testament to how far house music had traveled from The Warehouse."
+    },
+    {
+      "id": 72,
+      "question": "Before house music, disco emerged in the early 1970s. Where did DJs first blend funk, soul, and gospel into this new danceable sound?",
+      "a": "Gay clubs in New York City",
+      "b": "Radio stations in Philadelphia",
+      "c": "Beach parties in Miami",
+      "d": "Rock venues in Los Angeles",
+      "answer": "a",
+      "context": "Disco was born in underground gay clubs in NYC where DJs blended funk, soul, and gospel for crowds who had nowhere else to dance freely. These were some of the first spaces where LGBTQ+ people could gather and celebrate - disco was the sound of liberation before house music even existed."
     }
   ]
 }

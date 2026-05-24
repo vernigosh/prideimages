@@ -286,11 +286,24 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   }, [shuffledQuestions.length, shuffleArray, currentQuestion])
   
   // Handle !frontpage command to toggle front page mode
+  const [frontPageNotification, setFrontPageNotification] = useState<string | null>(null)
+  
   useEffect(() => {
     const handleFrontPageToggle = () => {
       setFrontPageMode(prev => {
         const newMode = !prev
         console.log(`[v0] Front page mode: ${newMode ? "ON" : "OFF"}`)
+        
+        // Show notification
+        setFrontPageNotification(newMode ? "FRONT PAGE MODE: ON" : "FRONT PAGE MODE: OFF")
+        setTimeout(() => setFrontPageNotification(null), 5000)
+        
+        // Send chat message
+        sendChatMessage(newMode 
+          ? "FRONT PAGE MODE ON - Curated questions for new audiences (3 accessible : 1 deep cut)"
+          : "FRONT PAGE MODE OFF - All questions enabled"
+        )
+        
         return newMode
       })
     }
@@ -634,6 +647,25 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         </div>
       )}
       
+      {/* Front page mode notification */}
+      {frontPageNotification && (
+        <div
+          className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50"
+          style={{
+            animation: "fadeInOut 5s ease-in-out forwards",
+          }}
+        >
+          <div
+            className="px-8 py-4 rounded-full text-white font-black text-2xl font-sans uppercase"
+            style={{ 
+              background: "linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff)",
+            }}
+          >
+            {frontPageNotification}
+          </div>
+        </div>
+      )}
+      
       {/* Main trivia box - fades in/out during work phase */}
       <div className="absolute left-8 top-[calc(50%-240px)]" style={{ width: "600px" }}>
         {/* Question box - fades in/out */}
@@ -653,9 +685,18 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               {/* Header with question */}
               <div className="flex items-start gap-2">
                 <span className="text-3xl flex-shrink-0">🏳️‍🌈</span>
-                <h2 className="text-2xl font-black text-black font-sans leading-relaxed uppercase">
-                  Pride Trivia: {currentQuestion.question}
-                </h2>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-2xl font-black text-black font-sans leading-relaxed uppercase">
+                      Pride Trivia: {currentQuestion.question}
+                    </h2>
+                    {frontPageMode && (
+                      <span className="px-2 py-1 text-xs font-black text-white rounded-full uppercase flex-shrink-0" style={{ background: "linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb)" }}>
+                        FP
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
               
               {/* Main content area with large letter indicator on left */}

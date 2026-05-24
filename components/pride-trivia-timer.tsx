@@ -837,20 +837,32 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 stroke="rgba(255, 255, 255, 0.35)"
                 strokeWidth="12"
               />
-              {/* Progress ring with gradient */}
+              {/* Progress ring with animated gradient */}
               <defs>
                 <linearGradient id="prideGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   {phase === "work" ? (
                     <>
-                      <stop offset="0%" stopColor="#e040fb" />
-                      <stop offset="50%" stopColor="#ffa5c5" />
-                      <stop offset="100%" stopColor="#e040fb" />
+                      <stop offset="0%" stopColor="#e040fb">
+                        <animate attributeName="stop-color" values="#e040fb;#ffa5c5;#e040fb" dur="2s" repeatCount="indefinite" />
+                      </stop>
+                      <stop offset="50%" stopColor="#ffa5c5">
+                        <animate attributeName="stop-color" values="#ffa5c5;#e040fb;#ffa5c5" dur="2s" repeatCount="indefinite" />
+                      </stop>
+                      <stop offset="100%" stopColor="#e040fb">
+                        <animate attributeName="stop-color" values="#e040fb;#ffa5c5;#e040fb" dur="2s" repeatCount="indefinite" />
+                      </stop>
                     </>
                   ) : (
                     <>
-                      <stop offset="0%" stopColor="#42a5f5" />
-                      <stop offset="50%" stopColor="#6ee4f2" />
-                      <stop offset="100%" stopColor="#42a5f5" />
+                      <stop offset="0%" stopColor="#42a5f5">
+                        <animate attributeName="stop-color" values="#42a5f5;#6ee4f2;#42a5f5" dur="2s" repeatCount="indefinite" />
+                      </stop>
+                      <stop offset="50%" stopColor="#6ee4f2">
+                        <animate attributeName="stop-color" values="#6ee4f2;#42a5f5;#6ee4f2" dur="2s" repeatCount="indefinite" />
+                      </stop>
+                      <stop offset="100%" stopColor="#42a5f5">
+                        <animate attributeName="stop-color" values="#42a5f5;#6ee4f2;#42a5f5" dur="2s" repeatCount="indefinite" />
+                      </stop>
                     </>
                   )}
                 </linearGradient>

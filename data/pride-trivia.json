@@ -675,14 +675,14 @@
       "question": "Which genre of electronic dance music can trace its roots back to house music's underground LGBTQ+ origins?",
       "a": "Techno",
       "b": "Trance",
-      "c": "Hardstyle",
+      "c": "Tech house",
       "d": "All of the above",
       "answer": "d",
-      "context": "Every major electronic dance music genre - techno, trance, hardstyle, EDM, drum & bass - evolved from house music, which was born in gay Black clubs like The Warehouse in Chicago. The entire global dance music industry has queer roots."
+      "context": "Every major electronic dance music genre - techno, trance, tech house, EDM, drum & bass - evolved from house music, which was born in gay Black clubs like The Warehouse in Chicago. The entire global dance music industry has queer roots."
     },
     {
       "id": 69,
-      "question": "When you hear techno, trance, hardstyle, or mainstage EDM at a festival, what underground scene did ALL of these genres evolve from?",
+      "question": "When you hear techno, trance, tech house, or mainstage EDM at a festival, what underground scene did ALL of these genres evolve from?",
       "a": "British rave culture",
       "b": "German industrial music",
       "c": "LGBTQ+ club culture in America",

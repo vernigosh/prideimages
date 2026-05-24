@@ -402,13 +402,13 @@
     },
     {
       "id": 41,
-      "question": "Many disco and house anthems share lyrics about self-acceptance and togetherness. Which Sylvester lyric captures this spirit?",
-      "a": "You make me feel mighty real",
-      "b": "I will survive",
-      "c": "We are family",
-      "d": "Born this way",
+      "question": "Many disco and house anthems were intentionally written for LGBTQ+ audiences. Which theme is common across 'Mighty Real,' 'I'm Coming Out,' and 'Free'?",
+      "a": "Self-acceptance and liberation",
+      "b": "Heartbreak and loneliness",
+      "c": "Political protest",
+      "d": "Summer romance",
       "answer": "a",
-      "context": "Disco and house lyrics often celebrated being yourself and finding community - 'Mighty Real,' 'I Will Survive,' 'We Are Family,' 'Free,' 'Finally.' These weren't just dance tracks; they were affirmations for people who needed to hear them."
+      "context": "Nile Rodgers wrote 'I'm Coming Out' after seeing Diana Ross impersonators at a gay club - he intended it for her gay following. While written for LGBTQ+ audiences, disco and house lyrics of self-acceptance, resilience, and joy resonated broadly, contributing to the genre's commercial success."
     },
     {
       "id": 42,

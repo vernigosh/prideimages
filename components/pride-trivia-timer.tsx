@@ -127,6 +127,11 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const leaderboardCooldownRef = useRef<number>(0)
   const LEADERBOARD_COOLDOWN = 60000 // 1 minute cooldown
   
+  // Front page mode - curated accessible questions for new audiences
+  const [frontPageMode, setFrontPageMode] = useState(false)
+  const FRONT_PAGE_ACCESSIBLE_IDS = [1, 5, 11, 26, 27, 29, 32, 35, 39, 41, 51, 52, 53, 54, 63, 64]
+  const FRONT_PAGE_DEEP_CUT_IDS = [12, 55, 57, 59, 60, 65, 66]
+  
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
@@ -151,8 +156,38 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   // Initialize shuffled questions on mount
   useEffect(() => {
     const questions: TriviaQuestion[] = triviaData.questions
-    setShuffledQuestions(shuffleArray(questions))
-  }, [shuffleArray])
+    
+    if (frontPageMode) {
+      // 3:1 ratio - 3 accessible questions, then 1 deep cut
+      const accessibleQs = questions.filter(q => FRONT_PAGE_ACCESSIBLE_IDS.includes(q.id))
+      const deepCutQs = questions.filter(q => FRONT_PAGE_DEEP_CUT_IDS.includes(q.id))
+      
+      // Shuffle both pools
+      const shuffledAccessible = shuffleArray(accessibleQs)
+      const shuffledDeepCuts = shuffleArray(deepCutQs)
+      
+      // Build 3:1 pattern
+      const frontPageQuestions: TriviaQuestion[] = []
+      let accessibleIndex = 0
+      let deepCutIndex = 0
+      
+      while (accessibleIndex < shuffledAccessible.length || deepCutIndex < shuffledDeepCuts.length) {
+        // Add 3 accessible
+        for (let i = 0; i < 3 && accessibleIndex < shuffledAccessible.length; i++) {
+          frontPageQuestions.push(shuffledAccessible[accessibleIndex++])
+        }
+        // Add 1 deep cut
+        if (deepCutIndex < shuffledDeepCuts.length) {
+          frontPageQuestions.push(shuffledDeepCuts[deepCutIndex++])
+        }
+      }
+      
+      setShuffledQuestions(frontPageQuestions)
+    } else {
+      setShuffledQuestions(shuffleArray(questions))
+    }
+    setCurrentQuestionIndex(0)
+  }, [shuffleArray, frontPageMode])
 
   // Cycle through slides (question -> A -> B -> C -> D -> question...)
   useEffect(() => {
@@ -246,9 +281,23 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       setCurrentSlide(0)
     }
     
-    window.addEventListener("nextTriviaQuestion", handleNextQuestion)
-    return () => window.removeEventListener("nextTriviaQuestion", handleNextQuestion)
+  window.addEventListener("nextTriviaQuestion", handleNextQuestion)
+  return () => window.removeEventListener("nextTriviaQuestion", handleNextQuestion)
   }, [shuffledQuestions.length, shuffleArray, currentQuestion])
+  
+  // Handle !frontpage command to toggle front page mode
+  useEffect(() => {
+    const handleFrontPageToggle = () => {
+      setFrontPageMode(prev => {
+        const newMode = !prev
+        console.log(`[v0] Front page mode: ${newMode ? "ON" : "OFF"}`)
+        return newMode
+      })
+    }
+    
+    window.addEventListener("toggleFrontPageMode", handleFrontPageToggle)
+    return () => window.removeEventListener("toggleFrontPageMode", handleFrontPageToggle)
+  }, [])
 
   // Handle !answer command to show previous question's answer
   useEffect(() => {

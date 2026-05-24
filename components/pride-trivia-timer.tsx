@@ -319,7 +319,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     
     // Show notification briefly
     setRecentGuessNotification({ username, answer: normalizedAnswer.toUpperCase() })
-    setTimeout(() => setRecentGuessNotification(null), 3000)
+    setTimeout(() => setRecentGuessNotification(null), 5000)
   }, [phase])
 
   // Listen for guess events
@@ -570,14 +570,14 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       
       {/* Guess notification - appears briefly like flower notifications */}
       {recentGuessNotification && (
-        <div 
+        <div
           className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in-out"
           style={{
-            animation: "fadeInOut 3s ease-in-out forwards",
+            animation: "fadeInOut 5s ease-in-out forwards",
           }}
         >
-          <div 
-            className="px-6 py-3 rounded-full text-black font-bold text-xl font-sans"
+          <div
+            className="px-8 py-4 rounded-full text-black font-black text-2xl font-sans uppercase"
             style={{ backgroundColor: "#ffb8ad" }}
           >
             @{recentGuessNotification.username} guessed {recentGuessNotification.answer}
@@ -630,10 +630,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               
               {/* Footer */}
               <div className="flex items-center justify-between text-black">
-                <div className="text-xl font-black font-sans uppercase">
+                <div className="text-2xl font-black font-sans uppercase">
                   {guessCount} {guessCount === 1 ? "person has" : "people have"} guessed
                 </div>
-                <div className="text-xl font-sans uppercase">
+                <div className="text-2xl font-black font-sans uppercase">
                   Type !a !b !c or !d
                 </div>
               </div>
@@ -729,14 +729,14 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       </div>
       
       {/* Circular Progress Timer - Right Side with Flip Animation */}
-      <div className="absolute right-8 top-1/2 transform -translate-y-1/2" style={{ perspective: "1000px" }}>
+      <div className="absolute right-8 top-[calc(50%-240px)]" style={{ perspective: "1000px" }}>
         <div 
           className="relative transition-transform duration-700 ease-in-out"
           style={{ 
             transformStyle: "preserve-3d",
             transform: showLeaderboard ? "rotateY(180deg)" : "rotateY(0deg)",
             width: "320px",
-            height: "420px"
+            height: "480px"
           }}
         >
           {/* Front - Timer */}
@@ -805,10 +805,16 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           </div>
           {/* Subtitle below ring */}
           <div 
-            className="text-lg text-white font-sans uppercase text-center"
+            className="text-2xl text-white font-sans uppercase text-center font-black"
             style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
           >
             Type !trivia to view question
+          </div>
+          <div 
+            className="text-2xl text-white font-sans uppercase text-center font-black"
+            style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
+          >
+            Type !a !b !c !d to guess
           </div>
             </div>
           </div>
@@ -822,56 +828,56 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             }}
           >
             <div 
-              className="rounded-lg p-4 border-2 border-black h-full"
+              className="rounded-3xl p-6 border-2 border-black h-full"
               style={{
                 background: "linear-gradient(135deg, rgba(255,229,229,0.95) 0%, rgba(255,245,229,0.95) 25%, rgba(240,255,229,0.95) 50%, rgba(229,245,255,0.95) 75%, rgba(240,229,255,0.95) 100%)",
               }}
             >
-              <div className="text-center mb-3">
-                <h2 className="text-xl font-black text-black font-sans uppercase tracking-wider">TRIVIA LEADERS</h2>
+              <div className="text-center mb-4">
+                <h2 className="text-2xl font-black text-black font-sans uppercase tracking-wider">TRIVIA LEADERS</h2>
               </div>
               
               {/* This Stream */}
-              <div className="mb-4">
-                <div className="text-sm font-bold text-black/70 font-sans uppercase mb-2">This Stream</div>
-                <div className="space-y-1">
+              <div className="mb-6">
+                <div className="text-lg font-black text-black/70 font-sans uppercase mb-3">This Stream</div>
+                <div className="space-y-2">
                   {Array.from(triviaScores.entries())
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 5)
                     .map(([username, score], index) => (
-                      <div key={username} className="flex items-center justify-between text-sm">
+                      <div key={username} className="flex items-center justify-between text-xl">
                         <div className="flex items-center gap-2">
                           <span className="font-black text-black font-sans">
                             {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
                           </span>
-                          <span className="font-bold text-black font-sans uppercase truncate max-w-[140px]">{username}</span>
+                          <span className="font-black text-black font-sans uppercase truncate max-w-[160px]">{username}</span>
                         </div>
                         <span className="font-black text-black font-sans">{score}</span>
                       </div>
                     ))}
                   {triviaScores.size === 0 && (
-                    <div className="text-center text-sm font-bold text-black/50 font-sans">No scores yet</div>
+                    <div className="text-center text-xl font-black text-black/50 font-sans">No scores yet</div>
                   )}
                 </div>
               </div>
               
               {/* All Time */}
               <div>
-                <div className="text-sm font-bold text-black/70 font-sans uppercase mb-2">All Time</div>
-                <div className="space-y-1">
+                <div className="text-lg font-black text-black/70 font-sans uppercase mb-3">All Time</div>
+                <div className="space-y-2">
                   {allTimeScores.slice(0, 5).map((user, index) => (
-                    <div key={user.username} className="flex items-center justify-between text-sm">
+                    <div key={user.username} className="flex items-center justify-between text-xl">
                       <div className="flex items-center gap-2">
                         <span className="font-black text-black font-sans">
                           {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
                         </span>
-                        <span className="font-bold text-black font-sans uppercase truncate max-w-[140px]">{user.username}</span>
+                        <span className="font-black text-black font-sans uppercase truncate max-w-[160px]">{user.username}</span>
                       </div>
                       <span className="font-black text-black font-sans">{user.score}</span>
                     </div>
                   ))}
                   {allTimeScores.length === 0 && (
-                    <div className="text-center text-sm font-bold text-black/50 font-sans">No scores yet</div>
+                    <div className="text-center text-xl font-black text-black/50 font-sans">No scores yet</div>
                   )}
                 </div>
               </div>

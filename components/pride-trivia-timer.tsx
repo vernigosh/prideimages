@@ -685,18 +685,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               {/* Header with question */}
               <div className="flex items-start gap-2">
                 <span className="text-3xl flex-shrink-0">🏳️‍🌈</span>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-2xl font-black text-black font-sans leading-relaxed uppercase">
-                      Pride Trivia: {currentQuestion.question}
-                    </h2>
-                    {frontPageMode && (
-                      <span className="px-2 py-1 text-xs font-black text-white rounded-full uppercase flex-shrink-0" style={{ background: "linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb)" }}>
-                        FP
-                      </span>
-                    )}
-                  </div>
-                </div>
+                <h2 className="text-2xl font-black text-black font-sans leading-relaxed uppercase">
+                  Pride Trivia: {currentQuestion.question}
+                </h2>
               </div>
               
               {/* Main content area with large letter indicator on left */}

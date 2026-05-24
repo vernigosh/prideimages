@@ -158,7 +158,7 @@
       "c": "Derrick Carter",
       "d": "Mark Farina",
       "answer": "a",
-      "context": "Honey Dijon was mentored by Frankie Knuckles himself. She's become a global ambassador for house music while being openly trans - proving that the genre's roots in Black queer culture continue to bear fruit."
+      "context": "Honey Dijon was mentored by Frankie Knuckles himself. Today she's one of dance music's most visible advocates for remembering the genre's roots - frequently reminding audiences that house music came from Black and queer communities in Chicago."
     },
     {
       "id": 17,
@@ -262,13 +262,13 @@
     },
     {
       "id": 27,
-      "question": "In 'Paris Is Burning,' Dorian Corey explains that being called this means 'you've done something that will never be forgotten.' What is the word?",
-      "a": "Fierce",
-      "b": "Legendary",
-      "c": "Iconic",
-      "d": "Sickening",
-      "answer": "b",
-      "context": "Dorian Corey's iconic monologue explains the ballroom hierarchy: 'If you're a star, that's good. But if you're a legend, that's something else... You've done something that will never be forgotten.' Ballroom culture gave us countless phrases now used everywhere."
+      "question": "Ballroom culture gave us many phrases used today. Which term means to insult someone cleverly, often with a sharp truth?",
+      "a": "Shade",
+      "b": "Slay",
+      "c": "Werk",
+      "d": "Gag",
+      "answer": "a",
+      "context": "Dorian Corey explained it best in 'Paris Is Burning': 'Shade is, I don't have to tell you you're ugly, because you know you're ugly.' Ballroom gave us shade, reading, serving, slay, iconic, legendary, the house down - language born from wit and survival."
     },
     {
       "id": 28,
@@ -402,13 +402,13 @@
     },
     {
       "id": 41,
-      "question": "Donna Summer's 1977 song 'I Feel Love' revolutionized dance music because producer Giorgio Moroder did what unprecedented thing?",
-      "a": "Recorded it entirely live in one take",
-      "b": "Created an almost entirely synthesized backing track",
-      "c": "Used a 100-piece orchestra",
-      "d": "Recorded it underwater for unique acoustics",
-      "answer": "b",
-      "context": "Brian Eno famously said 'I Feel Love' was the sound of the future. Its pulsing synthesizer backing was revolutionary - nearly all electronic, with Donna's ethereal vocals floating above. It directly influenced techno, house, and every electronic genre that followed."
+      "question": "Many disco and house anthems share lyrics about self-acceptance and togetherness. Which Sylvester lyric captures this spirit?",
+      "a": "You make me feel mighty real",
+      "b": "I will survive",
+      "c": "We are family",
+      "d": "Born this way",
+      "answer": "a",
+      "context": "Disco and house lyrics often celebrated being yourself and finding community - 'Mighty Real,' 'I Will Survive,' 'We Are Family,' 'Free,' 'Finally.' These weren't just dance tracks; they were affirmations for people who needed to hear them."
     },
     {
       "id": 42,
@@ -502,13 +502,13 @@
     },
     {
       "id": 51,
-      "question": "David Mancuso's The Loft was revolutionary for being one of the first NYC venues where same-sex dancing was allowed - what other rule made it unique?",
-      "a": "No alcohol served",
-      "b": "No cover charge",
-      "c": "Members only after midnight",
-      "d": "Live bands only",
+      "question": "David Mancuso's The Loft was one of the first NYC venues where same-sex dancing was allowed. By not serving alcohol, what did he avoid?",
+      "a": "Police raids and liquor license regulations",
+      "b": "High rent costs",
+      "c": "Noise complaints",
+      "d": "Age restrictions",
       "answer": "a",
-      "context": "The Loft's invitation-only parties avoided liquor license laws by not serving alcohol. This kept police away and created a safe, substance-free space focused purely on music and community for the queer community."
+      "context": "Without a liquor license, The Loft operated as a private party, keeping police away and allowing same-sex couples to dance freely. It became a model for underground queer spaces - community first, focused on music and each other."
     },
     {
       "id": 52,

@@ -127,6 +127,11 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   const leaderboardCooldownRef = useRef<number>(0)
   const LEADERBOARD_COOLDOWN = 60000 // 1 minute cooldown
   
+  // Front page mode - curated accessible questions for new audiences
+  const [frontPageMode, setFrontPageMode] = useState(false)
+  const FRONT_PAGE_ACCESSIBLE_IDS = [1, 5, 11, 26, 27, 29, 32, 35, 39, 41, 51, 52, 53, 54, 63, 64]
+  const FRONT_PAGE_DEEP_CUT_IDS = [12, 55, 57, 59, 60, 65, 66]
+  
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
@@ -151,8 +156,38 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   // Initialize shuffled questions on mount
   useEffect(() => {
     const questions: TriviaQuestion[] = triviaData.questions
-    setShuffledQuestions(shuffleArray(questions))
-  }, [shuffleArray])
+    
+    if (frontPageMode) {
+      // 3:1 ratio - 3 accessible questions, then 1 deep cut
+      const accessibleQs = questions.filter(q => FRONT_PAGE_ACCESSIBLE_IDS.includes(q.id))
+      const deepCutQs = questions.filter(q => FRONT_PAGE_DEEP_CUT_IDS.includes(q.id))
+      
+      // Shuffle both pools
+      const shuffledAccessible = shuffleArray(accessibleQs)
+      const shuffledDeepCuts = shuffleArray(deepCutQs)
+      
+      // Build 3:1 pattern
+      const frontPageQuestions: TriviaQuestion[] = []
+      let accessibleIndex = 0
+      let deepCutIndex = 0
+      
+      while (accessibleIndex < shuffledAccessible.length || deepCutIndex < shuffledDeepCuts.length) {
+        // Add 3 accessible
+        for (let i = 0; i < 3 && accessibleIndex < shuffledAccessible.length; i++) {
+          frontPageQuestions.push(shuffledAccessible[accessibleIndex++])
+        }
+        // Add 1 deep cut
+        if (deepCutIndex < shuffledDeepCuts.length) {
+          frontPageQuestions.push(shuffledDeepCuts[deepCutIndex++])
+        }
+      }
+      
+      setShuffledQuestions(frontPageQuestions)
+    } else {
+      setShuffledQuestions(shuffleArray(questions))
+    }
+    setCurrentQuestionIndex(0)
+  }, [shuffleArray, frontPageMode])
 
   // Cycle through slides (question -> A -> B -> C -> D -> question...)
   useEffect(() => {
@@ -202,7 +237,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         lastChatTimeRef.current = now
         sendChatMessage(`CURRENT QUESTION: ${currentQuestion.question}`)
         setTimeout(() => {
-          sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d} — Type !a !b !c or !d to guess!`)
+          sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d} — Type !a !b !c or !d to guess! Answer revealed at 5 min break!`)
         }, 1000)
       }
       
@@ -246,9 +281,36 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
       setCurrentSlide(0)
     }
     
-    window.addEventListener("nextTriviaQuestion", handleNextQuestion)
-    return () => window.removeEventListener("nextTriviaQuestion", handleNextQuestion)
+  window.addEventListener("nextTriviaQuestion", handleNextQuestion)
+  return () => window.removeEventListener("nextTriviaQuestion", handleNextQuestion)
   }, [shuffledQuestions.length, shuffleArray, currentQuestion])
+  
+  // Handle !frontpage command to toggle front page mode
+  const [frontPageNotification, setFrontPageNotification] = useState<string | null>(null)
+  
+  useEffect(() => {
+    const handleFrontPageToggle = () => {
+      setFrontPageMode(prev => {
+        const newMode = !prev
+        console.log(`[v0] Front page mode: ${newMode ? "ON" : "OFF"}`)
+        
+        // Show notification
+        setFrontPageNotification(newMode ? "FRONT PAGE MODE: ON" : "FRONT PAGE MODE: OFF")
+        setTimeout(() => setFrontPageNotification(null), 5000)
+        
+        // Send chat message
+        sendChatMessage(newMode 
+          ? "FRONT PAGE MODE ON - Curated questions for new audiences (3 accessible : 1 deep cut)"
+          : "FRONT PAGE MODE OFF - All questions enabled"
+        )
+        
+        return newMode
+      })
+    }
+    
+    window.addEventListener("toggleFrontPageMode", handleFrontPageToggle)
+    return () => window.removeEventListener("toggleFrontPageMode", handleFrontPageToggle)
+  }, [])
 
   // Handle !answer command to show previous question's answer
   useEffect(() => {
@@ -436,7 +498,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               if (nextQuestion) {
                 sendChatMessage(`PRIDE TRIVIA: ${nextQuestion.question}`)
                 setTimeout(() => {
-                  sendChatMessage(`a) ${nextQuestion.a} | b) ${nextQuestion.b} | c) ${nextQuestion.c} | d) ${nextQuestion.d} — Type !a !b !c or !d to guess!`)
+                  sendChatMessage(`a) ${nextQuestion.a} | b) ${nextQuestion.b} | c) ${nextQuestion.c} | d) ${nextQuestion.d} — Type !a !b !c or !d to guess! Answer revealed at 5 min break!`)
                 }, 1500)
               }
             }
@@ -581,6 +643,25 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             style={{ backgroundColor: "#ffb8ad" }}
           >
             @{recentGuessNotification.username} guessed {recentGuessNotification.answer}
+          </div>
+        </div>
+      )}
+      
+      {/* Front page mode notification */}
+      {frontPageNotification && (
+        <div
+          className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50"
+          style={{
+            animation: "fadeInOut 5s ease-in-out forwards",
+          }}
+        >
+          <div
+            className="px-8 py-4 rounded-full text-white font-black text-2xl font-sans uppercase"
+            style={{ 
+              background: "linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff)",
+            }}
+          >
+            {frontPageNotification}
           </div>
         </div>
       )}
@@ -756,22 +837,34 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 stroke="rgba(255, 255, 255, 0.35)"
                 strokeWidth="12"
               />
-              {/* Progress ring with gradient */}
+              {/* Progress ring with flowing gradient animation */}
               <defs>
-                <linearGradient id="prideGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id="prideGradient" x1="-100%" y1="0%" x2="100%" y2="0%" spreadMethod="repeat">
                   {phase === "work" ? (
                     <>
                       <stop offset="0%" stopColor="#e040fb" />
-                      <stop offset="50%" stopColor="#ff6b9d" />
+                      <stop offset="25%" stopColor="#ffa5c5" />
+                      <stop offset="50%" stopColor="#e040fb" />
+                      <stop offset="75%" stopColor="#ffa5c5" />
                       <stop offset="100%" stopColor="#e040fb" />
                     </>
                   ) : (
                     <>
                       <stop offset="0%" stopColor="#42a5f5" />
-                      <stop offset="50%" stopColor="#26c6da" />
+                      <stop offset="25%" stopColor="#6ee4f2" />
+                      <stop offset="50%" stopColor="#42a5f5" />
+                      <stop offset="75%" stopColor="#6ee4f2" />
                       <stop offset="100%" stopColor="#42a5f5" />
                     </>
                   )}
+                  <animateTransform
+                    attributeName="gradientTransform"
+                    type="translate"
+                    from="0 0"
+                    to="1 0"
+                    dur="1.5s"
+                    repeatCount="indefinite"
+                  />
                 </linearGradient>
               </defs>
               <circle

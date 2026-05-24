@@ -403,6 +403,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Next trivia question command detected")
           window.dispatchEvent(new CustomEvent("nextTriviaQuestion", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!frontpage" && (isMod || isBroadcaster || isVip)) {
+          console.log("Front page mode toggle command detected")
+          window.dispatchEvent(new CustomEvent("toggleFrontPageMode", { detail: { username } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!answer") {
           console.log("Previous answer command detected")
           window.dispatchEvent(new CustomEvent("showPreviousAnswer", { detail: { username } }))

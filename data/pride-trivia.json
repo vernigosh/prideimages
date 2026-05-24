@@ -262,13 +262,13 @@
     },
     {
       "id": 27,
-      "question": "The 1990 documentary 'Paris Is Burning' introduced the world to ballroom culture. Which iconic phrase from the film became a mainstream expression of praise?",
-      "a": "Work it out",
+      "question": "In 'Paris Is Burning,' Dorian Corey explains that being called this means 'you've done something that will never be forgotten.' What is the word?",
+      "a": "Fierce",
       "b": "Legendary",
-      "c": "Serving realness",
-      "d": "Slay",
+      "c": "Iconic",
+      "d": "Sickening",
       "answer": "b",
-      "context": "Ballroom culture gave us countless phrases now used everywhere - 'legendary,' 'iconic,' 'serving realness,' 'reading,' and 'shade.' The film preserved the creativity and resilience of Black and Latino LGBTQ+ communities who created an entire vocabulary of affirmation."
+      "context": "Dorian Corey's iconic monologue explains the ballroom hierarchy: 'If you're a star, that's good. But if you're a legend, that's something else... You've done something that will never be forgotten.' Ballroom culture gave us countless phrases now used everywhere."
     },
     {
       "id": 28,
@@ -499,6 +499,176 @@
       "d": "Record label requirements",
       "answer": "b",
       "context": "In 2020, during the BLM protests, Stamper changed her name to avoid any confusion that might take attention from Black artists. She's been an advocate for diversity in dance music and frequently speaks about the genre's Black and queer origins."
+    },
+    {
+      "id": 51,
+      "question": "David Mancuso's The Loft was revolutionary for being one of the first NYC venues where same-sex dancing was allowed - what other rule made it unique?",
+      "a": "No alcohol served",
+      "b": "No cover charge",
+      "c": "Members only after midnight",
+      "d": "Live bands only",
+      "answer": "a",
+      "context": "The Loft's invitation-only parties avoided liquor license laws by not serving alcohol. This kept police away and created a safe, substance-free space focused purely on music and community for the queer community."
+    },
+    {
+      "id": 52,
+      "question": "The Loft's invitation-only parties avoided liquor license laws, but what did David Mancuso serve instead that became part of the ritual?",
+      "a": "Fruit punch and snacks",
+      "b": "Coffee and tea",
+      "c": "Smoothies",
+      "d": "Nothing - BYOB",
+      "answer": "a",
+      "context": "Mancuso served fruit punch, cookies, and snacks - creating a communal, almost childlike party atmosphere. Balloons were also iconic at The Loft. It was about creating joy and connection, not intoxication."
+    },
+    {
+      "id": 53,
+      "question": "Which two future legendary DJs got their start as teenagers at The Loft before being mentored by Nicky Siano at The Gallery?",
+      "a": "Larry Levan and Frankie Knuckles",
+      "b": "Tony Humphries and David Morales",
+      "c": "Junior Vasquez and Danny Tenaglia",
+      "d": "Louie Vega and Kenny Dope",
+      "answer": "a",
+      "context": "Larry Levan and Frankie Knuckles were childhood friends who discovered dance music at The Loft as teenagers. Nicky Siano then mentored them at The Gallery, teaching them the art of DJing before they went on to define house music."
+    },
+    {
+      "id": 54,
+      "question": "Nicky Siano opened The Gallery in 1973 at age 18 - which two DJs did he mentor who would later define house music?",
+      "a": "Larry Levan and Frankie Knuckles",
+      "b": "Ron Hardy and Derrick May",
+      "c": "David Mancuso and Francis Grasso",
+      "d": "Tony Humphries and Louie Vega",
+      "answer": "a",
+      "context": "Siano hired Larry Levan as a lighting director and let both him and Frankie Knuckles learn DJing at The Gallery. This mentorship directly led to Paradise Garage and The Warehouse - the birthplaces of house music."
+    },
+    {
+      "id": 55,
+      "question": "The Bozak rotary mixer became the industry standard after DJ Francis Grasso pioneered beatmatching at The Sanctuary - what made this NYC venue historically significant in 1969?",
+      "a": "First legal gay dance club after Stonewall",
+      "b": "First disco in Manhattan",
+      "c": "First club with a light show",
+      "d": "First 24-hour venue",
+      "answer": "a",
+      "context": "The Sanctuary opened in a former German Baptist church just months after Stonewall. It was one of the first places gay men could legally dance together. Francis Grasso's beatmatching innovations on a Bozak mixer there created modern DJing."
+    },
+    {
+      "id": 56,
+      "question": "Sound engineer Richard Long built Paradise Garage's legendary system - what unconventional speaker placement made it revolutionary?",
+      "a": "Speakers surrounding the dance floor at multiple heights",
+      "b": "Speakers only in the ceiling",
+      "c": "Single stack behind DJ booth",
+      "d": "Subwoofers under the floor only",
+      "answer": "a",
+      "context": "Richard Long placed speakers all around the room at different heights, creating an immersive sound experience. The bass wasn't just heard - it was felt in your chest. This system became the template for proper club sound."
+    },
+    {
+      "id": 57,
+      "question": "The Urei 1620 mixer's warm rotary sound became synonymous with Larry Levan's style at Paradise Garage - what did Levan famously do to tracks during his sets?",
+      "a": "Re-edit them live with EQ and effects",
+      "b": "Play them at wrong speeds intentionally",
+      "c": "Only play white label promos",
+      "d": "Never play the same song twice",
+      "answer": "a",
+      "context": "Levan would dramatically reshape songs in real-time using the Urei's isolators and EQ. He'd strip tracks down to just hi-hats, build tension, then drop the bass back in. Every set was a unique live remix performance."
+    },
+    {
+      "id": 58,
+      "question": "When Frankie Knuckles left NYC to DJ at The Warehouse in Chicago in 1977, what community did this venue primarily serve?",
+      "a": "Black and Latino gay men",
+      "b": "College students",
+      "c": "Disco industry professionals",
+      "d": "European tourists",
+      "answer": "a",
+      "context": "The Warehouse was a safe haven for Black and Latino gay men in Chicago. Knuckles brought the sound and spirit of NYC's gay clubs to the Midwest, creating the foundation for what would become house music."
+    },
+    {
+      "id": 59,
+      "question": "The Roland TR-909's hi-hats defined Chicago house music - which producer first used it on the groundbreaking 1984 track 'On and On'?",
+      "a": "Jesse Saunders",
+      "b": "Frankie Knuckles",
+      "c": "Marshall Jefferson",
+      "d": "Larry Heard",
+      "answer": "a",
+      "context": "Jesse Saunders' 'On and On' is often cited as the first house record. The TR-909's crisp hi-hats and punchy kicks gave Chicago house its distinctive mechanical groove that would influence all electronic music."
+    },
+    {
+      "id": 60,
+      "question": "The Roland TB-303's squelchy acid sound was discovered by accident - DJ Ron Hardy first played Phuture's 'Acid Tracks' at which Chicago venue?",
+      "a": "The Music Box",
+      "b": "The Warehouse",
+      "c": "Paradise Garage",
+      "d": "Power Plant",
+      "answer": "a",
+      "context": "Ron Hardy debuted 'Acid Tracks' at The Music Box, playing it four times in one night. The crowd went crazy for the TB-303's alien sound. Hardy's Music Box was known for an even more intense, raw energy than The Warehouse."
+    },
+    {
+      "id": 61,
+      "question": "Tom Moulton invented the 12-inch single to give DJs at gay clubs longer mixes - which 1976 track is considered the first commercially released 12-inch single?",
+      "a": "Double Exposure - Ten Percent",
+      "b": "Donna Summer - Love to Love You Baby",
+      "c": "First Choice - Armed and Extremely Dangerous",
+      "d": "Gloria Gaynor - Never Can Say Goodbye",
+      "answer": "a",
+      "context": "Tom Moulton accidentally created the 12-inch format when a mastering engineer used the wrong size blank. The wider grooves meant louder, bassier cuts - perfect for the massive sound systems at gay clubs like The Loft."
+    },
+    {
+      "id": 62,
+      "question": "Before digital tools, DJs at gay clubs like The Loft created extended mixes using what format that required physically cutting and splicing?",
+      "a": "Reel-to-reel tape",
+      "b": "8-track cartridge",
+      "c": "Cassette tape",
+      "d": "DAT tape",
+      "answer": "a",
+      "context": "DJs like Walter Gibbons and Tom Moulton would create exclusive extended edits by physically cutting and splicing reel-to-reel tape. These one-of-a-kind edits made certain parties legendary - you could only hear them there."
+    },
+    {
+      "id": 63,
+      "question": "Madonna's 1990 hit 'Vogue' brought ballroom culture to mainstream pop - who choreographed the video and coached her on voguing?",
+      "a": "Jose Gutierez Xtravaganza and Luis Xtravaganza",
+      "b": "Willi Ninja",
+      "c": "Pepper LaBeija",
+      "d": "Junior LaBeija",
+      "answer": "a",
+      "context": "Jose and Luis from the House of Xtravaganza taught Madonna to vogue and appeared in the iconic video. Madonna hired dancers directly from the ballroom scene, bringing visibility to the underground gay and trans community."
+    },
+    {
+      "id": 64,
+      "question": "During the AIDS crisis, Madonna was one of the few mainstream artists to speak openly - she dedicated her Blond Ambition tour to which friend who died of AIDS in 1986?",
+      "a": "Martin Burgoyne",
+      "b": "Keith Haring",
+      "c": "Christopher Flynn",
+      "d": "Herb Ritts",
+      "answer": "a",
+      "context": "Martin Burgoyne was Madonna's roommate and close friend who helped design her early album artwork. His death deeply affected her and motivated her AIDS advocacy when most celebrities stayed silent."
+    },
+    {
+      "id": 65,
+      "question": "The Technics SL-1200 turntable became the standard at gay clubs like Paradise Garage - what feature made it revolutionary for DJs doing long blends?",
+      "a": "Direct drive motor with precise pitch control",
+      "b": "Built-in sampler",
+      "c": "Wireless capability",
+      "d": "Automatic beat sync",
+      "answer": "a",
+      "context": "The direct drive motor meant consistent speed without belt slippage, and the pitch slider allowed precise BPM matching. DJs could finally blend seamlessly for hours - essential for the marathon sets at gay clubs."
+    },
+    {
+      "id": 66,
+      "question": "David Mancuso at The Loft was known for his audiophile approach - he used which high-end home speaker brand, unusual for clubs, to achieve his signature warm sound?",
+      "a": "Klipschorn",
+      "b": "JBL",
+      "c": "Cerwin-Vega",
+      "d": "Altec Lansing",
+      "answer": "a",
+      "context": "Mancuso used Klipschorn speakers, typically found in audiophile living rooms, not clubs. He believed music should be reproduced faithfully, not just loud. This hi-fi philosophy influenced all the DJs who came through The Loft."
+    },
+    {
+      "id": 67,
+      "question": "Nicky Siano was one of the first DJs to use three turntables at The Gallery - what technique did this allow him to pioneer?",
+      "a": "Live blending and layering multiple tracks",
+      "b": "Scratching",
+      "c": "Beat juggling",
+      "d": "Backspinning",
+      "answer": "a",
+      "context": "With three turntables, Siano could layer percussion from one record over another while preparing the next track. This created seamless, building energy that kept dancers in a trance - the foundation of modern DJ mixing."
     }
   ]
 }

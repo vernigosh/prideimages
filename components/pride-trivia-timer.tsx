@@ -129,7 +129,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   
   // Front page mode - curated accessible questions for new audiences
   const [frontPageMode, setFrontPageMode] = useState(false)
-  const FRONT_PAGE_ACCESSIBLE_IDS = [1, 5, 11, 16, 26, 27, 35, 39, 41, 51, 52, 53, 54, 63, 64, 68, 69, 70, 71, 72, 73, 74]
+  const FRONT_PAGE_ACCESSIBLE_IDS = [1, 5, 16, 26, 27, 35, 39, 41, 51, 52, 53, 63, 64, 68, 69, 70, 71, 72, 73, 74]
   const FRONT_PAGE_DEEP_CUT_IDS = [12, 55, 57, 59, 60, 65, 66]
   
   const rafRef = useRef<number | null>(null)

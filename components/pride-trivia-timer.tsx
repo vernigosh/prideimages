@@ -198,7 +198,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
         lastChatTimeRef.current = now
         sendChatMessage(`CURRENT QUESTION: ${currentQuestion.question}`)
         setTimeout(() => {
-          sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d}`)
+          sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d} — Type !a !b !c or !d to guess!`)
         }, 1000)
       }
       

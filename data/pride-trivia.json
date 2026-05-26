@@ -8,7 +8,7 @@
       "c": "Studio 54",
       "d": "The Loft",
       "answer": "b",
-      "context": "The Warehouse, where Frankie Knuckles was resident DJ from 1977-1982, catered primarily to Black gay men. The music played there became known as 'house' - literally 'music from The Warehouse.'"
+      "context": "When Frankie Knuckles arrived in Chicago in 1977, Black patrons faced restrictive door policies at most clubs. The Warehouse offered something different - a space where a Black and Latino gay crowd could dance freely. The club was so essential to its community that they named the music after it."
     },
     {
       "id": 2,
@@ -18,7 +18,7 @@
       "c": "The use of drum machines",
       "d": "The 4/4 beat structure",
       "answer": "b",
-      "context": "The Loft was literally Mancuso's apartment where he threw invite-only parties with a high-fidelity sound system. No alcohol, no velvet ropes - just community. It created the blueprint for underground dance culture as a safe space."
+      "context": "Mancuso started The Loft in 1970 as a rent party in his apartment - invitation only, no liquor license, just friends dancing. It ran for decades and directly influenced Paradise Garage, The Warehouse, and countless clubs that followed."
     },
     {
       "id": 3,
@@ -28,7 +28,7 @@
       "c": "It was frequently raided by police",
       "d": "Only members over 30 could attend",
       "answer": "b",
-      "context": "Without alcohol sales, Paradise Garage was purely about the music and Larry Levan's legendary DJ sets. The predominantly Black and Latino LGBTQ+ crowd came to dance until noon - it was church, not a bar."
+      "context": "Regulars called Saturday nights at the Garage 'Saturday Mass' and Levan's booth 'the altar.' The crowd was mostly Black and Latino gay men who returned week after week - some for over a decade until it closed in 1987."
     },
     {
       "id": 4,
@@ -48,7 +48,7 @@
       "c": "The Hacienda",
       "d": "Tresor",
       "answer": "b",
-      "context": "Grace Jones was a Studio 54 regular and performer whose bold, gender-bending image challenged norms. Her collaborations with producers like Trevor Horn brought art and dance music together, and she remains an icon of queer aesthetic."
+      "context": "Jones grew up in strict religious Jamaica, then built a career refusing to be categorized. 'I can play the role of a man, I can paint my face white, I can be purple,' she said. At Studio 54 she found a space that matched her boundary-breaking approach to identity."
     },
     {
       "id": 6,
@@ -58,7 +58,7 @@
       "c": "A revolving dance floor",
       "d": "Floor-to-ceiling mirrors",
       "answer": "b",
-      "context": "The Saint's dome could project stars and cosmic visuals over 4,000 dancers. It was an exclusively gay male members club where the community danced through the height of the AIDS crisis - a temple of joy and grief."
+      "context": "The Saint opened in 1980 with a planetarium dome that projected stars over the dancefloor. As AIDS devastated the community through the '80s, members kept coming - often mourning friends one week and losing more the next. It closed in 1988."
     },
     {
       "id": 7,
@@ -68,7 +68,7 @@
       "c": "The disco revival",
       "d": "The rave explosion",
       "answer": "b",
-      "context": "The Shelter provided a home for the community devastated by AIDS. Timmy Regisford's deep, soulful house music was healing - the dancefloor became a place to process collective grief while celebrating survival."
+      "context": "Timmy Regisford opened The Shelter in 1991, four years after Paradise Garage closed. It welcomed a mixed crowd where race and sexuality weren't barriers to entry - during a time when many clubs still had restrictive door policies."
     },
     {
       "id": 8,
@@ -78,7 +78,7 @@
       "c": "Only playing music at low volumes",
       "d": "A strict no-dancing policy",
       "answer": "b",
-      "context": "Ron Hardy was the yin to Frankie Knuckles' yang - while Frankie was smooth, Hardy was raw and unpredictable. He'd play tracks at the wrong speed, layer industrial noise, and create transcendent chaos for his devoted queer Black audience."
+      "context": "Hardy's sets at the Music Box were unpredictable - he'd play tracks at the wrong speed, layer unexpected sounds, test new demos from local producers. He died in 1992 at 33. Many Chicago house tracks were made specifically for him to play first."
     },
     {
       "id": 9,
@@ -88,7 +88,7 @@
       "c": "10-12+ hours",
       "d": "Exactly 3 hours",
       "answer": "c",
-      "context": "Junior Vasquez would play until noon or later. The Sound Factory was a sanctuary during the AIDS crisis - a place where the community could dance, grieve, and feel alive together through the darkest years."
+      "context": "Vasquez's sets at Sound Factory ran from Saturday midnight into Sunday afternoon - eight hours or more. The crowd included everyone from street kids to Madonna. The club ran from 1989 to 1995."
     },
     {
       "id": 10,
@@ -128,17 +128,7 @@
       "c": "Never play the same song twice",
       "d": "Only spin vinyl backwards",
       "answer": "b",
-      "context": "Larry didn't just play records - he reconstructed them live. He'd boost frequencies, drop out the bass, extend breaks, and transform songs into transcendent experiences. He saw DJing as a spiritual practice for his community."
-    },
-    {
-      "id": 14,
-      "question": "Loleatta Holloway's vocals have been sampled in countless house tracks. Which of her songs contains the most sampled vocal phrase in dance music history?",
-      "a": "Hit and Run",
-      "b": "Love Sensation",
-      "c": "Dreamin'",
-      "d": "Crash Goes Love",
-      "answer": "b",
-      "context": "\"Love Sensation\" has been sampled over 100 times, including Black Box's \"Ride on Time\" and Marky Mark's \"Good Vibrations.\" Like many Black women vocalists, Holloway often went uncredited while her voice defined the genre."
+      "context": "Levan didn't just play records - he rebuilt them live, isolating drums, cutting between copies of the same track, extending breakdowns. Regulars called his Saturday nights 'Saturday Mass' and his DJ booth 'the altar.'"
     },
     {
       "id": 15,
@@ -158,7 +148,7 @@
       "c": "Derrick Carter",
       "d": "Mark Farina",
       "answer": "a",
-      "context": "Honey Dijon was mentored by Frankie Knuckles himself. She's become a global ambassador for house music while being openly trans - proving that the genre's roots in Black queer culture continue to bear fruit."
+      "context": "Honey Dijon was mentored by Frankie Knuckles himself. Today she's one of dance music's most visible advocates for remembering the genre's roots - frequently reminding audiences that house music came from Black and queer communities in Chicago."
     },
     {
       "id": 17,
@@ -208,7 +198,7 @@
       "c": "Acid house",
       "d": "Techno",
       "answer": "b",
-      "context": "Cowley's driving, synthesizer-heavy productions defined the Hi-NRG sound that dominated gay clubs in the early 80s. He passed away from AIDS in 1982 at just 32, but his innovations shaped all electronic dance music that followed."
+      "context": "Cowley created the pounding synthesizer sound that became Hi-NRG while producing Sylvester's biggest hits including 'You Make Me Feel (Mighty Real).' He died of AIDS-related illness in 1982 at 32 - one of the first musicians lost to the epidemic."
     },
     {
       "id": 22,
@@ -218,7 +208,7 @@
       "c": "Falsetto/countertenor",
       "d": "Tenor",
       "answer": "c",
-      "context": "Somerville's high falsetto was unmistakable on hits like \"Smalltown Boy\" and \"Don't Leave Me This Way.\" Bronski Beat's music openly addressed gay themes like homophobia and coming out - radical for mainstream pop in 1984."
+      "context": "The 'Smalltown Boy' video shows a gay teenager beaten up, rejected by his family, leaving his small town alone. Somerville based it on real experiences - in 1984 Britain, being openly gay still meant risking everything."
     },
     {
       "id": 23,
@@ -258,17 +248,17 @@
       "c": "London's Northern Soul scene",
       "d": "Detroit warehouse parties",
       "answer": "b",
-      "context": "Voguing emerged from Harlem's Black and Latino LGBTQ+ ballroom scene. Poses imitated fashion magazine models and Egyptian hieroglyphics. Madonna brought it mainstream in 1990, but the community had been voguing for decades."
+      "context": "Voguing emerged from Harlem's Black and Latino LGBTQ+ ballroom scene in the 1960s. Poses imitated fashion magazine models and Egyptian hieroglyphics. Madonna's 1990 hit introduced it to mainstream audiences, but the community had been voguing for decades."
     },
     {
       "id": 27,
-      "question": "In 'Paris Is Burning,' Dorian Corey explains that being called this means 'you've done something that will never be forgotten.' What is the word?",
-      "a": "Fierce",
-      "b": "Legendary",
-      "c": "Iconic",
-      "d": "Sickening",
-      "answer": "b",
-      "context": "Dorian Corey's iconic monologue explains the ballroom hierarchy: 'If you're a star, that's good. But if you're a legend, that's something else... You've done something that will never be forgotten.' Ballroom culture gave us countless phrases now used everywhere."
+      "question": "Ballroom culture gave us many phrases used today. Which term means to insult someone cleverly, often with a sharp truth?",
+      "a": "Shade",
+      "b": "Slay",
+      "c": "Werk",
+      "d": "Gag",
+      "answer": "a",
+      "context": "Dorian Corey explained it best in 'Paris Is Burning': 'Shade is, I don't have to tell you you're ugly, because you know you're ugly.' Ballroom gave us shade, reading, serving, slay, iconic, legendary, the house down - language born from wit and survival."
     },
     {
       "id": 28,
@@ -278,7 +268,7 @@
       "c": "Queer record label",
       "d": "LGBTQ+ community center",
       "answer": "b",
-      "context": "Crystal LaBeija founded the house system after experiencing racism at mainstream drag pageants. The 'house' became a chosen family structure - with mothers, fathers, and children - providing support for Black and Latino LGBTQ+ youth rejected by biological families."
+      "context": "In the 1967 documentary 'The Queen,' Crystal LaBeija confronts judges after losing a drag pageant to a white contestant: 'I have a right to show my color.' She founded House of LaBeija shortly after - starting the house system."
     },
     {
       "id": 29,
@@ -288,7 +278,7 @@
       "c": "Prince's 'Kiss'",
       "d": "Janet Jackson's 'Rhythm Nation'",
       "answer": "b",
-      "context": "Willi Ninja appeared in Malcolm McLaren's 1989 track \"Deep in Vogue\" and later in Madonna's \"Vogue\" video. He taught voguing to supermodels and celebrities but never received the wealth his innovations generated. He died in 2006 of AIDS-related complications."
+      "context": "Ninja taught supermodels how to walk - Paris Is Burning shows him coaching on the runway. He choreographed for fashion houses and appeared in Malcolm McLaren's 'Deep in Vogue.' He died of AIDS-related illness in 2006 at 45."
     },
     {
       "id": 30,
@@ -298,7 +288,7 @@
       "c": "Sing live while voguing",
       "d": "Create the most elaborate costumes",
       "answer": "b",
-      "context": "\"Realness\" categories judged how well someone could blend into mainstream society - as a businessman, student, or model. What started as a survival skill in a world that wasn't always safe became a celebrated art form."
+      "context": "In ballroom, 'realness' categories judged how well someone could pass - as a businessman, a college student, a woman who wouldn't be clocked. For trans women especially, the skill had stakes beyond competition. Being 'read' on the street could mean violence."
     },
     {
       "id": 31,
@@ -328,7 +318,7 @@
       "c": "Signal the end of the night",
       "d": "Introduce guest performers",
       "answer": "b",
-      "context": "\"Love Is The Message\" became a spiritual moment on the dancefloor - when it played, the community would collectively release grief while affirming their existence. Larry Levan would often play it as an emotional peak at Paradise Garage."
+      "context": "MFSB released 'Love Is The Message' in 1973. At Paradise Garage, Levan made it a centerpiece - when the strings hit, the whole floor would sing. After friends died of AIDS, regulars described hearing it as both grief and release at once."
     },
     {
       "id": 34,
@@ -348,7 +338,7 @@
       "c": "Use a drum machine exclusively",
       "d": "Be released on a major label",
       "answer": "b",
-      "context": "Sylvester was unapologetically himself - a gender-nonconforming Black gay man singing about ecstatic joy and desire. His falsetto and the song's electronic production pioneered Hi-NRG. He left his estate to AIDS charities and remains an icon of authentic self-expression."
+      "context": "When asked if he was a drag queen, Sylvester replied: 'I am not a drag queen. I am Sylvester.' He faced discrimination for his femininity from church and family, leaving home young. He never toned it down for labels - his authenticity became his legacy."
     },
     {
       "id": 36,
@@ -358,7 +348,7 @@
       "c": "Leaving the city",
       "d": "Religious salvation",
       "answer": "b",
-      "context": "\"Finally\" - with its message of finally finding joy and love - took on deeper meaning for a community that had endured so much loss. Dancing to it was an act of resilience, of insisting on happiness despite everything."
+      "context": "Peniston was a background singer and pageant winner in Phoenix when 'Finally' became a house anthem in 1991. She'd written the original version as a poem in college. It reached #5 on the Billboard Hot 100."
     },
     {
       "id": 37,
@@ -378,7 +368,7 @@
       "c": "Music journalists",
       "d": "Radio station owners",
       "answer": "b",
-      "context": "Many ACT UP members were embedded in club culture - the dancefloor and the protest were both sites of resistance. Clubs donated proceeds to AIDS organizations, and benefit parties were crucial fundraisers. The fight for survival happened on multiple fronts."
+      "context": "Dance for Life started in Chicago in 1992 as an AIDS benefit when government response was slow. DJs and clubs donated time because the people dying were their own - friends, lovers, regulars. It still runs today."
     },
     {
       "id": 39,
@@ -402,13 +392,13 @@
     },
     {
       "id": 41,
-      "question": "Donna Summer's 1977 song 'I Feel Love' revolutionized dance music because producer Giorgio Moroder did what unprecedented thing?",
-      "a": "Recorded it entirely live in one take",
-      "b": "Created an almost entirely synthesized backing track",
-      "c": "Used a 100-piece orchestra",
-      "d": "Recorded it underwater for unique acoustics",
-      "answer": "b",
-      "context": "Brian Eno famously said 'I Feel Love' was the sound of the future. Its pulsing synthesizer backing was revolutionary - nearly all electronic, with Donna's ethereal vocals floating above. It directly influenced techno, house, and every electronic genre that followed."
+      "question": "Many disco and house anthems were intentionally written for LGBTQ+ audiences. Which theme is common across 'Mighty Real,' 'I'm Coming Out,' and 'Free'?",
+      "a": "Self-acceptance and liberation",
+      "b": "Heartbreak and loneliness",
+      "c": "Political protest",
+      "d": "Summer romance",
+      "answer": "a",
+      "context": "Nile Rodgers wrote 'I'm Coming Out' after seeing Diana Ross impersonators at a gay club - he intended it for her gay following. While written for LGBTQ+ audiences, disco and house lyrics of self-acceptance, resilience, and joy resonated broadly, contributing to the genre's commercial success."
     },
     {
       "id": 42,
@@ -418,7 +408,7 @@
       "c": "The Communards' 1986 version featuring Jimmy Somerville",
       "d": "A Whitney Houston cover",
       "answer": "c",
-      "context": "The Communards were an openly gay duo - Jimmy Somerville and Richard Coles. Their version, released during the AIDS crisis, transformed the song into an urgent plea that resonated with a community losing loved ones. It hit #1 in the UK."
+      "context": "Somerville and Richard Coles formed the Communards in 1985, openly gay at a time when most pop stars weren't. Their cover of 'Don't Leave Me This Way' hit #1 in the UK in 1986 - while AIDS was still being called 'the gay plague' in tabloids."
     },
     {
       "id": 43,
@@ -429,16 +419,6 @@
       "d": "Admitted everyone without selection",
       "answer": "b",
       "context": "Studio 54's doormen famously mixed socialites with drag queens, uptown with downtown. While it was commercial and problematic in many ways, it also created rare spaces where queer people and people of color mixed with the elite - briefly leveling social hierarchies."
-    },
-    {
-      "id": 44,
-      "question": "Loleatta Holloway's vocals on 'Love Sensation' (1980) became one of the most sampled in dance music history. Which iconic 90s hit prominently featured her voice?",
-      "a": "Show Me Love by Robin S.",
-      "b": "Ride on Time by Black Box",
-      "c": "Finally by CeCe Peniston",
-      "d": "100% Pure Love by Crystal Waters",
-      "answer": "b",
-      "context": "Loleatta Holloway's powerful gospel-influenced voice defined countless dance tracks. 'Ride on Time' used her vocals without initial credit - like Martha Wash, she fought for recognition. Her voice represents the Black women whose artistry built dance music."
     },
     {
       "id": 45,
@@ -502,13 +482,13 @@
     },
     {
       "id": 51,
-      "question": "David Mancuso's The Loft was revolutionary for being one of the first NYC venues where same-sex dancing was allowed - what other rule made it unique?",
-      "a": "No alcohol served",
-      "b": "No cover charge",
-      "c": "Members only after midnight",
-      "d": "Live bands only",
+      "question": "David Mancuso's The Loft was one of the first NYC venues where same-sex dancing was allowed. By not serving alcohol, what did he avoid?",
+      "a": "Police raids and liquor license regulations",
+      "b": "High rent costs",
+      "c": "Noise complaints",
+      "d": "Age restrictions",
       "answer": "a",
-      "context": "The Loft's invitation-only parties avoided liquor license laws by not serving alcohol. This kept police away and created a safe, substance-free space focused purely on music and community for the queer community."
+      "context": "Without a liquor license, The Loft operated as a private party, keeping police away and allowing same-sex couples to dance freely. It became a model for underground queer spaces - community first, focused on music and each other."
     },
     {
       "id": 52,
@@ -518,7 +498,7 @@
       "c": "Smoothies",
       "d": "Nothing - BYOB",
       "answer": "a",
-      "context": "Mancuso served fruit punch, cookies, and snacks - creating a communal, almost childlike party atmosphere. Balloons were also iconic at The Loft. It was about creating joy and connection, not intoxication."
+      "context": "Mancuso's philosophy was simple: create a home where people from all walks of life could connect. The Loft started as a rent party in his apartment and became a template for inclusive underground spaces - egalitarian, focused on kindness, music, and each other."
     },
     {
       "id": 53,
@@ -528,7 +508,7 @@
       "c": "Junior Vasquez and Danny Tenaglia",
       "d": "Louie Vega and Kenny Dope",
       "answer": "a",
-      "context": "Larry Levan and Frankie Knuckles were childhood friends who discovered dance music at The Loft as teenagers. Nicky Siano then mentored them at The Gallery, teaching them the art of DJing before they went on to define house music."
+      "context": "Levan and Knuckles grew up together in the Bronx and found community in Harlem's ballroom scene - a space built by and for Black and Latino gay and trans youth. After learning from Nicky Siano at The Gallery, they parted ways - Levan to Paradise Garage, Knuckles to The Warehouse. Two friends who shaped two cities."
     },
     {
       "id": 54,
@@ -628,7 +608,7 @@
       "c": "Pepper LaBeija",
       "d": "Junior LaBeija",
       "answer": "a",
-      "context": "Jose and Luis from the House of Xtravaganza taught Madonna to vogue and appeared in the iconic video. Madonna hired dancers directly from the ballroom scene, bringing visibility to the underground gay and trans community."
+      "context": "Jose and Luis from the House of Xtravaganza taught Madonna to vogue and appeared in the video. She hired dancers directly from the ballroom scene - the video reached #1 in 30 countries and introduced voguing to a global audience."
     },
     {
       "id": 64,
@@ -669,6 +649,76 @@
       "d": "Backspinning",
       "answer": "a",
       "context": "With three turntables, Siano could layer percussion from one record over another while preparing the next track. This created seamless, building energy that kept dancers in a trance - the foundation of modern DJ mixing."
+    },
+    {
+      "id": 68,
+      "question": "Which genre of electronic dance music can trace its roots back to house music's underground LGBTQ+ origins?",
+      "a": "Techno",
+      "b": "Trance",
+      "c": "Tech house",
+      "d": "All of the above",
+      "answer": "d",
+      "context": "Honey Dijon often reminds audiences that house music came from Black and queer communities - roots that get erased in pursuit of mainstream appeal. Every subgenre evolved from what started in gay clubs in Chicago, NYC, and Detroit. A history worth remembering."
+    },
+    {
+      "id": 69,
+      "question": "When you hear techno, trance, tech house, or mainstage EDM at a festival, what underground scene did ALL of these genres evolve from?",
+      "a": "British rave culture",
+      "b": "German industrial music",
+      "c": "LGBTQ+ club culture in America",
+      "d": "Ibiza beach parties",
+      "answer": "c",
+      "context": "British raves, German clubs, and Ibiza all shaped dance music - but the foundation was laid in LGBTQ+ clubs in Chicago, NYC, and Detroit. Frankie Knuckles, Larry Levan, and the Detroit techno pioneers created the sounds these scenes built on."
+    },
+    {
+      "id": 70,
+      "question": "Which DJ is known as 'The Godfather of House Music' and was the first DJ to have a street named after him?",
+      "a": "Frankie Knuckles",
+      "b": "Larry Levan",
+      "c": "David Mancuso",
+      "d": "Ron Hardy",
+      "answer": "a",
+      "context": "Chicago named a street after Knuckles in 2004 - the first DJ so honored. He earned 'Godfather' not just for creating a sound, but for creating a space. The Warehouse gave a Black and gay community somewhere to belong when few other places would."
+    },
+    {
+      "id": 71,
+      "question": "In 1997, house music made history when Frankie Knuckles won the first-ever Grammy for which category?",
+      "a": "Remixer of the Year, Non-Classical",
+      "b": "Best Dance Recording",
+      "c": "Best Electronic Album",
+      "d": "Best New Artist",
+      "answer": "a",
+      "context": "The Recording Academy created the Remixer of the Year category in 1998, and Frankie won the first one. Twenty years after he started at The Warehouse, the genre he helped create had Grammy recognition."
+    },
+    {
+      "id": 72,
+      "question": "Before house music, disco emerged in the early 1970s. Where did DJs first blend funk, soul, and gospel into this new danceable sound?",
+      "a": "Gay clubs in New York City",
+      "b": "Radio stations in Philadelphia",
+      "c": "Beach parties in Miami",
+      "d": "Rock venues in Los Angeles",
+      "answer": "a",
+      "context": "Disco emerged in underground gay clubs in NYC in the early 1970s - places like The Loft and The Gallery where DJs blended funk, soul, and gospel. These were some of the first spaces where LGBTQ+ people could dance freely together."
+    },
+    {
+      "id": 73,
+      "question": "The ballroom scene was one of the few spaces in 1980s NYC where which community could find acceptance, celebration, and family?",
+      "a": "Trans women of color",
+      "b": "College students",
+      "c": "European tourists",
+      "d": "Record executives",
+      "answer": "a",
+      "context": "While mainstream society rejected them, the ballroom scene embraced Black and Latino trans women as legends, icons, and mothers. These spaces offered radical joy and loud love when the outside world offered none - they were sanctuaries of self-expression and belonging."
+    },
+    {
+      "id": 74,
+      "question": "Many pioneers of ballroom and early house were Black and Latino trans women. Which legendary house, founded in 1977, was one of the first?",
+      "a": "House of LaBeija",
+      "b": "House of Gucci",
+      "c": "House of Blues",
+      "d": "House of Pain",
+      "answer": "a",
+      "context": "Crystal LaBeija founded the House of LaBeija after experiencing racism at mainstream drag pageants. Houses became found families - providing mentorship, support, and unconditional love to LGBTQ+ youth rejected by their biological families. This tradition of chosen family continues today."
     }
   ]
 }

@@ -36,37 +36,33 @@ export async function POST(request: NextRequest) {
 
     // Update scores for each winner (increment by 1)
     for (const username of winners) {
-      const { error } = await supabase.rpc("increment_trivia_score", {
-        p_username: username.toLowerCase()
-      })
+      const lowerUsername = username.toLowerCase()
+      
+      // First, try to get existing record
+      const { data: existing } = await supabase
+        .from("trivia_scores")
+        .select("score")
+        .eq("username", lowerUsername)
+        .single()
 
-      if (error) {
-        // If RPC doesn't exist, try upsert
-        const { error: upsertError } = await supabase
+      if (existing) {
+        // Update existing record - increment score
+        const { error: updateError } = await supabase
           .from("trivia_scores")
-          .upsert(
-            { username: username.toLowerCase(), score: 1, updated_at: new Date().toISOString() },
-            { onConflict: "username" }
-          )
+          .update({ score: existing.score + 1, updated_at: new Date().toISOString() })
+          .eq("username", lowerUsername)
         
-        if (upsertError) {
-          // Try to update existing record
-          const { data: existing } = await supabase
-            .from("trivia_scores")
-            .select("score")
-            .eq("username", username.toLowerCase())
-            .single()
-
-          if (existing) {
-            await supabase
-              .from("trivia_scores")
-              .update({ score: existing.score + 1, updated_at: new Date().toISOString() })
-              .eq("username", username.toLowerCase())
-          } else {
-            await supabase
-              .from("trivia_scores")
-              .insert({ username: username.toLowerCase(), score: 1 })
-          }
+        if (updateError) {
+          console.error("[v0] Error updating score for", lowerUsername, updateError)
+        }
+      } else {
+        // Insert new record with score of 1
+        const { error: insertError } = await supabase
+          .from("trivia_scores")
+          .insert({ username: lowerUsername, score: 1 })
+        
+        if (insertError) {
+          console.error("[v0] Error inserting score for", lowerUsername, insertError)
         }
       }
     }

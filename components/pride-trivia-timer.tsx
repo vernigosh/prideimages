@@ -931,14 +931,14 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               </div>
               
               {/* This Stream */}
-              <div className="mb-6">
-                <div className="text-lg font-black text-black/70 font-sans uppercase mb-3">This Stream</div>
-                <div className="space-y-2">
+              <div className="mb-4">
+                <div className="text-lg font-black text-black/70 font-sans uppercase mb-2">This Stream</div>
+                <div className="space-y-1 max-h-[140px] overflow-y-auto">
                   {Array.from(triviaScores.entries())
                     .sort((a, b) => b[1] - a[1])
-                    .slice(0, 5)
+                    .slice(0, 10)
                     .map(([username, score], index) => (
-                      <div key={username} className="flex items-center justify-between text-xl">
+                      <div key={username} className="flex items-center justify-between text-lg">
                         <div className="flex items-center gap-2">
                           <span className="font-black text-black font-sans">
                             {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
@@ -949,17 +949,17 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                       </div>
                     ))}
                   {triviaScores.size === 0 && (
-                    <div className="text-center text-xl font-black text-black/50 font-sans">No scores yet</div>
+                    <div className="text-center text-lg font-black text-black/50 font-sans">No scores yet</div>
                   )}
                 </div>
               </div>
               
               {/* All Time */}
               <div>
-                <div className="text-lg font-black text-black/70 font-sans uppercase mb-3">All Time</div>
-                <div className="space-y-2">
-                  {allTimeScores.slice(0, 5).map((user, index) => (
-                    <div key={user.username} className="flex items-center justify-between text-xl">
+                <div className="text-lg font-black text-black/70 font-sans uppercase mb-2">All Time</div>
+                <div className="space-y-1 max-h-[140px] overflow-y-auto">
+                  {allTimeScores.slice(0, 10).map((user, index) => (
+                    <div key={user.username} className="flex items-center justify-between text-lg">
                       <div className="flex items-center gap-2">
                         <span className="font-black text-black font-sans">
                           {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
@@ -970,7 +970,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                     </div>
                   ))}
                   {allTimeScores.length === 0 && (
-                    <div className="text-center text-xl font-black text-black/50 font-sans">No scores yet</div>
+                    <div className="text-center text-lg font-black text-black/50 font-sans">No scores yet</div>
                   )}
                 </div>
               </div>

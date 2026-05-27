@@ -232,6 +232,9 @@ export default function DJRandomizer() {
   const [showPrideTrivia, setShowPrideTrivia] = useState(false)
   const [prideTriviaConnected, setPrideTriviaConnected] = useState(false)
   
+  // Timer flip state - alternates between dark timer and pride timer every 30 seconds when both are active
+  const [showDarkTimerInFlip, setShowDarkTimerInFlip] = useState(true)
+  
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
     subscribers: Array<{ name: string; months: number; tier: string; gifted: boolean; gifter?: string }>
@@ -246,6 +249,16 @@ export default function DJRandomizer() {
   
   // Use test data if available, otherwise use live data
   const activeStreamCredits = testCreditsData || streamCredits
+
+  // Flip between dark timer and pride timer every 30 seconds when both are active
+  useEffect(() => {
+    if (showDarkTimer && showPrideTrivia) {
+      const flipInterval = setInterval(() => {
+        setShowDarkTimerInFlip(prev => !prev)
+      }, 30000) // 30 seconds
+      return () => clearInterval(flipInterval)
+    }
+  }, [showDarkTimer, showPrideTrivia])
 
   // Add event listeners for timer commands
   useEffect(() => {
@@ -707,16 +720,18 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     }
 
     // Dark timer: left side if work timer is active, otherwise right side
-    if (showDarkTimer) {
+    // When both dark timer and pride trivia are active, use 3D flip animation between them
+    if (showDarkTimer && !showPrideTrivia) {
+      // Only dark timer active - show normally
       elements.push(
-<DarkTimer
-  key="dark-timer"
-  isVisible={showDarkTimer}
-  onConnectionChange={setDarkTimerConnected}
-  onHide={() => setShowDarkTimer(false)}
-  workTimerActive={showWorkTimer}
-  socialTimerActive={showSocialTimer}
-/>
+        <DarkTimer
+          key="dark-timer"
+          isVisible={showDarkTimer}
+          onConnectionChange={setDarkTimerConnected}
+          onHide={() => setShowDarkTimer(false)}
+          workTimerActive={showWorkTimer}
+          socialTimerActive={showSocialTimer}
+        />
       )
     }
 
@@ -783,7 +798,49 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           {getTimerElements()}
 
         {/* Pride Trivia Timer - Left side when visible */}
-        {showPrideTrivia && (
+        {/* When both dark timer and pride trivia are active, use 3D flip animation */}
+        {showPrideTrivia && showDarkTimer && (
+          <div className="absolute left-8 top-[calc(50%-240px)]" style={{ perspective: "1000px" }}>
+            <div
+              className="relative transition-transform duration-700 ease-in-out"
+              style={{
+                transformStyle: "preserve-3d",
+                transform: showDarkTimerInFlip ? "rotateY(0deg)" : "rotateY(180deg)",
+              }}
+            >
+              {/* Front - Dark Timer */}
+              <div
+                className="absolute w-full h-full"
+                style={{ backfaceVisibility: "hidden" }}
+              >
+                <DarkTimer
+                  isVisible={true}
+                  onConnectionChange={setDarkTimerConnected}
+                  onHide={() => setShowDarkTimer(false)}
+                  workTimerActive={showWorkTimer}
+                  socialTimerActive={showSocialTimer}
+                />
+              </div>
+              {/* Back - Pride Trivia Timer */}
+              <div
+                className="absolute w-full h-full"
+                style={{ 
+                  backfaceVisibility: "hidden",
+                  transform: "rotateY(180deg)"
+                }}
+              >
+                <PrideTriviaTimer
+                  isVisible={true}
+                  onConnectionChange={setPrideTriviaConnected}
+                  onHide={() => setShowPrideTrivia(false)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Pride Trivia Timer - Only pride trivia active, show normally */}
+        {showPrideTrivia && !showDarkTimer && (
           <PrideTriviaTimer
             isVisible={showPrideTrivia}
             onConnectionChange={setPrideTriviaConnected}

@@ -234,6 +234,7 @@ export default function DJRandomizer() {
   
   // Timer flip state - alternates between dark timer and pride timer every 30 seconds when both are active
   const [showDarkTimerInFlip, setShowDarkTimerInFlip] = useState(true)
+  const [isFlipTransitioning, setIsFlipTransitioning] = useState(false)
   
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
@@ -254,7 +255,13 @@ export default function DJRandomizer() {
   useEffect(() => {
     if (showDarkTimer && showPrideTrivia) {
       const flipInterval = setInterval(() => {
-        setShowDarkTimerInFlip(prev => !prev)
+        // Start fade out
+        setIsFlipTransitioning(true)
+        // After fade out, change which timer is shown and fade in
+        setTimeout(() => {
+          setShowDarkTimerInFlip(prev => !prev)
+          setIsFlipTransitioning(false)
+        }, 500) // 500ms for fade out, matches scoreboard
       }, 30000) // 30 seconds
       return () => clearInterval(flipInterval)
     }
@@ -725,14 +732,19 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
       const shouldShowDarkTimer = !showPrideTrivia || showDarkTimerInFlip
       if (shouldShowDarkTimer) {
         elements.push(
-          <DarkTimer
-            key="dark-timer"
-            isVisible={showDarkTimer}
-            onConnectionChange={setDarkTimerConnected}
-            onHide={() => setShowDarkTimer(false)}
-            workTimerActive={showWorkTimer}
-            socialTimerActive={showSocialTimer}
-          />
+          <div
+            key="dark-timer-wrapper"
+            className="transition-opacity duration-500"
+            style={{ opacity: (showPrideTrivia && isFlipTransitioning) ? 0 : 1 }}
+          >
+            <DarkTimer
+              isVisible={showDarkTimer}
+              onConnectionChange={setDarkTimerConnected}
+              onHide={() => setShowDarkTimer(false)}
+              workTimerActive={showWorkTimer}
+              socialTimerActive={showSocialTimer}
+            />
+          </div>
         )
       }
     }
@@ -802,11 +814,16 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         {/* Pride Trivia Timer - Left side when visible */}
         {/* When both dark timer and pride trivia are active, flip between them every 30 seconds */}
         {showPrideTrivia && (!showDarkTimer || !showDarkTimerInFlip) && (
-          <PrideTriviaTimer
-            isVisible={showPrideTrivia}
-            onConnectionChange={setPrideTriviaConnected}
-            onHide={() => setShowPrideTrivia(false)}
-          />
+          <div
+            className="transition-opacity duration-500"
+            style={{ opacity: (showDarkTimer && isFlipTransitioning) ? 0 : 1 }}
+          >
+            <PrideTriviaTimer
+              isVisible={showPrideTrivia}
+              onConnectionChange={setPrideTriviaConnected}
+              onHide={() => setShowPrideTrivia(false)}
+            />
+          </div>
         )}
 
         {/* Community Garden - Always at bottom when visible */}

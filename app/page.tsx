@@ -232,6 +232,9 @@ export default function DJRandomizer() {
   const [showPrideTrivia, setShowPrideTrivia] = useState(false)
   const [prideTriviaConnected, setPrideTriviaConnected] = useState(false)
   
+  // Timer flip state - alternates between dark timer and pride timer every 30 seconds when both are active
+  const [showDarkTimerInFlip, setShowDarkTimerInFlip] = useState(true)
+  
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
     subscribers: Array<{ name: string; months: number; tier: string; gifted: boolean; gifter?: string }>
@@ -246,6 +249,16 @@ export default function DJRandomizer() {
   
   // Use test data if available, otherwise use live data
   const activeStreamCredits = testCreditsData || streamCredits
+
+  // Flip between dark timer and pride timer every 30 seconds when both are active
+  useEffect(() => {
+    if (showDarkTimer && showPrideTrivia) {
+      const flipInterval = setInterval(() => {
+        setShowDarkTimerInFlip(prev => !prev)
+      }, 30000) // 30 seconds
+      return () => clearInterval(flipInterval)
+    }
+  }, [showDarkTimer, showPrideTrivia])
 
   // Add event listeners for timer commands
   useEffect(() => {
@@ -707,17 +720,21 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     }
 
     // Dark timer: left side if work timer is active, otherwise right side
+    // When both dark timer and pride trivia are active, flip between them every 30 seconds
     if (showDarkTimer) {
-      elements.push(
-<DarkTimer
-  key="dark-timer"
-  isVisible={showDarkTimer}
-  onConnectionChange={setDarkTimerConnected}
-  onHide={() => setShowDarkTimer(false)}
-  workTimerActive={showWorkTimer}
-  socialTimerActive={showSocialTimer}
-/>
-      )
+      const shouldShowDarkTimer = !showPrideTrivia || showDarkTimerInFlip
+      if (shouldShowDarkTimer) {
+        elements.push(
+          <DarkTimer
+            key="dark-timer"
+            isVisible={showDarkTimer}
+            onConnectionChange={setDarkTimerConnected}
+            onHide={() => setShowDarkTimer(false)}
+            workTimerActive={showWorkTimer}
+            socialTimerActive={showSocialTimer}
+          />
+        )
+      }
     }
 
     // Social timer: left side if work timer is active, otherwise right side
@@ -783,7 +800,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           {getTimerElements()}
 
         {/* Pride Trivia Timer - Left side when visible */}
-        {showPrideTrivia && (
+        {/* When both dark timer and pride trivia are active, flip between them every 30 seconds */}
+        {showPrideTrivia && (!showDarkTimer || !showDarkTimerInFlip) && (
           <PrideTriviaTimer
             isVisible={showPrideTrivia}
             onConnectionChange={setPrideTriviaConnected}

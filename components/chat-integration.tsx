@@ -58,9 +58,15 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
   }
 
   const testPrideTrivia = () => {
-    console.log("Manual test: Starting pride trivia timer")
+    console.log("Manual test: Starting pride trivia timer (Monday/Pomodoro mode)")
     window.dispatchEvent(new CustomEvent("startPrideTrivia", { detail: { username: "Manual Test" } }))
     addRecentCommand("!pridetimer by Manual Test (manual)")
+  }
+
+  const testCasualTrivia = () => {
+    console.log("Manual test: Starting casual trivia (Wed/Fri mode)")
+    window.dispatchEvent(new CustomEvent("startCasualTrivia", { detail: { username: "Manual Test" } }))
+    addRecentCommand("!casualtrivia by Manual Test (manual)")
   }
 
   const connectToTwitch = async () => {
@@ -386,12 +392,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           window.dispatchEvent(new CustomEvent("hideAllCelebrations"))
           addRecentCommand(`${command} by ${username}`)
         } 
-        // PRIDE TRIVIA COMMANDS
-        else if (command === "!pridetimer" && (isMod || isBroadcaster || isVip)) {
-          console.log("Pride trivia timer command detected")
-          window.dispatchEvent(new CustomEvent("startPrideTrivia", { detail: { username } }))
-          addRecentCommand(`${command} by ${username}`)
-        } else if (command === "!trivia") {
+          // PRIDE TRIVIA COMMANDS
+          else if (command === "!pridetimer" && (isMod || isBroadcaster || isVip)) {
+            console.log("Pride trivia timer command detected (Monday/Pomodoro mode)")
+            window.dispatchEvent(new CustomEvent("startPrideTrivia", { detail: { username } }))
+            addRecentCommand(`${command} by ${username}`)
+          } else if (command === "!casualtrivia" && (isMod || isBroadcaster || isVip)) {
+            console.log("Casual trivia command detected (Wed/Fri mode)")
+            window.dispatchEvent(new CustomEvent("startCasualTrivia", { detail: { username } }))
+            addRecentCommand(`${command} by ${username}`)
+          } else if (command === "!trivia") {
           console.log("Toggle trivia box visibility command detected")
           window.dispatchEvent(new CustomEvent("toggleTriviaBox", { detail: { username } }))
           addRecentCommand(`${command} by ${username}`)
@@ -548,6 +558,20 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
             >
               <Play className="w-4 h-4" />
               Test Garden
+            </button>
+            <button
+              onClick={testPrideTrivia}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-purple-400 hover:bg-purple-500 text-white"
+            >
+              <Play className="w-4 h-4" />
+              Pride Trivia (Mon)
+            </button>
+            <button
+              onClick={testCasualTrivia}
+              className="flex items-center gap-2 px-4 py-2 font-bold border-2 border-black rounded bg-pink-400 hover:bg-pink-500 text-white"
+            >
+              <Play className="w-4 h-4" />
+              Casual Trivia (Wed/Fri)
             </button>
             <button
               onClick={() => {

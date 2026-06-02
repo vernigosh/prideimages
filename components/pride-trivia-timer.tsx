@@ -921,56 +921,73 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             }}
           >
             <div 
-              className="rounded-3xl p-6 border-2 border-black h-full"
+              className="rounded-3xl p-6 border-2 border-black h-full overflow-hidden"
               style={{
                 background: "linear-gradient(135deg, rgba(255,229,229,0.95) 0%, rgba(255,245,229,0.95) 25%, rgba(240,255,229,0.95) 50%, rgba(229,245,255,0.95) 75%, rgba(240,229,255,0.95) 100%)",
               }}
             >
-              <div className="text-center mb-4">
+              <div className="text-center mb-3">
                 <h2 className="text-2xl font-black text-black font-sans uppercase tracking-wider">TRIVIA LEADERS</h2>
               </div>
               
+              {/* Last Question Winners */}
+              {correctGuessers.length > 0 && (
+                <div className="mb-3">
+                  <div className="text-sm font-black text-black/70 font-sans uppercase mb-1">Last Question</div>
+                  <div className="text-sm font-black text-black font-sans uppercase truncate">
+                    {correctGuessers.slice(0, 5).map(u => `@${u}`).join(", ")}
+                    {correctGuessers.length > 5 && ` +${correctGuessers.length - 5} more`}
+                  </div>
+                </div>
+              )}
+              
               {/* This Stream */}
-              <div className="mb-4">
-                <div className="text-lg font-black text-black/70 font-sans uppercase mb-2">This Stream</div>
-                <div className="space-y-1 max-h-[140px] overflow-y-auto">
+              <div className="mb-3">
+                <div className="text-sm font-black text-black/70 font-sans uppercase mb-1">This Stream</div>
+                <div 
+                  className="space-y-0.5 overflow-y-auto pr-1"
+                  style={{ maxHeight: correctGuessers.length > 0 ? "100px" : "130px" }}
+                >
                   {Array.from(triviaScores.entries())
                     .sort((a, b) => b[1] - a[1])
-                    .slice(0, 10)
+                    .slice(0, 15)
                     .map(([username, score], index) => (
-                      <div key={username} className="flex items-center justify-between text-lg">
-                        <div className="flex items-center gap-2">
-                          <span className="font-black text-black font-sans">
-                            {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
+                      <div key={username} className="flex items-center justify-between text-base">
+                        <div className="flex items-center gap-1">
+                          <span className="font-black text-black font-sans w-5">
+                            {index + 1}.
                           </span>
-                          <span className="font-black text-black font-sans uppercase truncate max-w-[160px]">{username}</span>
+                          <span className="font-black text-black font-sans uppercase truncate max-w-[140px]">{username}</span>
                         </div>
                         <span className="font-black text-black font-sans">{score}</span>
                       </div>
                     ))}
                   {triviaScores.size === 0 && (
-                    <div className="text-center text-lg font-black text-black/50 font-sans">No scores yet</div>
+                    <div className="text-center text-sm font-black text-black/50 font-sans">No scores yet</div>
                   )}
                 </div>
               </div>
               
               {/* All Time */}
               <div>
-                <div className="text-lg font-black text-black/70 font-sans uppercase mb-2">All Time</div>
-                <div className="space-y-1 max-h-[140px] overflow-y-auto">
-                  {allTimeScores.slice(0, 10).map((user, index) => (
-                    <div key={user.username} className="flex items-center justify-between text-lg">
-                      <div className="flex items-center gap-2">
-                        <span className="font-black text-black font-sans">
-                          {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
+                <div className="text-sm font-black text-black/70 font-sans uppercase mb-1">All Time</div>
+                <div 
+                  className="space-y-0.5 overflow-y-auto pr-1"
+                  style={{ maxHeight: correctGuessers.length > 0 ? "100px" : "130px" }}
+                >
+                  {allTimeScores.slice(0, 15).map((user, index) => (
+                    <div key={user.username} className="flex items-center justify-between text-base">
+                      <div className="flex items-center gap-1">
+                        <span className="font-black text-black font-sans w-5">
+                          {index + 1}.
                         </span>
-                        <span className="font-black text-black font-sans uppercase truncate max-w-[160px]">{user.username}</span>
+                        <span className="font-black text-black font-sans uppercase truncate max-w-[140px]">{user.username}</span>
                       </div>
                       <span className="font-black text-black font-sans">{user.score}</span>
                     </div>
                   ))}
                   {allTimeScores.length === 0 && (
-                    <div className="text-center text-lg font-black text-black/50 font-sans">No scores yet</div>
+                    <div className="text-center text-sm font-black text-black/50 font-sans">No scores yet</div>
                   )}
                 </div>
               </div>

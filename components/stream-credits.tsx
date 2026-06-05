@@ -15,6 +15,7 @@ interface StreamCreditsProps {
   onHide: () => void
   streamCredits: StreamCredits
   flowerLegends: Array<{ username: string; count: number }>
+  sessionMods?: string[]
 }
 
 export function StreamCreditsComponent({
@@ -22,6 +23,7 @@ export function StreamCreditsComponent({
   onHide,
   streamCredits,
   flowerLegends,
+  sessionMods = [],
 }: StreamCreditsProps) {
   const [guardians, setGuardians] = useState<Guardian[]>([])
   const [scrollPosition, setScrollPosition] = useState(0)
@@ -81,6 +83,7 @@ export function StreamCreditsComponent({
   const hasRedeemers = streamCredits.redeemers?.length > 0
   const hasLegends = flowerLegends.length > 0
   const hasGuardians = guardians.length > 0
+  const hasMods = sessionMods.length > 0
 
   return (
     <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[9998] w-[650px] h-[700px] bg-black/80 rounded-xl overflow-hidden">
@@ -273,10 +276,46 @@ export function StreamCreditsComponent({
           </div>
         )}
 
-        {/* End Credits */}
+        {/* Session Mods - Splashy Section */}
+        {hasMods && (
+          <div className="mb-16 relative">
+            {/* Decorative rainbow gradient bar */}
+            <div className="h-2 w-full bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 rounded-full mb-8 animate-pulse" />
+            
+            <h2 className="text-5xl font-bold mb-2 bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+              Stream Guardians
+            </h2>
+            <p className="text-2xl text-purple-300 mb-6 italic">Our amazing mods keeping chat safe</p>
+            
+            <div className="flex flex-wrap justify-center gap-4">
+              {sessionMods.map((mod, i) => (
+                <div 
+                  key={i} 
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600/40 to-pink-600/40 rounded-full border border-purple-400/50 backdrop-blur-sm"
+                >
+                  <p className="text-3xl font-semibold text-white">{mod}</p>
+                </div>
+              ))}
+            </div>
+            
+            {/* Decorative rainbow gradient bar */}
+            <div className="h-2 w-full bg-gradient-to-r from-purple-500 via-blue-500 via-green-500 via-yellow-500 to-red-500 rounded-full mt-8 animate-pulse" />
+          </div>
+        )}
+
+        {/* End Credits with Motto */}
         <div className="mt-20 mb-24">
           <p className="text-4xl text-white mb-4">Thank you all for your kind support!</p>
-          <p className="text-4xl text-white">See you next stream!</p>
+          <p className="text-4xl text-white mb-12">See you next stream!</p>
+          
+          {/* Motto Section */}
+          <div className="mt-16 pt-8 border-t border-white/20">
+            <p className="text-3xl text-purple-300 italic mb-4">Remember...</p>
+            <p className="text-5xl font-bold bg-gradient-to-r from-pink-400 via-yellow-400 via-green-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent leading-relaxed">
+              &quot;Stay curious, stay kind, stay you.&quot;
+            </p>
+            <p className="text-2xl text-white/60 mt-6">- Vernigosh</p>
+          </div>
         </div>
       </div>
     </div>

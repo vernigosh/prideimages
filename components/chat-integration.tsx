@@ -146,6 +146,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
         console.log("Chat message received:", message, "from", username)
         console.log("User permissions:", { isMod, isBroadcaster, isVip })
+        
+        // Track mods who appear in chat for credits
+        if (isMod && !isBroadcaster) {
+          window.dispatchEvent(new CustomEvent("modInChat", { detail: { username } }))
+        }
 
         const command = message.toLowerCase().trim()
         console.log("Processing command:", command)

@@ -223,7 +223,7 @@ export default function DJRandomizer() {
   const [showBrb, setShowBrb] = useState(false)
   const [brbDuration, setBrbDuration] = useState<number | undefined>(undefined)
   const [flowerLegends, setFlowerLegends] = useState<Array<{ username: string; count: number }>>([])
-  
+  const [sessionMods, setSessionMods] = useState<string[]>([]) // Track mods who appeared in chat
   // Raid celebration settings
   const [showRaidCelebration, setShowRaidCelebration] = useState(false)
   const [raidData, setRaidData] = useState<{ raiderName?: string; viewerCount?: number }>({})
@@ -560,6 +560,20 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
       window.removeEventListener("hideCasualTrivia", handleHideCasualTrivia as EventListener)
     }
     // eslint-disable-next-line react-hooks-exhaustive-deps
+  }, [])
+
+  // Track mods who appear in chat for credits
+  useEffect(() => {
+    const handleModInChat = (event: CustomEvent) => {
+      const { username } = event.detail
+      setSessionMods(prev => {
+        if (prev.includes(username)) return prev
+        return [...prev, username]
+      })
+    }
+    
+    window.addEventListener("modInChat", handleModInChat as EventListener)
+    return () => window.removeEventListener("modInChat", handleModInChat as EventListener)
   }, [])
 
   // Simulate chat command integration
@@ -981,6 +995,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           }}
           streamCredits={activeStreamCredits}
           flowerLegends={flowerLegends}
+          sessionMods={sessionMods}
         />
 
         {/* Starting Timer */}

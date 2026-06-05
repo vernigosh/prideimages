@@ -231,6 +231,7 @@ export default function DJRandomizer() {
   // Pride Trivia Timer settings
   const [showPrideTrivia, setShowPrideTrivia] = useState(false)
   const [prideTriviaConnected, setPrideTriviaConnected] = useState(false)
+  const [triviaCasualMode, setTriviaCasualMode] = useState(false) // Wed/Fri casual mode - no pomodoro
   
   // Timer flip state - alternates between dark timer and pride timer every 30 seconds when both are active
   const [showDarkTimerInFlip, setShowDarkTimerInFlip] = useState(true)
@@ -446,16 +447,25 @@ const handleHideStartingTimer = () => {
       setRaidData({})
     }
 
-    const handleStartPrideTrivia = () => {
-      console.log("[v0] handleStartPrideTrivia called - setting showPrideTrivia to true")
-      setShowPrideTrivia(true)
-      // Hide regular work timer when pride trivia starts
-      setShowWorkTimer(false)
-    }
-
-    const handleHidePrideTrivia = () => {
-      setShowPrideTrivia(false)
-    }
+  const handleStartPrideTrivia = () => {
+    console.log("[v0] handleStartPrideTrivia called - setting showPrideTrivia to true (pomodoro mode)")
+    setShowPrideTrivia(true)
+    setTriviaCasualMode(false) // Monday mode - with pomodoro
+    // Hide regular work timer when pride trivia starts
+    setShowWorkTimer(false)
+  }
+  
+  const handleStartCasualTrivia = () => {
+    console.log("[v0] handleStartCasualTrivia called - setting showPrideTrivia to true (casual mode)")
+    setShowPrideTrivia(true)
+    setTriviaCasualMode(true) // Wed/Fri mode - no pomodoro
+    setShowWorkTimer(false)
+  }
+  
+  const handleHidePrideTrivia = () => {
+    setShowPrideTrivia(false)
+    setTriviaCasualMode(false)
+  }
   
     const handleHideAllCelebrations = () => {
       setShowFlowerCelebration(false)
@@ -501,6 +511,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     window.addEventListener("showRaid", handleShowRaid as EventListener)
     window.addEventListener("hideRaid", handleHideRaid as EventListener)
     window.addEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
+    window.addEventListener("startCasualTrivia", handleStartCasualTrivia as EventListener)
     window.addEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
     
     return () => {
@@ -534,10 +545,11 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
       window.removeEventListener("hideStartingTimer", handleHideStartingTimer as EventListener)
       window.removeEventListener("showBrb", handleShowBrb as EventListener)
       window.removeEventListener("hideBrb", handleHideBrb as EventListener)
-      window.removeEventListener("showRaid", handleShowRaid as EventListener)
-      window.removeEventListener("hideRaid", handleHideRaid as EventListener)
-      window.removeEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
-      window.removeEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
+    window.removeEventListener("showRaid", handleShowRaid as EventListener)
+    window.removeEventListener("hideRaid", handleHideRaid as EventListener)
+    window.removeEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
+    window.removeEventListener("startCasualTrivia", handleStartCasualTrivia as EventListener)
+    window.removeEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
     }
     // eslint-disable-next-line react-hooks-exhaustive-deps
   }, [])
@@ -833,6 +845,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
                   isVisible={true}
                   onConnectionChange={setPrideTriviaConnected}
                   onHide={() => setShowPrideTrivia(false)}
+                  casualMode={triviaCasualMode}
                 />
               </div>
             </div>
@@ -845,6 +858,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
             isVisible={showPrideTrivia}
             onConnectionChange={setPrideTriviaConnected}
             onHide={() => setShowPrideTrivia(false)}
+            casualMode={triviaCasualMode}
           />
         )}
 

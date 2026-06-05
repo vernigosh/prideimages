@@ -24,6 +24,7 @@ interface PrideTriviaTimerProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
+  casualMode?: boolean // Wed/Fri mode - no pomodoro, just trivia auto-cycling
 }
 
 const WORK_DURATION = 25 * 60
@@ -95,7 +96,7 @@ async function sendChatMessage(message: string) {
   }
 }
 
-export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: PrideTriviaTimerProps) {
+export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casualMode: casualModeProp = false }: PrideTriviaTimerProps) {
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
   const [cycleCount, setCycleCount] = useState(1)
@@ -129,8 +130,16 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
   
   // Front page mode - curated accessible questions for new audiences
   const [frontPageMode, setFrontPageMode] = useState(false)
-  const FRONT_PAGE_ACCESSIBLE_IDS = [1, 5, 16, 26, 27, 35, 39, 41, 51, 52, 53, 63, 64, 68, 69, 70, 71, 72, 73, 74]
-  const FRONT_PAGE_DEEP_CUT_IDS = [12, 55, 57, 59, 60, 65, 66]
+  const FRONT_PAGE_ACCESSIBLE_IDS = [1, 3, 5, 6, 10, 12, 16, 22, 26, 27, 28, 30, 32, 33, 34, 35, 39, 40, 41, 42, 43, 50, 51, 52, 53, 63, 64, 68, 69, 70, 71, 72, 73, 74]
+  const FRONT_PAGE_DEEP_CUT_IDS = [2, 4, 7, 8, 9, 11, 13, 14, 15, 17, 18, 19, 20, 21, 23, 24, 25, 29, 31, 36, 37, 38, 44, 45, 46, 47, 48, 49, 54, 55, 56, 57, 58, 59, 60, 61, 62, 65, 66, 67]
+  
+  // Casual mode - no pomodoro, just trivia auto-cycling (for Wed/Fri streams)
+  const casualMode = casualModeProp
+  const [casualPhase, setCasualPhase] = useState<"guess" | "reveal">("guess")
+  const [casualTimeLeft, setCasualTimeLeft] = useState(0)
+  const casualTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const CASUAL_GUESS_DURATION = 8 * 60 // 8 minutes to guess
+  const CASUAL_REVEAL_DURATION = 3 * 60 // 3 minutes to discuss answer
   
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
@@ -607,15 +616,94 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
     }
   }, [isVisible, currentQuestion, guesses, shuffledQuestions.length, shuffleArray, onConnectionChange])
 
+  // Casual mode timer - auto-cycles questions without pomodoro
+  useEffect(() => {
+    if (!isVisible || !casualMode) {
+      if (casualTimerRef.current) {
+        clearInterval(casualTimerRef.current)
+        casualTimerRef.current = null
+      }
+      return
+    }
+
+    // Initialize casual timer
+    setCasualPhase("guess")
+    setCasualTimeLeft(CASUAL_GUESS_DURATION)
+    setBoxVisible(true)
+
+    casualTimerRef.current = setInterval(() => {
+      setCasualTimeLeft(prev => {
+        if (prev <= 1) {
+          // Time's up - switch phases
+          setCasualPhase(currentPhase => {
+            if (currentPhase === "guess") {
+              // Reveal answer, record winners
+              const correctAnswer = currentQuestion?.answer
+              const winners = Array.from(guesses.entries())
+                .filter(([, answer]) => answer === correctAnswer)
+                .map(([username]) => username)
+              
+              if (winners.length > 0) {
+                // Update local scores
+                setTriviaScores(prev => {
+                  const newScores = new Map(prev)
+                  winners.forEach(username => {
+                    newScores.set(username, (newScores.get(username) || 0) + 1)
+                  })
+                  return newScores
+                })
+                setCorrectGuessers(winners)
+                
+                // Update all-time scores in database
+                fetch("/api/trivia-scores", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ winners })
+                }).catch(err => console.error("[v0] Failed to update trivia scores:", err))
+              }
+              
+              return "reveal"
+            } else {
+              // Move to next question
+              setCurrentQuestionIndex(prev => (prev + 1) % shuffledQuestions.length)
+              setGuesses(new Map())
+              setCorrectGuessers([])
+              return "guess"
+            }
+          })
+          
+          // Return new duration based on next phase
+          return casualPhase === "guess" ? CASUAL_REVEAL_DURATION : CASUAL_GUESS_DURATION
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => {
+      if (casualTimerRef.current) {
+        clearInterval(casualTimerRef.current)
+        casualTimerRef.current = null
+      }
+    }
+  }, [isVisible, casualMode, currentQuestion, guesses, shuffledQuestions.length])
+
   if (!isVisible || !currentQuestion) return null
 
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = timeLeft % 60
+  // Use casual mode timing/phase if enabled, otherwise use pomodoro
+  const displayPhase = casualMode ? casualPhase : phase
+  const displayTimeLeft = casualMode ? casualTimeLeft : timeLeft
+  const isGuessing = casualMode ? (casualPhase === "guess") : (phase === "work")
+  const isRevealing = casualMode ? (casualPhase === "reveal") : (phase === "break")
+  
+  const minutes = Math.floor(displayTimeLeft / 60)
+  const seconds = displayTimeLeft % 60
   const guessCount = guesses.size
   
   // Calculate progress percentage for the timer bar
-  const totalDuration = phase === "work" ? WORK_DURATION : SHORT_BREAK
-  const progressPercent = (timeLeft / totalDuration) * 100
+  const totalDuration = casualMode 
+    ? (casualPhase === "guess" ? CASUAL_GUESS_DURATION : CASUAL_REVEAL_DURATION)
+    : (phase === "work" ? WORK_DURATION : SHORT_BREAK)
+  const progressPercent = (displayTimeLeft / totalDuration) * 100
 
   return (
     <>
@@ -679,8 +767,8 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
           }}
         >
           <div className="p-6">
-          {phase === "work" ? (
-            /* WORK PHASE - Question in header, cycle through A/B/C/D */
+          {isGuessing ? (
+            /* GUESSING PHASE - Question in header, cycle through A/B/C/D */
             <div className="flex flex-col gap-4">
               {/* Header with question */}
               <div className="flex items-start gap-2">
@@ -719,8 +807,8 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 </div>
               </div>
             </div>
-          ) : timeLeft <= 60 ? (
-            /* BREAK PHASE - Last minute: Get ready message */
+          ) : displayTimeLeft <= 60 && !casualMode ? (
+            /* BREAK PHASE (pomodoro only) - Last minute: Get ready message */
             <div className="flex flex-col items-center justify-center gap-6 py-12">
               <span className="text-6xl">🏳️‍🌈</span>
               <h2 className="text-4xl font-black text-black font-sans text-center uppercase">
@@ -731,7 +819,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               </p>
             </div>
           ) : (
-            /* BREAK PHASE - Show answer and context */
+            /* REVEAL PHASE - Show answer and context */
             <div className="flex flex-col gap-4">
               {/* Header with question - same style as work phase */}
               <div className="flex items-start gap-2">
@@ -840,7 +928,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
               {/* Progress ring with flowing gradient animation */}
               <defs>
                 <linearGradient id="prideGradient" x1="-100%" y1="0%" x2="100%" y2="0%" spreadMethod="repeat">
-                  {phase === "work" ? (
+                  {isGuessing ? (
                     <>
                       <stop offset="0%" stopColor="#e040fb" />
                       <stop offset="25%" stopColor="#ffa5c5" />
@@ -892,7 +980,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
                 className="text-xl font-bold text-white font-sans uppercase mt-1"
                 style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)" }}
               >
-                {phase === "work" ? "WORK TIME" : "BREAK"}
+                {casualMode 
+                  ? (isGuessing ? "GUESS TIME" : "ANSWER") 
+                  : (phase === "work" ? "WORK TIME" : "BREAK")}
               </div>
             </div>
           </div>
@@ -921,56 +1011,73 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide }: Prid
             }}
           >
             <div 
-              className="rounded-3xl p-6 border-2 border-black h-full"
+              className="rounded-3xl p-6 border-2 border-black h-full overflow-hidden"
               style={{
                 background: "linear-gradient(135deg, rgba(255,229,229,0.95) 0%, rgba(255,245,229,0.95) 25%, rgba(240,255,229,0.95) 50%, rgba(229,245,255,0.95) 75%, rgba(240,229,255,0.95) 100%)",
               }}
             >
-              <div className="text-center mb-4">
+              <div className="text-center mb-3">
                 <h2 className="text-2xl font-black text-black font-sans uppercase tracking-wider">TRIVIA LEADERS</h2>
               </div>
               
+              {/* Last Question Winners */}
+              {correctGuessers.length > 0 && (
+                <div className="mb-3">
+                  <div className="text-sm font-black text-black/70 font-sans uppercase mb-1">Last Question</div>
+                  <div className="text-sm font-black text-black font-sans uppercase truncate">
+                    {correctGuessers.slice(0, 5).map(u => `@${u}`).join(", ")}
+                    {correctGuessers.length > 5 && ` +${correctGuessers.length - 5} more`}
+                  </div>
+                </div>
+              )}
+              
               {/* This Stream */}
-              <div className="mb-4">
-                <div className="text-lg font-black text-black/70 font-sans uppercase mb-2">This Stream</div>
-                <div className="space-y-1 max-h-[140px] overflow-y-auto">
+              <div className="mb-3">
+                <div className="text-sm font-black text-black/70 font-sans uppercase mb-1">This Stream</div>
+                <div 
+                  className="space-y-0.5 overflow-y-auto pr-1"
+                  style={{ maxHeight: correctGuessers.length > 0 ? "100px" : "130px" }}
+                >
                   {Array.from(triviaScores.entries())
                     .sort((a, b) => b[1] - a[1])
-                    .slice(0, 10)
+                    .slice(0, 15)
                     .map(([username, score], index) => (
-                      <div key={username} className="flex items-center justify-between text-lg">
-                        <div className="flex items-center gap-2">
-                          <span className="font-black text-black font-sans">
-                            {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
+                      <div key={username} className="flex items-center justify-between text-base">
+                        <div className="flex items-center gap-1">
+                          <span className="font-black text-black font-sans w-5">
+                            {index + 1}.
                           </span>
-                          <span className="font-black text-black font-sans uppercase truncate max-w-[160px]">{username}</span>
+                          <span className="font-black text-black font-sans uppercase truncate max-w-[140px]">{username}</span>
                         </div>
                         <span className="font-black text-black font-sans">{score}</span>
                       </div>
                     ))}
                   {triviaScores.size === 0 && (
-                    <div className="text-center text-lg font-black text-black/50 font-sans">No scores yet</div>
+                    <div className="text-center text-sm font-black text-black/50 font-sans">No scores yet</div>
                   )}
                 </div>
               </div>
               
               {/* All Time */}
               <div>
-                <div className="text-lg font-black text-black/70 font-sans uppercase mb-2">All Time</div>
-                <div className="space-y-1 max-h-[140px] overflow-y-auto">
-                  {allTimeScores.slice(0, 10).map((user, index) => (
-                    <div key={user.username} className="flex items-center justify-between text-lg">
-                      <div className="flex items-center gap-2">
-                        <span className="font-black text-black font-sans">
-                          {index === 0 ? "1." : index === 1 ? "2." : index === 2 ? "3." : `${index + 1}.`}
+                <div className="text-sm font-black text-black/70 font-sans uppercase mb-1">All Time</div>
+                <div 
+                  className="space-y-0.5 overflow-y-auto pr-1"
+                  style={{ maxHeight: correctGuessers.length > 0 ? "100px" : "130px" }}
+                >
+                  {allTimeScores.slice(0, 15).map((user, index) => (
+                    <div key={user.username} className="flex items-center justify-between text-base">
+                      <div className="flex items-center gap-1">
+                        <span className="font-black text-black font-sans w-5">
+                          {index + 1}.
                         </span>
-                        <span className="font-black text-black font-sans uppercase truncate max-w-[160px]">{user.username}</span>
+                        <span className="font-black text-black font-sans uppercase truncate max-w-[140px]">{user.username}</span>
                       </div>
                       <span className="font-black text-black font-sans">{user.score}</span>
                     </div>
                   ))}
                   {allTimeScores.length === 0 && (
-                    <div className="text-center text-lg font-black text-black/50 font-sans">No scores yet</div>
+                    <div className="text-center text-sm font-black text-black/50 font-sans">No scores yet</div>
                   )}
                 </div>
               </div>

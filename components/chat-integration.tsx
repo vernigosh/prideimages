@@ -146,6 +146,19 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
         console.log("Chat message received:", message, "from", username)
         console.log("User permissions:", { isMod, isBroadcaster, isVip })
+        
+        // Track mods who appear in chat for credits
+        // Exclude bots and specific accounts (but vbotdancebot is a person, not a bot)
+        if (isMod && !isBroadcaster) {
+          const lowerUsername = username.toLowerCase()
+          const excludedAccounts = ["vernitron", "streamelements"]
+          const isExcluded = excludedAccounts.includes(lowerUsername)
+          const isBotName = lowerUsername.includes("bot") && lowerUsername !== "vbotdancebot"
+          
+          if (!isExcluded && !isBotName) {
+            window.dispatchEvent(new CustomEvent("modInChat", { detail: { username } }))
+          }
+        }
 
         const command = message.toLowerCase().trim()
         console.log("Processing command:", command)
@@ -178,7 +191,8 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           command === "!hidespin" ||
           command === "!hidesj" ||
           command === "!hidelegend" ||
-          command === "!hidecelebrate"
+          command === "!hidecelebrate" ||
+          command === "!hidecasualtrivia"
 
         if (isRestrictedCommand) {
           let canUseCommand = false
@@ -400,6 +414,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           } else if (command === "!casualtrivia" && (isMod || isBroadcaster || isVip)) {
             console.log("Casual trivia command detected (Wed/Fri mode)")
             window.dispatchEvent(new CustomEvent("startCasualTrivia", { detail: { username } }))
+            addRecentCommand(`${command} by ${username}`)
+          } else if (command === "!hidecasualtrivia" && (isMod || isBroadcaster || isVip)) {
+            console.log("Hide casual trivia command detected")
+            window.dispatchEvent(new CustomEvent("hideCasualTrivia", { detail: { username } }))
             addRecentCommand(`${command} by ${username}`)
           } else if (command === "!trivia") {
           console.log("Toggle trivia box visibility command detected")

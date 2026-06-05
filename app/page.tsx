@@ -223,7 +223,7 @@ export default function DJRandomizer() {
   const [showBrb, setShowBrb] = useState(false)
   const [brbDuration, setBrbDuration] = useState<number | undefined>(undefined)
   const [flowerLegends, setFlowerLegends] = useState<Array<{ username: string; count: number }>>([])
-  
+  const [sessionMods, setSessionMods] = useState<string[]>([]) // Track mods who appeared in chat
   // Raid celebration settings
   const [showRaidCelebration, setShowRaidCelebration] = useState(false)
   const [raidData, setRaidData] = useState<{ raiderName?: string; viewerCount?: number }>({})
@@ -467,6 +467,12 @@ const handleHideStartingTimer = () => {
     setTriviaCasualMode(false)
   }
   
+  const handleHideCasualTrivia = () => {
+    console.log("[v0] handleHideCasualTrivia called - hiding casual trivia")
+    setShowPrideTrivia(false)
+    setTriviaCasualMode(false)
+  }
+  
     const handleHideAllCelebrations = () => {
       setShowFlowerCelebration(false)
       setShowBeeParadeCelebration(false)
@@ -513,6 +519,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     window.addEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
     window.addEventListener("startCasualTrivia", handleStartCasualTrivia as EventListener)
     window.addEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
+    window.addEventListener("hideCasualTrivia", handleHideCasualTrivia as EventListener)
     
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -548,10 +555,25 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     window.removeEventListener("showRaid", handleShowRaid as EventListener)
     window.removeEventListener("hideRaid", handleHideRaid as EventListener)
     window.removeEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
-    window.removeEventListener("startCasualTrivia", handleStartCasualTrivia as EventListener)
-    window.removeEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
+      window.removeEventListener("startCasualTrivia", handleStartCasualTrivia as EventListener)
+      window.removeEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
+      window.removeEventListener("hideCasualTrivia", handleHideCasualTrivia as EventListener)
     }
     // eslint-disable-next-line react-hooks-exhaustive-deps
+  }, [])
+
+  // Track mods who appear in chat for credits
+  useEffect(() => {
+    const handleModInChat = (event: CustomEvent) => {
+      const { username } = event.detail
+      setSessionMods(prev => {
+        if (prev.includes(username)) return prev
+        return [...prev, username]
+      })
+    }
+    
+    window.addEventListener("modInChat", handleModInChat as EventListener)
+    return () => window.removeEventListener("modInChat", handleModInChat as EventListener)
   }, [])
 
   // Simulate chat command integration
@@ -973,6 +995,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           }}
           streamCredits={activeStreamCredits}
           flowerLegends={flowerLegends}
+          sessionMods={sessionMods}
         />
 
         {/* Starting Timer */}

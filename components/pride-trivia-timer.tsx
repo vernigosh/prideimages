@@ -139,6 +139,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
   const [casualTimeLeft, setCasualTimeLeft] = useState(0)
   const casualTimerRef = useRef<NodeJS.Timeout | null>(null)
   const casualPhaseRef = useRef<"guess" | "reveal">("guess") // Track phase for timer callback
+  const casualInitializedRef = useRef(false) // Prevent re-initialization
+  const currentQuestionRef = useRef<TriviaQuestion | null>(null) // Track current question without re-renders
+  const guessesRef = useRef<Map<string, string>>(new Map()) // Track guesses without re-renders
   const CASUAL_GUESS_DURATION = 8 * 60 // 8 minutes to guess
   const CASUAL_REVEAL_DURATION = 2 * 60 // 2 minutes to show answer and context
   
@@ -162,6 +165,15 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
 
   // Derive current question from shuffled questions
   const currentQuestion = shuffledQuestions[currentQuestionIndex]
+  
+  // Keep refs in sync with state (for use in interval callbacks)
+  useEffect(() => {
+    currentQuestionRef.current = currentQuestion || null
+  }, [currentQuestion])
+  
+  useEffect(() => {
+    guessesRef.current = guesses
+  }, [guesses])
 
   // Initialize shuffled questions on mount
   useEffect(() => {
@@ -381,7 +393,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
     const normalizedAnswer = answer.toLowerCase()
     
     if (!["a", "b", "c", "d"].includes(normalizedAnswer)) return
-    if (phase !== "work") return // Only accept guesses during work phase
+    
+    // Only accept guesses during guessing phase (work phase for pomodoro, guess phase for casual)
+    const canGuess = casualMode ? (casualPhaseRef.current === "guess") : (phase === "work")
+    if (!canGuess) return
     
     setGuesses(prev => {
       const newGuesses = new Map(prev)
@@ -392,7 +407,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
     // Show notification briefly
     setRecentGuessNotification({ username, answer: normalizedAnswer.toUpperCase() })
     setTimeout(() => setRecentGuessNotification(null), 5000)
-  }, [phase])
+  }, [phase, casualMode])
 
   // Listen for guess events
   useEffect(() => {
@@ -619,20 +634,39 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
 
   // Casual mode timer - auto-cycles questions without pomodoro
   // 8 min guess phase -> 2 min reveal phase -> next question
+  // Uses refs to avoid stale closures and prevent re-initialization
   useEffect(() => {
     if (!isVisible || !casualMode) {
       if (casualTimerRef.current) {
         clearInterval(casualTimerRef.current)
         casualTimerRef.current = null
       }
+      casualInitializedRef.current = false
       return
     }
+
+    // Only initialize once when casual mode starts
+    if (casualInitializedRef.current) {
+      return
+    }
+    casualInitializedRef.current = true
 
     // Initialize casual timer
     setCasualPhase("guess")
     casualPhaseRef.current = "guess"
     setCasualTimeLeft(CASUAL_GUESS_DURATION)
     setBoxVisible(true)
+    
+    // Announce first question after a short delay
+    setTimeout(() => {
+      const question = currentQuestionRef.current
+      if (question) {
+        sendChatMessage(`🏳️‍🌈 CASUAL TRIVIA STARTED! First question: ${question.question}`)
+        setTimeout(() => {
+          sendChatMessage(`a) ${question.a} | b) ${question.b} | c) ${question.c} | d) ${question.d} — Type !a !b !c or !d to guess!`)
+        }, 1500)
+      }
+    }, 500)
 
     casualTimerRef.current = setInterval(() => {
       setCasualTimeLeft(prev => {
@@ -640,8 +674,10 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
           // Time's up - switch phases
           if (casualPhaseRef.current === "guess") {
             // End of guess phase - record winners, announce in chat, switch to reveal
-            const correctAnswer = currentQuestion?.answer
-            const winners = Array.from(guesses.entries())
+            const question = currentQuestionRef.current
+            const correctAnswer = question?.answer?.toLowerCase()
+            const currentGuesses = guessesRef.current
+            const winners = Array.from(currentGuesses.entries())
               .filter(([, answer]) => answer === correctAnswer)
               .map(([username]) => username)
             
@@ -663,26 +699,75 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
                 body: JSON.stringify({ winners })
               }).catch(err => console.error("[v0] Failed to update trivia scores:", err))
               
-              // Announce winners in chat
-              const winnerList = winners.slice(0, 5).map(u => `@${u}`).join(", ")
-              const answerLetter = correctAnswer?.toUpperCase() || "?"
-              fetch("/api/send-chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                  message: `🏳️‍🌈 Answer: ${answerLetter}! Winners: ${winnerList}${winners.length > 5 ? ` +${winners.length - 5} more` : ""} 🎉`
-                })
-              }).catch(err => console.error("[v0] Failed to send chat:", err))
+              // Announce answer and winners in chat
+              if (question) {
+                const answerLetter = question.answer.toUpperCase()
+                const answerText = question[question.answer as keyof TriviaQuestion] as string
+                const winnerList = winners.slice(0, 5).map(u => `@${u}`).join(", ")
+                
+                fetch("/api/send-chat", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ 
+                    message: `🏳️‍🌈 ANSWER: ${answerLetter}) ${answerText}`
+                  })
+                }).catch(err => console.error("[v0] Failed to send chat:", err))
+                
+                setTimeout(() => {
+                  fetch("/api/send-chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                      message: `FUN FACT: ${question.context}`
+                    })
+                  }).catch(err => console.error("[v0] Failed to send chat:", err))
+                }, 1500)
+                
+                setTimeout(() => {
+                  fetch("/api/send-chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                      message: `WINNERS: ${winnerList}${winners.length > 5 ? ` +${winners.length - 5} more` : ""} 🎉`
+                    })
+                  }).catch(err => console.error("[v0] Failed to send chat:", err))
+                }, 3000)
+              }
             } else {
               // No winners - still announce the answer
-              const answerLetter = correctAnswer?.toUpperCase() || "?"
-              fetch("/api/send-chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                  message: `🏳️‍🌈 Answer was: ${answerLetter}! No winners this round.`
-                })
-              }).catch(err => console.error("[v0] Failed to send chat:", err))
+              if (question) {
+                const answerLetter = question.answer.toUpperCase()
+                const answerText = question[question.answer as keyof TriviaQuestion] as string
+                
+                fetch("/api/send-chat", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ 
+                    message: `🏳️‍🌈 ANSWER: ${answerLetter}) ${answerText}`
+                  })
+                }).catch(err => console.error("[v0] Failed to send chat:", err))
+                
+                setTimeout(() => {
+                  fetch("/api/send-chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                      message: `FUN FACT: ${question.context}`
+                    })
+                  }).catch(err => console.error("[v0] Failed to send chat:", err))
+                }, 1500)
+                
+                setTimeout(() => {
+                  fetch("/api/send-chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                      message: `No winners this round! Better luck next time!`
+                    })
+                  }).catch(err => console.error("[v0] Failed to send chat:", err))
+                }, 3000)
+              }
+              setCorrectGuessers([])
             }
             
             // Switch to reveal phase
@@ -691,7 +776,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
             return CASUAL_REVEAL_DURATION
           } else {
             // End of reveal phase - move to next question
-            setCurrentQuestionIndex(prevIdx => (prevIdx + 1) % shuffledQuestions.length)
+            setCurrentQuestionIndex(prevIdx => (prevIdx + 1) % (shuffledQuestions.length || 1))
             setGuesses(new Map())
             setCorrectGuessers([])
             setCasualPhase("guess")
@@ -709,7 +794,29 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
         casualTimerRef.current = null
       }
     }
-  }, [isVisible, casualMode, currentQuestion, guesses, shuffledQuestions.length])
+  }, [isVisible, casualMode]) // Only depend on visibility and mode, not question/guesses
+
+  // Announce new question in chat when casual mode switches to guess phase
+  const prevCasualPhaseRef = useRef<"guess" | "reveal">("guess")
+  useEffect(() => {
+    if (!casualMode || !isVisible || !currentQuestion) return
+    
+    // Only announce when transitioning TO guess phase (not initial render)
+    if (casualPhase === "guess" && prevCasualPhaseRef.current === "reveal") {
+      // Small delay to ensure question index has updated
+      setTimeout(() => {
+        const question = currentQuestionRef.current
+        if (question) {
+          sendChatMessage(`🏳️‍🌈 NEW QUESTION: ${question.question}`)
+          setTimeout(() => {
+            sendChatMessage(`a) ${question.a} | b) ${question.b} | c) ${question.c} | d) ${question.d} — Type !a !b !c or !d to guess!`)
+          }, 1500)
+        }
+      }, 100)
+    }
+    
+    prevCasualPhaseRef.current = casualPhase
+  }, [casualPhase, casualMode, isVisible, currentQuestion])
 
   if (!isVisible || !currentQuestion) return null
 

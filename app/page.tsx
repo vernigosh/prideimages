@@ -467,6 +467,12 @@ const handleHideStartingTimer = () => {
     setTriviaCasualMode(false)
   }
   
+  const handleHideCasualTrivia = () => {
+    console.log("[v0] handleHideCasualTrivia called - hiding casual trivia")
+    setShowPrideTrivia(false)
+    setTriviaCasualMode(false)
+  }
+  
     const handleHideAllCelebrations = () => {
       setShowFlowerCelebration(false)
       setShowBeeParadeCelebration(false)
@@ -513,6 +519,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     window.addEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
     window.addEventListener("startCasualTrivia", handleStartCasualTrivia as EventListener)
     window.addEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
+    window.addEventListener("hideCasualTrivia", handleHideCasualTrivia as EventListener)
     
     return () => {
       window.removeEventListener("startDarkTimer", handleStartDarkTimer as EventListener)
@@ -548,8 +555,9 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     window.removeEventListener("showRaid", handleShowRaid as EventListener)
     window.removeEventListener("hideRaid", handleHideRaid as EventListener)
     window.removeEventListener("startPrideTrivia", handleStartPrideTrivia as EventListener)
-    window.removeEventListener("startCasualTrivia", handleStartCasualTrivia as EventListener)
-    window.removeEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
+      window.removeEventListener("startCasualTrivia", handleStartCasualTrivia as EventListener)
+      window.removeEventListener("hidePrideTrivia", handleHidePrideTrivia as EventListener)
+      window.removeEventListener("hideCasualTrivia", handleHideCasualTrivia as EventListener)
     }
     // eslint-disable-next-line react-hooks-exhaustive-deps
   }, [])

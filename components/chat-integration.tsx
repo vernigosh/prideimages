@@ -178,7 +178,8 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           command === "!hidespin" ||
           command === "!hidesj" ||
           command === "!hidelegend" ||
-          command === "!hidecelebrate"
+          command === "!hidecelebrate" ||
+          command === "!hidecasualtrivia"
 
         if (isRestrictedCommand) {
           let canUseCommand = false
@@ -400,6 +401,10 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           } else if (command === "!casualtrivia" && (isMod || isBroadcaster || isVip)) {
             console.log("Casual trivia command detected (Wed/Fri mode)")
             window.dispatchEvent(new CustomEvent("startCasualTrivia", { detail: { username } }))
+            addRecentCommand(`${command} by ${username}`)
+          } else if (command === "!hidecasualtrivia" && (isMod || isBroadcaster || isVip)) {
+            console.log("Hide casual trivia command detected")
+            window.dispatchEvent(new CustomEvent("hideCasualTrivia", { detail: { username } }))
             addRecentCommand(`${command} by ${username}`)
           } else if (command === "!trivia") {
           console.log("Toggle trivia box visibility command detected")

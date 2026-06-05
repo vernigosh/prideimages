@@ -138,8 +138,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
   const [casualPhase, setCasualPhase] = useState<"guess" | "reveal">("guess")
   const [casualTimeLeft, setCasualTimeLeft] = useState(0)
   const casualTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const casualPhaseRef = useRef<"guess" | "reveal">("guess") // Track phase for timer callback
   const CASUAL_GUESS_DURATION = 8 * 60 // 8 minutes to guess
-  const CASUAL_REVEAL_DURATION = 3 * 60 // 3 minutes to discuss answer
+  const CASUAL_REVEAL_DURATION = 2 * 60 // 2 minutes to show answer and context
   
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
@@ -617,7 +618,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
   }, [isVisible, currentQuestion, guesses, shuffledQuestions.length, shuffleArray, onConnectionChange])
 
   // Casual mode timer - auto-cycles questions without pomodoro
-  // Questions cycle continuously - brief answer flash then next question
+  // 8 min guess phase -> 2 min reveal phase -> next question
   useEffect(() => {
     if (!isVisible || !casualMode) {
       if (casualTimerRef.current) {
@@ -627,69 +628,76 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
       return
     }
 
-    // Initialize casual timer - always in guess phase, just cycling questions
+    // Initialize casual timer
     setCasualPhase("guess")
+    casualPhaseRef.current = "guess"
     setCasualTimeLeft(CASUAL_GUESS_DURATION)
     setBoxVisible(true)
 
     casualTimerRef.current = setInterval(() => {
       setCasualTimeLeft(prev => {
         if (prev <= 1) {
-          // Time's up - record winners, show answer briefly, move to next question
-          const correctAnswer = currentQuestion?.answer
-          const winners = Array.from(guesses.entries())
-            .filter(([, answer]) => answer === correctAnswer)
-            .map(([username]) => username)
-          
-          if (winners.length > 0) {
-            // Update local scores
-            setTriviaScores(prevScores => {
-              const newScores = new Map(prevScores)
-              winners.forEach(username => {
-                newScores.set(username, (newScores.get(username) || 0) + 1)
-              })
-              return newScores
-            })
-            setCorrectGuessers(winners)
+          // Time's up - switch phases
+          if (casualPhaseRef.current === "guess") {
+            // End of guess phase - record winners, announce in chat, switch to reveal
+            const correctAnswer = currentQuestion?.answer
+            const winners = Array.from(guesses.entries())
+              .filter(([, answer]) => answer === correctAnswer)
+              .map(([username]) => username)
             
-            // Update all-time scores in database
-            fetch("/api/trivia-scores", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ winners })
-            }).catch(err => console.error("[v0] Failed to update trivia scores:", err))
-            
-            // Announce winners in chat
-            const winnerList = winners.slice(0, 5).map(u => `@${u}`).join(", ")
-            const answerLetter = correctAnswer?.toUpperCase() || "?"
-            fetch("/api/send-chat", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ 
-                message: `🏳️‍🌈 Answer: ${answerLetter}! Winners: ${winnerList}${winners.length > 5 ? ` +${winners.length - 5} more` : ""} 🎉`
+            if (winners.length > 0) {
+              // Update local scores
+              setTriviaScores(prevScores => {
+                const newScores = new Map(prevScores)
+                winners.forEach(username => {
+                  newScores.set(username, (newScores.get(username) || 0) + 1)
+                })
+                return newScores
               })
-            }).catch(err => console.error("[v0] Failed to send chat:", err))
+              setCorrectGuessers(winners)
+              
+              // Update all-time scores in database
+              fetch("/api/trivia-scores", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ winners })
+              }).catch(err => console.error("[v0] Failed to update trivia scores:", err))
+              
+              // Announce winners in chat
+              const winnerList = winners.slice(0, 5).map(u => `@${u}`).join(", ")
+              const answerLetter = correctAnswer?.toUpperCase() || "?"
+              fetch("/api/send-chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                  message: `🏳️‍🌈 Answer: ${answerLetter}! Winners: ${winnerList}${winners.length > 5 ? ` +${winners.length - 5} more` : ""} 🎉`
+                })
+              }).catch(err => console.error("[v0] Failed to send chat:", err))
+            } else {
+              // No winners - still announce the answer
+              const answerLetter = correctAnswer?.toUpperCase() || "?"
+              fetch("/api/send-chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                  message: `🏳️‍🌈 Answer was: ${answerLetter}! No winners this round.`
+                })
+              }).catch(err => console.error("[v0] Failed to send chat:", err))
+            }
+            
+            // Switch to reveal phase
+            setCasualPhase("reveal")
+            casualPhaseRef.current = "reveal"
+            return CASUAL_REVEAL_DURATION
           } else {
-            // No winners - still announce the answer
-            const answerLetter = correctAnswer?.toUpperCase() || "?"
-            fetch("/api/send-chat", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ 
-                message: `🏳️‍🌈 Answer was: ${answerLetter}! No winners this round.`
-              })
-            }).catch(err => console.error("[v0] Failed to send chat:", err))
-          }
-          
-          // Brief reveal phase then move to next question
-          setCasualPhase("reveal")
-          setTimeout(() => {
+            // End of reveal phase - move to next question
             setCurrentQuestionIndex(prevIdx => (prevIdx + 1) % shuffledQuestions.length)
             setGuesses(new Map())
+            setCorrectGuessers([])
             setCasualPhase("guess")
-          }, 5000) // 5 second answer reveal
-          
-          return CASUAL_GUESS_DURATION
+            casualPhaseRef.current = "guess"
+            return CASUAL_GUESS_DURATION
+          }
         }
         return prev - 1
       })

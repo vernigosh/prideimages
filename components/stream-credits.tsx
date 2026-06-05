@@ -310,11 +310,9 @@ export function StreamCreditsComponent({
           
           {/* Motto Section */}
           <div className="mt-16 pt-8 border-t border-white/20">
-            <p className="text-3xl text-purple-300 italic mb-4">Remember...</p>
             <p className="text-5xl font-bold bg-gradient-to-r from-pink-400 via-yellow-400 via-green-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent leading-relaxed">
-              &quot;Stay curious, stay kind, stay you.&quot;
+              ꧁⊹٭RADICAL JOY. FOUND FAMILY. LOUD LOVE٭⊹꧂
             </p>
-            <p className="text-2xl text-white/60 mt-6">- Vernigosh</p>
           </div>
         </div>
       </div>

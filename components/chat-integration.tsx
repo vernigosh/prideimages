@@ -148,8 +148,16 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
         console.log("User permissions:", { isMod, isBroadcaster, isVip })
         
         // Track mods who appear in chat for credits
+        // Exclude bots and specific accounts (but vbotdancebot is a person, not a bot)
         if (isMod && !isBroadcaster) {
-          window.dispatchEvent(new CustomEvent("modInChat", { detail: { username } }))
+          const lowerUsername = username.toLowerCase()
+          const excludedAccounts = ["vernitron", "streamelements"]
+          const isExcluded = excludedAccounts.includes(lowerUsername)
+          const isBotName = lowerUsername.includes("bot") && lowerUsername !== "vbotdancebot"
+          
+          if (!isExcluded && !isBotName) {
+            window.dispatchEvent(new CustomEvent("modInChat", { detail: { username } }))
+          }
         }
 
         const command = message.toLowerCase().trim()

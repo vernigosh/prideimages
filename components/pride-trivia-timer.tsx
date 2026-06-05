@@ -703,7 +703,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
               if (question) {
                 const answerLetter = question.answer.toUpperCase()
                 const answerText = question[question.answer as keyof TriviaQuestion] as string
+                const contextText = question.context
                 const winnerList = winners.slice(0, 5).map(u => `@${u}`).join(", ")
+                const winnerCount = winners.length
                 
                 fetch("/api/send-chat", {
                   method: "POST",
@@ -718,9 +720,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                      message: `FUN FACT: ${question.context}`
+                      message: `FUN FACT: ${contextText}`
                     })
-                  }).catch(err => console.error("[v0] Failed to send chat:", err))
+                  }).catch(err => console.error("[v0] Failed to send context chat:", err))
                 }, 1500)
                 
                 setTimeout(() => {
@@ -728,9 +730,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                      message: `WINNERS: ${winnerList}${winners.length > 5 ? ` +${winners.length - 5} more` : ""} 🎉`
+                      message: `WINNERS: ${winnerList}${winnerCount > 5 ? ` +${winnerCount - 5} more` : ""} 🎉`
                     })
-                  }).catch(err => console.error("[v0] Failed to send chat:", err))
+                  }).catch(err => console.error("[v0] Failed to send winners chat:", err))
                 }, 3000)
               }
             } else {
@@ -738,6 +740,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
               if (question) {
                 const answerLetter = question.answer.toUpperCase()
                 const answerText = question[question.answer as keyof TriviaQuestion] as string
+                const contextText = question.context
                 
                 fetch("/api/send-chat", {
                   method: "POST",
@@ -752,9 +755,9 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                      message: `FUN FACT: ${question.context}`
+                      message: `FUN FACT: ${contextText}`
                     })
-                  }).catch(err => console.error("[v0] Failed to send chat:", err))
+                  }).catch(err => console.error("[v0] Failed to send context chat:", err))
                 }, 1500)
                 
                 setTimeout(() => {
@@ -764,7 +767,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
                     body: JSON.stringify({ 
                       message: `No winners this round! Better luck next time!`
                     })
-                  }).catch(err => console.error("[v0] Failed to send chat:", err))
+                  }).catch(err => console.error("[v0] Failed to send no winners chat:", err))
                 }, 3000)
               }
               setCorrectGuessers([])

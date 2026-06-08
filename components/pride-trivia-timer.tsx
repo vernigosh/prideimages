@@ -253,15 +253,8 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
         setIsFading(false)
       }, 300) // Match fade duration
       
-      // Send current question to chat for mobile viewers (with cooldown)
-      const now = Date.now()
-      if (currentQuestion && phase === "work" && (now - lastChatTimeRef.current) >= CHAT_COOLDOWN) {
-        lastChatTimeRef.current = now
-        sendChatMessage(`CURRENT QUESTION: ${currentQuestion.question}`)
-        setTimeout(() => {
-          sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d} — Type !a !b !c or !d to guess! Answer revealed at 5 min break!`)
-        }, 1000)
-      }
+      // Note: question mirroring to chat is handled centrally by the
+      // "mirror question on screen appearance" effect whenever the box becomes visible.
       
       // Reset the auto-cycle timer when manually toggled
       if (boxVisibilityTimerRef.current) {
@@ -387,6 +380,26 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
     }
   }, [isVisible, phase, boxVisible])
   
+  // Mirror question to chat ANY time it appears on screen (pomodoro work phase).
+  // Fires when the box fades in OR when the question changes while the box is visible,
+  // so every on-screen question is echoed to chat viewers exactly once.
+  const lastMirroredQuestionRef = useRef<number | null>(null)
+  useEffect(() => {
+    // Casual mode handles its own announcements; only mirror during pomodoro work phase
+    if (casualMode || phase !== "work" || !isVisible || !boxVisible || !currentQuestion) {
+      return
+    }
+
+    // Avoid double-posting the same question while it stays on screen
+    if (lastMirroredQuestionRef.current === currentQuestion.id) return
+    lastMirroredQuestionRef.current = currentQuestion.id
+
+    sendChatMessage(`PRIDE TRIVIA: ${currentQuestion.question}`)
+    setTimeout(() => {
+      sendChatMessage(`a) ${currentQuestion.a} | b) ${currentQuestion.b} | c) ${currentQuestion.c} | d) ${currentQuestion.d} — Type !a !b !c or !d to guess! Answer revealed at 5 min break!`)
+    }, 1500)
+  }, [boxVisible, phase, isVisible, casualMode, currentQuestion])
+
   // Handle guess commands from chat
   const handleGuess = useCallback((event: CustomEvent) => {
     const { username, answer } = event.detail
@@ -515,18 +528,8 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
             // Reset guesses for new question
             setGuesses(new Map())
             
-            // Send question to chat (use next question since we just advanced)
-            // Only send if we've completed at least one cycle (not on initial startup)
-            if (hasCompletedFirstCycleRef.current) {
-              const nextIndex = (currentQuestionIndex + 1) >= shuffledQuestions.length ? 0 : (currentQuestionIndex + 1)
-              const nextQuestion = shuffledQuestions[nextIndex]
-              if (nextQuestion) {
-                sendChatMessage(`PRIDE TRIVIA: ${nextQuestion.question}`)
-                setTimeout(() => {
-                  sendChatMessage(`a) ${nextQuestion.a} | b) ${nextQuestion.b} | c) ${nextQuestion.c} | d) ${nextQuestion.d} — Type !a !b !c or !d to guess! Answer revealed at 5 min break!`)
-                }, 1500)
-              }
-            }
+            // Note: posting the new question to chat is handled centrally by the
+            // "mirror question on screen appearance" effect once the box is visible.
           } else {
             // Break started - reveal answer
             window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))

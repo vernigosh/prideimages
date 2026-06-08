@@ -381,17 +381,30 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
   }, [isVisible, phase, boxVisible])
   
   // Mirror question to chat ANY time it appears on screen (pomodoro work phase).
-  // Fires when the box fades in OR when the question changes while the box is visible,
-  // so every on-screen question is echoed to chat viewers exactly once.
+  // Posts when the box becomes visible (hidden -> visible) OR when the question
+  // changes while the box is already visible — so every on-screen appearance is echoed.
+  const prevBoxVisibleRef = useRef<boolean | null>(null)
   const lastMirroredQuestionRef = useRef<number | null>(null)
   useEffect(() => {
     // Casual mode handles its own announcements; only mirror during pomodoro work phase
-    if (casualMode || phase !== "work" || !isVisible || !boxVisible || !currentQuestion) {
+    if (casualMode || phase !== "work" || !isVisible) {
+      // Reset tracking so the next entry into the work phase re-posts.
+      prevBoxVisibleRef.current = null
+      lastMirroredQuestionRef.current = null
       return
     }
 
-    // Avoid double-posting the same question while it stays on screen
-    if (lastMirroredQuestionRef.current === currentQuestion.id) return
+    const wasVisible = prevBoxVisibleRef.current
+    prevBoxVisibleRef.current = boxVisible
+
+    if (!boxVisible || !currentQuestion) return
+
+    const becameVisible = wasVisible !== true
+    const questionChanged = lastMirroredQuestionRef.current !== currentQuestion.id
+
+    // Post on fade-in, or when a new question shows up while the box is visible
+    if (!becameVisible && !questionChanged) return
+
     lastMirroredQuestionRef.current = currentQuestion.id
 
     sendChatMessage(`PRIDE TRIVIA: ${currentQuestion.question}`)

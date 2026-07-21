@@ -211,12 +211,20 @@ export function OverlayExtrasSettings({
               <Range label={`Visible messages (${chat.visibleCount})`} min={1} max={3} value={chat.visibleCount} onChange={(v) => setChat({ visibleCount: v })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Range label={`Username size (${chat.usernameFontSize}px)`} min={11} max={26} value={chat.usernameFontSize} onChange={(v) => setChat({ usernameFontSize: v })} />
-              <Range label={`Message size (${chat.messageFontSize}px)`} min={12} max={28} value={chat.messageFontSize} onChange={(v) => setChat({ messageFontSize: v })} />
+              <Range label={`Username size (${chat.usernameFontSize}px)`} min={20} max={44} value={chat.usernameFontSize} onChange={(v) => setChat({ usernameFontSize: v })} />
+              <Range label={`Message size (${chat.messageFontSize}px)`} min={20} max={44} value={chat.messageFontSize} onChange={(v) => setChat({ messageFontSize: v })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Range label={`Lifetime (${Math.round(chat.lifetimeMs / 1000)}s)`} min={5} max={60} value={Math.round(chat.lifetimeMs / 1000)} onChange={(v) => setChat({ lifetimeMs: v * 1000 })} />
               <Range label={`Background opacity (${chat.backgroundOpacity.toFixed(2)})`} min={0} max={1} step={0.02} value={chat.backgroundOpacity} onChange={(v) => setChat({ backgroundOpacity: v })} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Range label={`Corner radius (${chat.borderRadius}px)`} min={0} max={28} value={chat.borderRadius} onChange={(v) => setChat({ borderRadius: v })} />
+              <Range label={`Card gap (${chat.cardGap}px)`} min={0} max={24} value={chat.cardGap} onChange={(v) => setChat({ cardGap: v })} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Range label={`Padding X (${chat.paddingX}px)`} min={6} max={40} value={chat.paddingX} onChange={(v) => setChat({ paddingX: v })} />
+              <Range label={`Padding Y (${chat.paddingY}px)`} min={4} max={32} value={chat.paddingY} onChange={(v) => setChat({ paddingY: v })} />
             </div>
             <Range label={`Max lines (${chat.maxLines})`} min={1} max={4} value={chat.maxLines} onChange={(v) => setChat({ maxLines: v })} />
             <div className="grid grid-cols-2 gap-2">

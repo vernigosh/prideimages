@@ -186,33 +186,46 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
               style={{ transition: "stroke-dashoffset 0.5s ease-out", filter: "drop-shadow(0 0 8px #ff0000)" }}
             />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span
-              className="font-sans tabular-nums"
-              style={{
-                fontSize: `${OVERLAY_FONT_DISPLAY}px`,
-                lineHeight: 1,
-                letterSpacing: 0,
-                fontWeight: OVERLAY_WEIGHT_PRIMARY,
-                color: "#ffffff",
-                textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000",
-              }}
-            >
-              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-            </span>
-            <span
-              className="mt-1 font-sans uppercase"
-              style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL, color: "#ff6b6b", textShadow: "0 0 10px #ff0000" }}
-            >
-              DARK
-            </span>
-          </div>
+          {/* Countdown pinned to the exact geometric center; label sits below,
+              independent of the countdown's centering. */}
+          <span
+            className="absolute font-sans tabular-nums"
+            style={{
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+              lineHeight: 1,
+              letterSpacing: 0,
+              fontWeight: OVERLAY_WEIGHT_PRIMARY,
+              color: "#ffffff",
+              textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000",
+            }}
+          >
+            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+          </span>
+          <span
+            className="absolute font-sans uppercase"
+            style={{
+              left: "50%",
+              top: "calc(50% + 34px)",
+              transform: "translateX(-50%)",
+              fontSize: `${OVERLAY_FONT_STANDARD}px`,
+              letterSpacing: 0,
+              fontWeight: OVERLAY_WEIGHT_LABEL,
+              color: "#ff6b6b",
+              textShadow: "0 0 10px #ff0000",
+            }}
+          >
+            DARK
+          </span>
         </div>
+        {/* Supporting text: preserve exact capitalization, no uppercase transform. */}
         <span
-          className="font-sans uppercase"
+          className="font-sans"
           style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
         >
-          EXPLORING THE SHADOWS
+          Exploring Darker Sounds
         </span>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, Fragment } from "react"
+import { useEffect, useLayoutEffect, useRef, useState, Fragment } from "react"
 import {
   type NormalizedChatMessage,
   type OverlayChatEmote,
@@ -23,6 +23,10 @@ export interface ChatOverlaySettings {
   messageFontSize: number
   lifetimeMs: number // ~18000-22000
   backgroundOpacity: number // 0-1 (card translucency)
+  borderRadius: number // px, per-card corner rounding
+  paddingX: number // px, card horizontal padding
+  paddingY: number // px, card vertical padding
+  cardGap: number // px, vertical gap between individual cards
   maxLines: number // max text lines per message
   showBadges: boolean
   showEmotes: boolean
@@ -37,14 +41,18 @@ export interface ChatOverlaySettings {
 
 export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   enabled: true,
-  offsetX: 40,
-  offsetY: 40,
-  width: 560, // wide enough for two clean lines at the standard chat size
+  offsetX: 60, // inset from right — aligns near the clock/timer right edge
+  offsetY: 205, // above the highest normal flower area, below the timer
+  width: 500,
   visibleCount: 2,
-  usernameFontSize: 28, // spec: 28px, weight 600
-  messageFontSize: 28, // spec: 28px, weight 500
+  usernameFontSize: 28, // 28px, weight 600
+  messageFontSize: 28, // 28px, weight 500
   lifetimeMs: 20000,
-  backgroundOpacity: 0.72,
+  backgroundOpacity: 0.58,
+  borderRadius: 16,
+  paddingX: 17,
+  paddingY: 10,
+  cardGap: 7,
   maxLines: 2,
   showBadges: true,
   showEmotes: true,
@@ -59,10 +67,23 @@ export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
 const PINK_FALLBACK = "#ff6b9d"
 // Subtle dark shadow keeps any Twitch color legible over video without altering it.
 const NAME_TEXT_SHADOW = "0 1px 2px rgba(0,0,0,0.85), 0 0 3px rgba(0,0,0,0.65)"
+// Individual-card chrome: subtle 1px light border + minimal shadow, no backdrop blur.
+const CARD_BORDER = "1px solid rgba(255,255,255,0.14)"
+const CARD_SHADOW = "0 1px 3px rgba(0,0,0,0.35)"
 const HISTORY_MAX = 20
+
+// Message-flow animation timing.
+const ENTER_OFFSET_PX = 14 // new messages rise from ~14px below their final spot
+const ANIM_MS = 200 // enter / move / exit duration
+const ANIM_EASE = "cubic-bezier(0.22, 1, 0.36, 1)" // smooth ease-out, no bounce/overshoot
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+}
 
 interface DisplayMessage extends NormalizedChatMessage {
   addedAt: number
+  leaving?: boolean // fading out prior to removal
 }
 
 // Only a #RGB or #RRGGBB string is a valid Twitch color.
@@ -109,10 +130,13 @@ function renderContent(text: string, emotes: OverlayChatEmote[], showEmotes: boo
   return nodes
 }
 
+// Compact text-pill fallback for Twitch badges (official icons are not resolvable
+// in this environment — see the badge report). Kept small so it never grows the
+// card height beyond the ~28px text line.
 function Badge({ label, className }: { label: string; className: string }) {
   return (
     <span
-      className={`inline-block rounded px-1.5 py-0.5 text-[0.5em] font-bold uppercase leading-none align-middle ${className}`}
+      className={`inline-block rounded-sm px-1 py-px text-[0.42em] font-bold uppercase leading-none align-middle ${className}`}
       style={{ letterSpacing: 0 }}
     >
       {label}
@@ -130,13 +154,30 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
   const [messages, setMessages] = useState<DisplayMessage[]>([])
   const seenIdsRef = useRef<Set<string>>(new Set())
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  const removeTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   const settingsRef = useRef(s)
   settingsRef.current = s
 
+  // Animation bookkeeping (FLIP for position, CSS transition for enter/exit).
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const prevTopsRef = useRef<Map<string, number>>(new Map())
+  const enteredRef = useRef<Set<string>>(new Set())
+
+  // Expiry runs in two phases so the card can fade out before it is removed.
+  // The lifetime is scheduled ONCE on arrival and is never reset by later messages.
   const scheduleExpiry = (id: string, lifetimeMs: number) => {
     const timer = setTimeout(() => {
-      setMessages((prev) => prev.filter((m) => m.id !== id))
       timersRef.current.delete(id)
+      const reduce = prefersReducedMotion()
+      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, leaving: true } : m)))
+      const rt = setTimeout(
+        () => {
+          setMessages((prev) => prev.filter((m) => m.id !== id))
+          removeTimersRef.current.delete(id)
+        },
+        reduce ? 0 : ANIM_MS,
+      )
+      removeTimersRef.current.set(id, rt)
     }, lifetimeMs)
     timersRef.current.set(id, timer)
   }
@@ -205,8 +246,68 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
     return () => {
       timersRef.current.forEach((t) => clearTimeout(t))
       timersRef.current.clear()
+      removeTimersRef.current.forEach((t) => clearTimeout(t))
+      removeTimersRef.current.clear()
     }
   }, [])
+
+  // FLIP animation: new cards rise + fade in, existing cards glide to their new
+  // positions, expiring cards fade out. Runs after every commit; keys are stable
+  // message ids so cards are never remounted unnecessarily.
+  useLayoutEffect(() => {
+    if (prefersReducedMotion()) {
+      const tops = new Map<string, number>()
+      cardRefs.current.forEach((el, id) => {
+        el.style.transition = ""
+        el.style.transform = ""
+        el.style.opacity = el.dataset.leaving === "true" ? "0" : "1"
+        tops.set(id, el.getBoundingClientRect().top)
+      })
+      prevTopsRef.current = tops
+      return
+    }
+
+    // 1. Measure natural positions with any prior transform cleared.
+    const naturalTops = new Map<string, number>()
+    cardRefs.current.forEach((el, id) => {
+      el.style.transition = "none"
+      el.style.transform = ""
+      naturalTops.set(id, el.getBoundingClientRect().top)
+    })
+
+    // 2. Invert: seed the starting transform/opacity for new + moved cards.
+    cardRefs.current.forEach((el, id) => {
+      if (el.dataset.leaving === "true") return
+      const prevTop = prevTopsRef.current.get(id)
+      if (!enteredRef.current.has(id)) {
+        enteredRef.current.add(id)
+        el.style.transform = `translateY(${ENTER_OFFSET_PX}px)`
+        el.style.opacity = "0"
+      } else if (prevTop !== undefined) {
+        const dy = prevTop - (naturalTops.get(id) ?? prevTop)
+        if (dy) el.style.transform = `translateY(${dy}px)`
+      }
+    })
+
+    // 3. Play: next frame, transition every card to its resting state.
+    const raf = requestAnimationFrame(() => {
+      cardRefs.current.forEach((el) => {
+        el.style.transition = `transform ${ANIM_MS}ms ${ANIM_EASE}, opacity ${ANIM_MS}ms ${ANIM_EASE}`
+        if (el.dataset.leaving === "true") {
+          el.style.opacity = "0"
+        } else {
+          el.style.transform = "translateY(0)"
+          el.style.opacity = "1"
+        }
+      })
+    })
+
+    prevTopsRef.current = naturalTops
+    enteredRef.current.forEach((id) => {
+      if (!cardRefs.current.has(id)) enteredRef.current.delete(id)
+    })
+    return () => cancelAnimationFrame(raf)
+  })
 
   if (!s.enabled) return null
 
@@ -216,20 +317,27 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
 
   return (
     <div
-      className="pointer-events-none fixed z-40 flex flex-col justify-end gap-2"
-      style={{ right: `${s.offsetX}px`, bottom: `${s.offsetY}px`, width: `${s.width}px` }}
+      className="pointer-events-none fixed z-40 flex flex-col justify-end"
+      style={{ right: `${s.offsetX}px`, bottom: `${s.offsetY}px`, width: `${s.width}px`, gap: `${s.cardGap}px` }}
     >
       {visible.map((m) => {
         const nameColor = resolveUsernameColor(m.color, s.useTwitchUsernameColors)
         return (
           <div
             key={m.id}
-            className="w-full shadow-lg"
+            ref={(el) => {
+              if (el) cardRefs.current.set(m.id, el)
+              else cardRefs.current.delete(m.id)
+            }}
+            data-leaving={m.leaving ? "true" : "false"}
+            className="w-full"
             style={{
               backgroundColor: `rgba(10, 10, 12, ${s.backgroundOpacity})`,
-              borderRadius: "12px",
-              border: "1px solid rgba(255,255,255,0.12)",
-              padding: "14px 20px",
+              borderRadius: `${s.borderRadius}px`,
+              border: CARD_BORDER,
+              boxShadow: CARD_SHADOW,
+              padding: `${s.paddingY}px ${s.paddingX}px`,
+              willChange: "transform, opacity",
             }}
           >
             {/* Username and message share one size + baseline; text flows inline.

@@ -355,26 +355,37 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
                 style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
               />
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                className="font-sans tabular-nums text-white"
-                style={{
-                  fontSize: `${cfg.countdownFontSize}px`,
-                  lineHeight: 1,
-                  letterSpacing: 0,
-                  fontWeight: OVERLAY_WEIGHT_PRIMARY,
-                  textShadow: "0 2px 8px rgba(0,0,0,0.6)",
-                }}
-              >
-                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-              </span>
-              <span
-                className="mt-1 font-sans uppercase text-white/80"
-                style={{ fontSize: `${cfg.stateLabelFontSize}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL }}
-              >
-                {stateLabel}
-              </span>
-            </div>
+            {/* Countdown: its own layer, pinned to the exact geometric center of
+                the ring. The state label is positioned independently below it and
+                never participates in centering the countdown. */}
+            <span
+              className="absolute font-sans tabular-nums text-white"
+              style={{
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+                fontSize: `${cfg.countdownFontSize}px`,
+                lineHeight: 1,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_PRIMARY,
+                textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+              }}
+            >
+              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </span>
+            <span
+              className="absolute font-sans uppercase text-white/80"
+              style={{
+                left: "50%",
+                top: "calc(50% + 34px)",
+                transform: "translateX(-50%)",
+                fontSize: `${cfg.stateLabelFontSize}px`,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_LABEL,
+              }}
+            >
+              {stateLabel}
+            </span>
           </div>
           <span
             className="font-sans uppercase text-white/70"

@@ -182,32 +182,30 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
               style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
             />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span
-              className="font-sans tabular-nums text-white"
-              style={{
-                fontSize: `${OVERLAY_FONT_DISPLAY}px`,
-                lineHeight: 1,
-                letterSpacing: 0,
-                fontWeight: OVERLAY_WEIGHT_PRIMARY,
-                textShadow: "0 2px 8px rgba(0,0,0,0.6)",
-              }}
-            >
-              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-            </span>
-            <span
-              className="mt-1 font-sans uppercase text-white/80"
-              style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL }}
-            >
-              SOCIAL
-            </span>
-          </div>
+          {/* Ring interior: ONLY the countdown, pinned to the exact geometric
+              center. No SOCIAL label lives inside the ring. */}
+          <span
+            className="absolute font-sans tabular-nums text-white"
+            style={{
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+              lineHeight: 1,
+              letterSpacing: 0,
+              fontWeight: OVERLAY_WEIGHT_PRIMARY,
+              textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+            }}
+          >
+            {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+          </span>
         </div>
+        {/* Single external label beneath the ring — no duplicate SOCIAL inside. */}
         <span
-          className="font-sans uppercase text-white/70"
-          style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
+          className="font-sans uppercase text-white"
+          style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
         >
-          SAY HI IN CHAT
+          SOCIAL!
         </span>
       </div>
     </div>

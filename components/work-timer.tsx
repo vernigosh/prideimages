@@ -355,38 +355,50 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
                 style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
               />
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                className="font-sans tabular-nums text-white"
-                style={{
-                  fontSize: `${cfg.countdownFontSize}px`,
-                  lineHeight: 1,
-                  letterSpacing: 0,
-                  fontWeight: OVERLAY_WEIGHT_PRIMARY,
-                  textShadow: "0 2px 8px rgba(0,0,0,0.6)",
-                }}
-              >
-                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-              </span>
-              <span
-                className="mt-1 font-sans uppercase text-white/80"
-                style={{ fontSize: `${cfg.stateLabelFontSize}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL }}
-              >
-                {stateLabel}
-              </span>
-            </div>
+            {/* Ring interior: ONLY the countdown, pinned to the exact geometric
+                center. No phase label or subtitle lives inside the ring. */}
+            <span
+              className="absolute font-sans tabular-nums text-white"
+              style={{
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+                fontSize: `${cfg.countdownFontSize}px`,
+                lineHeight: 1,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_PRIMARY,
+                textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+              }}
+            >
+              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </span>
           </div>
-          <span
-            className="font-sans uppercase text-white/70"
-            style={{
-              fontSize: `${cfg.nextChangeFontSize}px`,
-              letterSpacing: 0,
-              fontWeight: OVERLAY_WEIGHT_BODY,
-              textShadow: "0 2px 6px rgba(0,0,0,0.6)",
-            }}
-          >
-            {nextChange}
-          </span>
+          {/* Timer copy: normal centered vertical layout BENEATH the ring, giving
+              a predictable measured bottom edge for chat placement. */}
+          <div className="flex flex-col items-center gap-1">
+            <span
+              className="font-sans uppercase text-white"
+              style={{
+                fontSize: `${cfg.stateLabelFontSize}px`,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_LABEL,
+                textShadow: "0 2px 6px rgba(0,0,0,0.6)",
+              }}
+            >
+              {stateLabel}
+            </span>
+            <span
+              className="font-sans uppercase text-white/70"
+              style={{
+                fontSize: `${cfg.nextChangeFontSize}px`,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_BODY,
+                textShadow: "0 2px 6px rgba(0,0,0,0.6)",
+              }}
+            >
+              {nextChange}
+            </span>
+          </div>
         </div>
       </div>
     </>

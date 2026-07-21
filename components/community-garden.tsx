@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, type CSSProperties } from "react"
 import FlowerCelebration from "./flower-celebration" // Import FlowerCelebration component
 import { GardenLegendCelebration } from "./garden-legend-celebration" // Import the new Garden Legend celebration component
 import { BeeParadeCelebration } from "./bee-parade-celebration" // Import the new Bee Parade celebration component
@@ -28,6 +28,9 @@ export interface GardenActivitySettings {
   fontSize: number
   lifetimeMs: number
   backgroundOpacity: number // 0-1 (0 = no card background)
+  highlightEnabled: boolean // power-up the specific flower tied to a plant activity
+  highlightMs: number // duration of the targeted flower power-up effect
+  highlightIntensity: "low" | "medium" | "high" // strength of the power-up treatment
 }
 
 export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
@@ -37,7 +40,68 @@ export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
   fontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
   lifetimeMs: 6000,
   backgroundOpacity: 0,
+  highlightEnabled: true,
+  highlightMs: 1300, // ~1200-1400ms classic power-up
+  highlightIntensity: "medium",
 }
+
+// Maps the intensity setting to the peak brightness/saturation used by the
+// power-up. The animation keyframes read these via CSS custom properties.
+function intensityFactors(intensity: GardenActivitySettings["highlightIntensity"]) {
+  switch (intensity) {
+    case "low":
+      return { brightness: 1.25, saturate: 1.4 }
+    case "high":
+      return { brightness: 1.6, saturate: 2.2 }
+    default:
+      return { brightness: 1.4, saturate: 1.9 }
+  }
+}
+
+// Respect the viewer's OS-level reduced-motion preference for the flower effect.
+function gardenPrefersReducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+}
+
+// A single centralized garden activity item. Only `message` is shown; the
+// optional `flowerId` is what lets the power-up effect target the exact flower
+// referenced by THIS message when it becomes the visible item.
+interface GardenActivity {
+  id: string
+  type?: "plant" | "water" | "pick" | "rain" | "bunny"
+  username?: string
+  message: string
+  timestamp: number
+  flowerId?: string
+  flowerType?: string
+}
+
+// Optional metadata a caller can attach to an activity for sprite targeting.
+type GardenActivityMeta = Pick<GardenActivity, "type" | "username" | "flowerId" | "flowerType">
+
+let gardenActivitySeq = 0
+function nextActivityId(): string {
+  gardenActivitySeq += 1
+  return `ga_${Date.now().toString(36)}_${gardenActivitySeq}`
+}
+
+// An activity older than this when it first becomes visible is treated as stale
+// (e.g. surviving a remount) and will not fire its flower effect.
+const STALE_ACTIVITY_MS = 4000
+
+// A temporary visual copy of a flower that has already been removed from garden
+// state (picked, or eaten by the bunny) but must remain on screen at its original
+// position to play the power-up + fade-away. Tied to the activity id that owns it,
+// so the animation only starts when that activity's message becomes visible.
+interface DepartingFlower {
+  key: string // unique render key: `${activityId}_${flower.id}`
+  activityId: string // the Garden Activity whose visibility starts the animation
+  flower: Flower // snapshot captured before removal (position, type, stage, etc.)
+  phase: "waiting" | "animating" | "leaving"
+}
+
+// How long the fade/shrink-away runs after the color animation finishes.
+const DEPART_LEAVE_MS = 420
 
 interface CommunityGardenProps {
   isVisible: boolean
@@ -127,7 +191,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     lastActivity: "",
     waterLevel: 100, // Garden health
   })
-  const [recentActivity, setRecentActivity] = useState<string[]>([])
+  const [recentActivity, setRecentActivity] = useState<GardenActivity[]>([])
+  // Ids of flowers currently playing the power-up effect (tied to the visible message).
+  const [highlightedFlowerIds, setHighlightedFlowerIds] = useState<string[]>([])
+  const highlightTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  // Temporary on-screen copies of flowers that were removed by a pick or bunny-eat.
+  const [departingFlowers, setDepartingFlowers] = useState<DepartingFlower[]>([])
+  const departTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set())
+  // Tracks which visible-activity id has already triggered its effect (fires once).
+  const poweredActivityIdRef = useRef<string | null>(null)
+  // Mirror of flowers for stable reads inside stable (empty-dep) event handlers.
+  const flowersRef = useRef<Flower[]>(flowers)
+  flowersRef.current = flowers
   const [bunnyActive, setBunnyActive] = useState(false)
   const [bunnyPhase, setBunnyPhase] = useState<"arriving" | "exploring" | "eating" | "playing" | "leaving">("arriving")
   const [bunnyOpacity, setBunnyOpacity] = useState(0)
@@ -277,15 +352,22 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
           setBunnyOpacity(1)
 
           if (bunnyEatenCount > 0) {
-            addActivity(`🐰 THE BUNNY IS MUNCHING ON ${bunnyEatenCount} DELICIOUS FLOWERS!`, 4000)
+            // Capture the EXACT flowers about to be eaten (by unique id) before they
+            // leave garden state, so temporary copies can animate at their spots.
+            const matureFlowers = flowersRef.current.filter((f) => f.stage === "fully-mature")
+            const eatenSnapshots = matureFlowers.slice(0, bunnyEatenCount).map((f) => ({ ...f }))
+            const eatenIds = new Set(eatenSnapshots.map((f) => f.id))
 
-            // Remove flowers from garden
-            setFlowers((currentFlowers) => {
-              const matureFlowers = currentFlowers.filter((f) => f.stage === "fully-mature")
-              const flowersToRemove = matureFlowers.slice(0, bunnyEatenCount)
-              const remainingFlowers = currentFlowers.filter((f) => !flowersToRemove.includes(f))
-              return remainingFlowers
-            })
+            const bunnyActivityId = addActivity(
+              `🐰 THE BUNNY IS MUNCHING ON ${bunnyEatenCount} DELICIOUS FLOWERS!`,
+              4000,
+              { type: "bunny", username: "Bunny" },
+            )
+            // All eaten copies animate simultaneously when the message appears.
+            spawnDepartingFlowers(eatenSnapshots, bunnyActivityId)
+
+            // Remove exactly those flowers from garden state.
+            setFlowers((currentFlowers) => currentFlowers.filter((f) => !eatenIds.has(f.id)))
           } else {
             addActivity("🐰 THE BUNNY IS HAPPILY MUNCHING ON GARDEN WEEDS!", 4000)
           }
@@ -520,11 +602,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         lastActivity: `${username} planted a ${flowerTypes[newFlower.type].name}!`,
       }))
 
-      // Clean session-based messaging
+      // Clean session-based messaging. The flowerId is carried on the activity so
+      // the sprite power-up fires when THIS message becomes visible (queue-safe).
+      const plantMeta: GardenActivityMeta = {
+        type: "plant",
+        username,
+        flowerId: newFlower.id,
+        flowerType: flowerTypes[newFlower.type].name,
+      }
       if (userFlowerCount === 1) {
-        addActivity(`🌱 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLANT 1 MORE!`, 5000)
+        addActivity(`🌱 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLANT 1 MORE!`, 5000, plantMeta)
       } else {
-        addActivity(`🌸 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLOT COMPLETE!`, 5000)
+        addActivity(`🌸 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLOT COMPLETE!`, 5000, plantMeta)
       }
     }
 
@@ -543,7 +632,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         waterLevel: Math.min(100, prev.waterLevel + 10),
         lastActivity: `${username} watered the garden!`,
       }))
-      addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`, 5000)
+      // Water targets the whole garden, so no single flowerId is attached.
+      addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`, 5000, { type: "water", username })
 
       console.log("Starting rain animation...")
       // Clear any existing rain timeout before setting a new one
@@ -660,11 +750,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         [username]: 0,
       }))
 
-      // Show picking message with lifetime total
-      addActivity(
+      // Snapshot the exact flowers being picked (by unique id) BEFORE they leave
+      // garden state, so temporary copies can play the power-up at their spots.
+      const pickedSnapshots = userPickableFlowers.map((f) => ({ ...f }))
+
+      // Show picking message with lifetime total. The returned activity id links
+      // the departing copies to this message so the effect starts when it shows.
+      const pickActivityId = addActivity(
         `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}! USE !FLOWERS TO CHECK INVENTORY!`,
         5000,
+        { type: "pick", username },
       )
+      spawnDepartingFlowers(pickedSnapshots, pickActivityId)
 
       // Remove only the user's pickable flowers
       setFlowers((prev) =>
@@ -861,24 +958,148 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
 
-  const addActivity = (activity: string, duration = 5000) => {
+  const addActivity = (activity: string, duration = 5000, meta?: GardenActivityMeta): string => {
     // Show one routine message at a time (newest wins); history stays bounded to 5.
-    setRecentActivity((prev) => [activity, ...prev.slice(0, 4)])
+    const item: GardenActivity = {
+      id: nextActivityId(),
+      message: activity,
+      timestamp: Date.now(),
+      type: meta?.type,
+      username: meta?.username,
+      flowerId: meta?.flowerId,
+      flowerType: meta?.flowerType,
+    }
+    setRecentActivity((prev) => [item, ...prev.slice(0, 4)])
 
     // Lifetime is configurable via settings; falls back to the per-call duration.
     const effective = activityCfgRef.current.lifetimeMs > 0 ? activityCfgRef.current.lifetimeMs : duration
     setTimeout(() => {
-      setRecentActivity((current) => current.filter((item) => item !== activity))
+      setRecentActivity((current) => current.filter((i) => i.id !== item.id))
     }, effective)
+    // Returned so callers can associate departing-flower copies with this activity.
+    return item.id
   }
+
+  // Register temporary visual copies of flowers that were just removed (picked or
+  // eaten). They render in the "waiting" phase and stay perfectly still until their
+  // owning activity becomes the visible message, at which point the effect starts.
+  const spawnDepartingFlowers = (snapshots: Flower[], activityId: string) => {
+    if (!activityCfgRef.current.highlightEnabled) return
+    if (snapshots.length === 0) return
+    setDepartingFlowers((prev) => [
+      ...prev,
+      ...snapshots.map((f) => ({ key: `${activityId}_${f.id}`, activityId, flower: f, phase: "waiting" as const })),
+    ])
+  }
+
+  // Start the power-up on every departing copy tied to `activityId`: switch them to
+  // "animating", then to "leaving" (fade/shrink) after the color animation, then
+  // remove them. All copies for one bunny/pick event animate simultaneously.
+  const startDepartingAnimation = (activityId: string) => {
+    setDepartingFlowers((prev) => {
+      if (!prev.some((d) => d.activityId === activityId && d.phase === "waiting")) return prev
+      return prev.map((d) => (d.activityId === activityId && d.phase === "waiting" ? { ...d, phase: "animating" } : d))
+    })
+    const dur = Math.max(600, activityCfgRef.current.highlightMs)
+    const toLeave = setTimeout(() => {
+      setDepartingFlowers((prev) =>
+        prev.map((d) => (d.activityId === activityId && d.phase === "animating" ? { ...d, phase: "leaving" } : d)),
+      )
+      const toRemove = setTimeout(() => {
+        setDepartingFlowers((prev) => prev.filter((d) => d.activityId !== activityId))
+        departTimersRef.current.delete(toRemove)
+      }, DEPART_LEAVE_MS)
+      departTimersRef.current.add(toRemove)
+      departTimersRef.current.delete(toLeave)
+    }, dur)
+    departTimersRef.current.add(toLeave)
+  }
+
+  // Play the power-up effect on one specific flower sprite. Additive and
+  // self-clearing; re-triggering the same flower refreshes its timer rather
+  // than stacking. Duration mirrors the configured highlight duration so the
+  // clear timer and the CSS animation stay in sync.
+  const powerUpFlower = (flowerId: string) => {
+    if (!activityCfgRef.current.highlightEnabled) return
+    setHighlightedFlowerIds((prev) => (prev.includes(flowerId) ? prev : [...prev, flowerId]))
+    const existing = highlightTimersRef.current.get(flowerId)
+    if (existing) clearTimeout(existing)
+    const t = setTimeout(() => {
+      setHighlightedFlowerIds((prev) => prev.filter((id) => id !== flowerId))
+      highlightTimersRef.current.delete(flowerId)
+    }, Math.max(600, activityCfgRef.current.highlightMs))
+    highlightTimersRef.current.set(flowerId, t)
+  }
+
+  // Queue-safe synchronization: the effect fires only when an activity carrying a
+  // flowerId becomes the VISIBLE (newest, index 0) message — never when it is
+  // merely created or queued. Each visible activity triggers exactly once.
+  //
+  // Bounded consumed-tracking: `poweredActivityIdRef` holds only the single last
+  // activated id (never grows). A timestamp-age check is the explicit mount-time
+  // baseline — any activity older than STALE_ACTIVITY_MS (e.g. one restored or
+  // still present at first mount) is marked consumed WITHOUT firing, so effects
+  // cannot replay after a remount or unrelated rerender.
+  useEffect(() => {
+    const visible = recentActivity[0]
+    if (!visible) {
+      poweredActivityIdRef.current = null
+      return
+    }
+    if (visible.id === poweredActivityIdRef.current) return
+    poweredActivityIdRef.current = visible.id
+    const isFresh = Date.now() - visible.timestamp <= STALE_ACTIVITY_MS
+    if (!isFresh) return
+    // Planted flower still lives in garden state → highlight it in place.
+    if (visible.flowerId) powerUpFlower(visible.flowerId)
+    // Picked / eaten flowers were removed → start their temporary-copy animations
+    // now that this activity's message is the one on screen.
+    startDepartingAnimation(visible.id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recentActivity])
+
+  // Clear power-up + departing-flower timers on unmount.
+  useEffect(() => {
+    const departTimers = departTimersRef.current
+    return () => {
+      highlightTimersRef.current.forEach((t) => clearTimeout(t))
+      highlightTimersRef.current.clear()
+      departTimers.forEach((t) => clearTimeout(t))
+      departTimers.clear()
+    }
+  }, [])
 
   // Test + clear controls for the centralized activity panel (from settings).
   useEffect(() => {
     const handleActivityTest = (e: Event) => {
       const kind = (e as CustomEvent<{ kind?: string }>).detail?.kind
-      if (kind === "water") addActivity("💧 TESTGARDENER WATERED THE ENTIRE GARDEN!")
-      else if (kind === "pick") addActivity("🌸 TESTGARDENER PICKED 3 OF THEIR OWN FLOWERS!")
-      else addActivity("🌱 TESTGARDENER PLANTED FLOWER #1! PLANT 1 MORE!")
+      if (kind === "water") addActivity("💧 TESTGARDENER WATERED THE ENTIRE GARDEN!", 5000, { type: "water", username: "TestGardener" })
+      else if (kind === "pick") addActivity("🌸 TESTGARDENER PICKED 3 OF THEIR OWN FLOWERS!", 5000, { type: "pick", username: "TestGardener" })
+      else if (kind === "plant-burst") {
+        // Rapid three-activity test: queue three plant activities back-to-back,
+        // each carrying a DISTINCT flower id. Because effects only fire when an
+        // activity becomes the visible message, the 2nd and 3rd flowers must stay
+        // normal until their own message surfaces — verifying queue-safe timing.
+        const flowers = flowersRef.current
+        const targets = flowers.slice(-3)
+        for (let i = 0; i < 3; i++) {
+          const target = targets[targets.length - 1 - i] ?? flowers[flowers.length - 1]
+          addActivity(`🌱 BURSTGARDENER PLANTED FLOWER #${i + 1}!`, 5000, {
+            type: "plant",
+            username: "BurstGardener",
+            flowerId: target?.id,
+          })
+        }
+      } else {
+        // Attach the newest flower's id so the power-up fires when this message
+        // becomes visible (queue-safe) rather than being triggered imperatively.
+        const newest = flowersRef.current[flowersRef.current.length - 1]
+        addActivity("🌱 TESTGARDENER PLANTED FLOWER #1! PLANT 1 MORE!", 5000, {
+          type: "plant",
+          username: "TestGardener",
+          flowerId: newest?.id,
+        })
+      }
     }
     const handleActivityClear = () => setRecentActivity([])
     window.addEventListener("gardenActivityTest", handleActivityTest as EventListener)
@@ -1150,7 +1371,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                   fontWeight: OVERLAY_WEIGHT_LABEL,
                 }}
               >
-                {recentActivity[0]}
+                {recentActivity[0].message}
               </span>
             </div>
           </div>
@@ -1238,6 +1459,21 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             else if (timeSincePlanted > 45000) currentStage = "blooming"
             else currentStage = "sprout"
 
+            const isPoweredUp = highlightedFlowerIds.includes(flower.id)
+            const reduceMotion = gardenPrefersReducedMotion()
+            // Power-up is applied directly to the sprite wrapper: no halo, ring, or
+            // detached shape. Motion path cycles color/brightness and a tiny scale;
+            // reduced-motion path holds a static brightness/saturation boost only.
+            const powerUpClass = isPoweredUp ? (reduceMotion ? "gardenPowerUpStatic" : "gardenPowerUp") : ""
+            const pu = intensityFactors(activityCfg.highlightIntensity)
+            const powerUpStyle = isPoweredUp
+              ? ({
+                  animationDuration: `${Math.max(600, activityCfg.highlightMs)}ms`,
+                  // Consumed by the keyframes / static class below.
+                  ["--pu-bright" as string]: `${pu.brightness}`,
+                  ["--pu-sat" as string]: `${pu.saturate}`,
+                } as CSSProperties)
+              : undefined
             return (
               <div
                 key={flower.id}
@@ -1245,11 +1481,49 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                 style={{ left: `${flower.x}%` }}
                 title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${currentStage}) - ${Math.floor(timeSincePlanted / 1000)}s old`}
               >
-                {getFlowerDisplay(flower)}
+                <div className={powerUpClass} style={powerUpStyle}>
+                  {getFlowerDisplay(flower)}
+                </div>
                 {/* Show sparkles only on non-fully-mature flowers */}
                 {flower.stage !== "fully-mature" && (
                   <div className="absolute -top-2 -right-2 text-lg animate-pulse">✨</div>
                 )}
+              </div>
+            )
+          })}
+
+          {/* Departing flowers: temporary copies of picked / eaten flowers, held at
+              their original positions so the power-up + fade-away can play after the
+              real flower has already left garden state. No halo or ring is used. */}
+          {departingFlowers.map((d) => {
+            const reduceMotion = gardenPrefersReducedMotion()
+            const pu = intensityFactors(activityCfg.highlightIntensity)
+            const animating = d.phase === "animating"
+            const leaving = d.phase === "leaving"
+            const effectClass = animating ? (reduceMotion ? "gardenPowerUpStatic" : "gardenPowerUp") : ""
+            const effectStyle = animating
+              ? ({
+                  animationDuration: `${Math.max(600, activityCfg.highlightMs)}ms`,
+                  ["--pu-bright" as string]: `${pu.brightness}`,
+                  ["--pu-sat" as string]: `${pu.saturate}`,
+                } as CSSProperties)
+              : undefined
+            return (
+              <div
+                key={d.key}
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-2"
+                style={{
+                  left: `${d.flower.x}%`,
+                  // Match the live flower's -translate-x-1/2 anchor, then fade/shrink on leave.
+                  transform: `translateX(-50%) scale(${leaving ? 0.85 : 1})`,
+                  opacity: leaving ? 0 : 1,
+                  transition: `opacity ${DEPART_LEAVE_MS}ms ease, transform ${DEPART_LEAVE_MS}ms ease`,
+                }}
+              >
+                <div className={effectClass} style={effectStyle}>
+                  {getFlowerDisplay(d.flower)}
+                </div>
               </div>
             )
           })}
@@ -1266,6 +1540,63 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
           100% {
             left: 100vw;
             opacity: 0.8;
+          }
+        }
+        /* Restrained classic power-up: the sprite briefly cycles a few bright
+           colors, gains brightness/saturation, grows a hair (max ~1.05), and
+           returns to its EXACT original state at 100%. Peak brightness/saturation
+           come from --pu-bright / --pu-sat (driven by the intensity setting). A
+           silhouette-following glow uses drop-shadow so it hugs the sprite rather
+           than forming a detached disc. No white/black flash, no strobe. */
+        @keyframes gardenPowerUp {
+          0% {
+            filter: brightness(1) saturate(1) hue-rotate(0deg);
+            transform: scale(1);
+          }
+          20% {
+            filter: brightness(var(--pu-bright, 1.4)) saturate(calc(var(--pu-sat, 1.9) * 0.95))
+              hue-rotate(35deg) drop-shadow(0 0 4px rgba(255, 220, 90, 0.8));
+            transform: scale(1.04);
+          }
+          42% {
+            filter: brightness(calc(var(--pu-bright, 1.4) * 0.95)) saturate(var(--pu-sat, 1.9))
+              hue-rotate(145deg) drop-shadow(0 0 4px rgba(80, 230, 255, 0.8));
+            transform: scale(1.05);
+          }
+          64% {
+            filter: brightness(var(--pu-bright, 1.4)) saturate(calc(var(--pu-sat, 1.9) * 0.97))
+              hue-rotate(255deg) drop-shadow(0 0 4px rgba(255, 100, 220, 0.8));
+            transform: scale(1.04);
+          }
+          82% {
+            filter: brightness(calc(var(--pu-bright, 1.4) * 0.92)) saturate(calc(var(--pu-sat, 1.9) * 0.85))
+              hue-rotate(65deg);
+            transform: scale(1.02);
+          }
+          100% {
+            filter: brightness(1) saturate(1) hue-rotate(0deg);
+            transform: scale(1);
+          }
+        }
+        .gardenPowerUp {
+          animation-name: gardenPowerUp;
+          animation-duration: 1300ms;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: 1;
+          transform-origin: center bottom;
+          will-change: filter, transform;
+        }
+        /* Reduced-motion: a static, non-animated brightness/saturation lift that
+           still makes the referenced flower obvious, with no movement or hue cycling. */
+        .gardenPowerUpStatic {
+          filter: brightness(var(--pu-bright, 1.35)) saturate(var(--pu-sat, 1.6))
+            drop-shadow(0 0 4px rgba(255, 220, 120, 0.85));
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .gardenPowerUp {
+            animation: none;
+            filter: brightness(var(--pu-bright, 1.35)) saturate(var(--pu-sat, 1.6))
+              drop-shadow(0 0 4px rgba(255, 220, 120, 0.85));
           }
         }
       `}</style>

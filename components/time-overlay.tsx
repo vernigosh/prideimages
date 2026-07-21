@@ -81,7 +81,9 @@ export function TimeOverlay({
 
   return (
     <div className={`absolute ${getPositionClasses()} z-10`}>
-      <div className="flex flex-col items-end">
+      {/* Left-align the two lines with each other. The outer container position,
+          offsets, and sizes are unchanged — only the internal alignment differs. */}
+      <div className="flex flex-col items-start">
         {/* Time: display size */}
         <span
           className={`${getFontWeight()} font-sans tabular-nums`}

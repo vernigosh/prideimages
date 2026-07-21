@@ -15,6 +15,28 @@ export interface StreamCredits {
   redeemers: Array<{ name: string; redeems: string[] }>
 }
 
+// Discrete, per-occurrence realtime event used to feed the temporary popup queue.
+// This is intentionally SEPARATE from the aggregate `StreamCredits` above so the
+// popup never changes or double-counts the end-of-stream credits behavior.
+export type StreamEventType = "follow" | "subscriber" | "giftSub" | "cheer" | "tip" | "raid"
+
+export interface StreamEvent {
+  id: string // unique per discrete event (stable id when available, else generated) - used for React keys + consumer tracking
+  type: StreamEventType
+  username: string
+  value?: number // months (sub), bits (cheer), amount (tip), viewers (raid), count (giftSub)
+  tier?: string
+  gifted?: boolean
+  gifter?: string
+  isTest: boolean
+  timestamp: number
+}
+
+// Bounded, self-expiring dedup cache to survive reconnect replays.
+const DEDUPE_TTL_MS = 60_000
+const DEDUPE_MAX = 200
+const EVENTS_MAX = 50
+
 export function useStreamElements() {
   const [recentTippers, setRecentTippers] = useState<Array<{ name: string; amount: number }>>([])
   const [streamCredits, setStreamCredits] = useState<StreamCredits>({
@@ -28,8 +50,13 @@ export function useStreamElements() {
     charityDonors: [],
     redeemers: [],
   })
+  // Discrete realtime events (newest last). Bounded to EVENTS_MAX.
+  const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const socketRef = useRef<Socket | null>(null)
+  // signature -> insertion timestamp; bounded + TTL-expired.
+  const dedupeRef = useRef<Map<string, number>>(new Map())
+  const eventSeqRef = useRef(0)
 
   useEffect(() => {
     const fetchTokenAndConnect = async () => {
@@ -77,12 +104,12 @@ export function useStreamElements() {
         // Listen for all events - these are the main event handlers
         socket.on("event", (eventData: any) => {
           console.log("[v0] StreamElements EVENT received:", JSON.stringify(eventData))
-          handleEvent(eventData)
+          handleEvent(eventData, false)
         })
 
         socket.on("event:test", (eventData: any) => {
           console.log("[v0] StreamElements TEST EVENT received:", JSON.stringify(eventData))
-          handleEvent(eventData)
+          handleEvent(eventData, true)
         })
 
         socket.on("event:update", (eventData: any) => {
@@ -112,7 +139,61 @@ export function useStreamElements() {
       }
     }
 
-    const handleEvent = (eventData: any) => {
+    // Best-effort dedup: prefer a stable id, else a normalized signature that
+    // tolerates reconnect replays with slightly different timestamps (time-bucketed).
+    const isDuplicate = (signature: string): boolean => {
+      const now = Date.now()
+      const cache = dedupeRef.current
+      // Expire stale entries.
+      for (const [key, ts] of cache) {
+        if (now - ts > DEDUPE_TTL_MS) cache.delete(key)
+      }
+      if (cache.has(signature)) return true
+      cache.set(signature, now)
+      // Bound size (delete oldest inserted).
+      while (cache.size > DEDUPE_MAX) {
+        const oldestKey = cache.keys().next().value
+        if (oldestKey === undefined) break
+        cache.delete(oldestKey)
+      }
+      return false
+    }
+
+    // Push a discrete event to the popup queue, guarded by best-effort dedup.
+    const emitDiscreteEvent = (
+      eventData: any,
+      isTest: boolean,
+      type: StreamEventType,
+      username: string,
+      value: number | undefined,
+      extra?: { tier?: string; gifted?: boolean; gifter?: string },
+    ) => {
+      const normalizedUser = String(username || "").trim().toLowerCase()
+      const stableId = eventData._id || eventData.id || eventData.data?._id || eventData.data?.id
+      const bucket = Math.floor(Date.now() / 10_000) // 10s bucket tolerates replay jitter
+      const signature = stableId
+        ? `id:${stableId}`
+        : `${type}|${normalizedUser}|${value ?? ""}|${isTest ? "t" : "r"}|${bucket}`
+      if (isDuplicate(signature)) {
+        console.log("[v0] Discrete event deduped:", signature)
+        return
+      }
+      eventSeqRef.current += 1
+      const ev: StreamEvent = {
+        id: stableId ? `${stableId}` : `${type}-${normalizedUser}-${Date.now()}-${eventSeqRef.current}`,
+        type,
+        username,
+        value,
+        tier: extra?.tier,
+        gifted: extra?.gifted,
+        gifter: extra?.gifter,
+        isTest,
+        timestamp: Date.now(),
+      }
+      setStreamEvents((prev) => [...prev, ev].slice(-EVENTS_MAX))
+    }
+
+    const handleEvent = (eventData: any, isTest = false) => {
       // The event structure is: { type: "follow", data: { username, displayName, ... }, ... }
       const eventType = eventData.type
       const data = eventData.data || {}
@@ -128,6 +209,7 @@ export function useStreamElements() {
             followers: prev.followers.includes(username) ? prev.followers : [...prev.followers, username],
           }))
           console.log("[v0] Follow recorded:", username)
+          emitDiscreteEvent(eventData, isTest, "follow", username, undefined)
         }
       }
 
@@ -147,6 +229,7 @@ export function useStreamElements() {
             ],
           }))
           console.log("[v0] Sub recorded:", username, months, "months")
+          emitDiscreteEvent(eventData, isTest, "subscriber", username, months, { tier, gifted, gifter })
           
           // Also track gift subs by gifter
           if (gifted && gifter) {
@@ -183,6 +266,7 @@ export function useStreamElements() {
             }
           })
           console.log("[v0] Cheer recorded:", username, bits, "bits")
+          emitDiscreteEvent(eventData, isTest, "cheer", username, bits)
         }
       }
 
@@ -207,6 +291,7 @@ export function useStreamElements() {
             }
           })
           console.log("[v0] Tip recorded:", username, amount)
+          emitDiscreteEvent(eventData, isTest, "tip", username, amount)
         }
       }
 
@@ -220,6 +305,7 @@ export function useStreamElements() {
             raiders: [...prev.raiders, { name: username, viewers }],
           }))
           console.log("[v0] Raid recorded:", username, viewers, "viewers")
+          emitDiscreteEvent(eventData, isTest, "raid", username, viewers)
         }
       }
 
@@ -240,6 +326,7 @@ export function useStreamElements() {
             }
           })
           console.log("[v0] Bulk gift sub recorded:", gifter, count, "subs")
+          emitDiscreteEvent(eventData, isTest, "giftSub", gifter, count, { gifter })
         }
       }
 
@@ -327,6 +414,7 @@ export function useStreamElements() {
   return {
     recentTippers,
     streamCredits,
+    streamEvents,
     isConnected,
   }
 }

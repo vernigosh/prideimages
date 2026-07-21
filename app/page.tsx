@@ -28,6 +28,7 @@ import { StartingTimer } from "@/components/starting-timer" // Import StartingTi
 import { BrbOverlay } from "@/components/brb-overlay" // Import BRB overlay component
 import { RaidCelebration } from "@/components/raid-celebration" // Import Raid celebration component
 import { PrideTriviaTimer } from "@/components/pride-trivia-timer" // Import Pride Trivia Timer component
+import { StreamEventPopup } from "@/components/stream-event-popup" // Import discrete stream event popup
 
 interface Trick {
   name: string
@@ -246,7 +247,7 @@ export default function DJRandomizer() {
   } | null>(null)
 
   // StreamElements service for tracking stream events
-  const { streamCredits } = useStreamElements()
+  const { streamCredits, streamEvents } = useStreamElements()
   
   // Use test data if available, otherwise use live data
   const activeStreamCredits = testCreditsData || streamCredits
@@ -808,6 +809,9 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
             fontWeight={fontWeight}
           />
         )}
+
+        {/* Discrete Stream Event Popup (follows, subs, gifts, cheers, tips, raids) */}
+        <StreamEventPopup events={streamEvents} />
 
         {/* Blurb Overlay */}
         <BlurbOverlay

@@ -114,9 +114,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   const [bunnyStartTime, setBunnyStartTime] = useState<number | null>(null) // Track when bunny visit started
   const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const [rainTimeoutRef, setRainTimeoutRef] = useState<NodeJS.Timeout | null>(null) // Use state for rain timeout
-  const [flowerReveals, setFlowerReveals] = useState<{ [key: string]: { type: string; x: number; timestamp: number } }>(
-    {},
-  )
   const [lastWaterTime, setLastWaterTime] = useState(0) // New state variable for tracking the last water time
   const [userFlowerCounts, setUserFlowerCounts] = useState<{ [username: string]: number }>({}) // New state for user flower totals
   const [userPickedTotals, setUserPickedTotals] = useState<{ [username: string]: number }>({}) // New state for lifetime picked totals
@@ -294,7 +291,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
           if (flower.stage === "fully-mature") return flower
 
           const timeSincePlanted = Date.now() - flower.plantedAt
-          const oldStage = flower.stage
 
           let newStage: Flower["stage"] = "sprout"
           if (timeSincePlanted > 150000)
@@ -307,28 +303,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             newStage = "blooming" // 45s-1 minute
           else newStage = "sprout" // 0-45s
 
-          // Trigger reveal when flower reaches small stage (after sparkle)
-          if (oldStage === "blooming" && newStage === "small") {
-            const flowerName = flowerTypes[flower.type].name.toUpperCase()
-
-            setFlowerReveals((prev) => ({
-              ...prev,
-              [flower.id]: {
-                type: `${flower.plantedBy.toUpperCase()}'S ${flowerName}!`,
-                x: flower.x,
-                timestamp: Date.now(),
-              },
-            }))
-
-            // Remove reveal after 3 seconds
-            setTimeout(() => {
-              setFlowerReveals((prev) => {
-                const newReveals = { ...prev }
-                delete newReveals[flower.id]
-                return newReveals
-              })
-            }, 3000)
-          }
+          // Per-flower name labels removed by design; routine activity is
+          // surfaced through the centralized activity feed (addActivity) instead.
 
           return { ...flower, stage: newStage }
         })
@@ -1182,19 +1158,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
               />
             </div>
           )}
-
-          {/* Flower Reveals - centered horizontally above garden */}
-          {Object.keys(flowerReveals).map((flowerId) => (
-            <div
-              key={flowerId}
-              className="fixed transform -translate-x-1/2 z-30 pointer-events-none"
-              style={{ bottom: "358px", left: `${flowerReveals[flowerId].x}%` }} // Moving flower reveals down 5px: 363px -> 358px
-            >
-              <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
-                {flowerReveals[flowerId].type}
-              </span>
-            </div>
-          ))}
 
           {/* Flowers */}
           {flowers.map((flower) => {

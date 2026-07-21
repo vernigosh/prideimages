@@ -2,10 +2,40 @@
 
 import { useState, useEffect, useRef } from "react"
 
+export interface WorkTimerSettings {
+  offsetX: number // px from the right edge
+  offsetY: number // px from vertical center (positive = down)
+  scale: number
+  ringSize: number // ring diameter in px
+  countdownFontSize: number
+  stateLabelFontSize: number
+  nextChangeFontSize: number
+  introEnabled: boolean
+  introDuration: number // ms
+  focusIntroText: string
+  breakIntroText: string
+}
+
+export const DEFAULT_WORK_TIMER_SETTINGS: WorkTimerSettings = {
+  offsetX: 60,
+  offsetY: 0,
+  scale: 1,
+  ringSize: 240,
+  countdownFontSize: 56,
+  stateLabelFontSize: 22,
+  nextChangeFontSize: 26,
+  introEnabled: true,
+  introDuration: 6000,
+  focusIntroText: "FOCUS TIME",
+  breakIntroText: "BREAK TIME",
+}
+
 interface WorkTimerProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
+  settings?: Partial<WorkTimerSettings>
+  onIntroActiveChange?: (active: boolean) => void
 }
 
 const WORK_DURATION = 25 * 60
@@ -56,6 +86,20 @@ function getNextBreakTime() {
   return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
 }
 
+// During a break, the next focus block starts at x:30 or x:00 (next hour).
+function getNextFocusTime() {
+  const now = new Date()
+  const mins = now.getMinutes()
+  const target = new Date(now)
+  if (mins < 30) {
+    target.setMinutes(30, 0, 0)
+  } else {
+    target.setHours(target.getHours() + 1)
+    target.setMinutes(0, 0, 0)
+  }
+  return `${String(target.getHours()).padStart(2, "0")}:${String(target.getMinutes()).padStart(2, "0")}`
+}
+
 // Send chat message via StreamElements bot
 async function sendChatMessage(message: string) {
   try {
@@ -96,17 +140,37 @@ function getRingProps(progress: number) {
   return { radius, circumference, strokeDashoffset }
 }
 
-export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerProps) {
+export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onIntroActiveChange }: WorkTimerProps) {
+  const cfg: WorkTimerSettings = { ...DEFAULT_WORK_TIMER_SETTINGS, ...settings }
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
   const [cycleCount, setCycleCount] = useState(1)
   const [showPulse, setShowPulse] = useState(false)
+  const [intro, setIntro] = useState<{ text: string; phase: "work" | "break" } | null>(null)
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
   const isVisibleRef = useRef(isVisible)
   const prevPhaseRef = useRef<"work" | "break" | null>(null)
-  // Keep ref in sync
+  const introTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Keep refs in sync
   isVisibleRef.current = isVisible
+  const cfgRef = useRef(cfg)
+  cfgRef.current = cfg
+  const onIntroActiveChangeRef = useRef(onIntroActiveChange)
+  onIntroActiveChangeRef.current = onIntroActiveChange
+
+  // Fire the temporary intro banner ONLY on a genuine wall-clock phase transition.
+  const triggerIntro = (newPhase: "work" | "break") => {
+    const c = cfgRef.current
+    if (!c.introEnabled) return
+    if (introTimerRef.current) clearTimeout(introTimerRef.current)
+    setIntro({ text: newPhase === "work" ? c.focusIntroText : c.breakIntroText, phase: newPhase })
+    onIntroActiveChangeRef.current?.(true)
+    introTimerRef.current = setTimeout(() => {
+      setIntro(null)
+      onIntroActiveChangeRef.current?.(false)
+    }, c.introDuration)
+  }
 
   // Single effect: use requestAnimationFrame instead of setInterval
   // RAF automatically pauses when OBS hides the browser source (scene change)
@@ -119,6 +183,13 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
         rafRef.current = null
       }
       lastTickRef.current = 0
+      if (introTimerRef.current) {
+        clearTimeout(introTimerRef.current)
+        introTimerRef.current = null
+      }
+      setIntro(null)
+      onIntroActiveChangeRef.current?.(false)
+      prevPhaseRef.current = null
       setPhase("work")
       setTimeLeft(WORK_DURATION)
       setCycleCount(1)
@@ -155,10 +226,12 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
             setShowPulse(true)
             setTimeout(() => setShowPulse(false), 10000) // 10 second pulse
             sendChatMessage("FOCUS TIME! 25 minutes of productivity starts now!")
+            triggerIntro("work")
           } else {
             // Break started
             window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))
             sendChatMessage("BREAK TIME! Take 5 minutes to rest and recharge!")
+            triggerIntro("break")
           }
         }
         prevPhaseRef.current = s.currentPhase
@@ -210,84 +283,90 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide }: WorkTimerPr
   const seconds = timeLeft % 60
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
+  const workColor = "rgba(145, 70, 255, 0.95)"
+  const breakColor = "rgba(59, 130, 246, 0.95)"
+  const ringColor = phase === "work" ? workColor : breakColor
+  const stateLabel = phase === "work" ? "FOCUS" : "BREAK"
+  const nextChange = phase === "work" ? `BREAK ${getNextBreakTime()}` : `FOCUS ${getNextFocusTime()}`
+
   return (
     <>
       {/* Purple pulse overlay for new work cycle */}
       {showPulse && (
-        <div 
-          className="fixed inset-0 pointer-events-none z-50 animate-pulse"
+        <div
+          className="fixed inset-0 pointer-events-none z-50"
           style={{
             background: "radial-gradient(ellipse at center, rgba(147, 51, 234, 0.3) 0%, rgba(147, 51, 234, 0.15) 50%, transparent 70%)",
             animation: "pulse 2s ease-in-out infinite",
           }}
         />
       )}
-      <div className="absolute right-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-md">
-      {/* Gradient background for visibility on light backgrounds */}
-      <div
-        className="absolute inset-0 -m-8 rounded-3xl"
-        style={{
-          background: "radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 80%)",
-        }}
-      />
-      <div className="flex flex-col items-center justify-center gap-4 font-bold relative z-10">
-        <div className="relative w-64 h-64">
-          <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">
-            {/* Background ring */}
-            <circle
-              cx="100"
-              cy="100"
-              r={radius}
-              fill="none"
-              stroke="rgba(255, 255, 255, 0.2)"
-              strokeWidth="12"
-            />
-            {/* Progress ring */}
-            <circle
-              cx="100"
-              cy="100"
-              r={radius}
-              fill="none"
-              stroke={phase === "work" ? "rgba(145, 70, 255, 0.95)" : "rgba(59, 130, 246, 0.9)"}
-              strokeWidth="12"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
-            />
-          </svg>
 
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-5xl text-white drop-shadow-lg font-bold font-sans">
-                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-              </div>
-              <div className="text-sm text-gray-300 mt-2 drop-shadow-md font-semibold">
-                {phase === "work" ? "Focus Time" : "Break Time"}
-              </div>
-            </div>
+      {/* Temporary intro banner - only shown briefly on an actual phase transition */}
+      {intro && (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="flex flex-col items-center rounded-3xl border border-white/10 bg-neutral-900/85 px-16 py-10 shadow-2xl backdrop-blur-sm"
+            style={{ animation: "pulse 2.5s ease-in-out infinite" }}
+          >
+            <span
+              className="font-sans font-black uppercase tracking-widest text-white"
+              style={{ fontSize: "64px", color: intro.phase === "work" ? "#b18cff" : "#7fb0ff" }}
+            >
+              {intro.text}
+            </span>
+            <span className="mt-2 font-sans text-2xl font-semibold uppercase tracking-wide text-white/70">
+              {intro.phase === "work" ? "25 minutes of deep work" : "5 minutes to recharge"}
+            </span>
           </div>
         </div>
+      )}
 
-        <div className="text-4xl text-white text-center drop-shadow-lg font-semibold leading-tight uppercase font-sans">
-          {phase === "work" ? (
-            <>
-              <div>25 MIN</div>
-              <div>WORK CHALLENGE</div>
-            </>
-          ) : (
-            <>
-              <div>5 MIN</div>
-              <div>BREAK TIME</div>
-            </>
-          )}
-        </div>
-
-        <div className="text-3xl text-gray-300 drop-shadow-lg font-sans font-semibold">
-          Break at {getNextBreakTime()}
+      {/* Persistent compact timer */}
+      <div
+        className="absolute right-0 top-1/2 z-10"
+        style={{ transform: `translate(${-cfg.offsetX}px, calc(-50% + ${cfg.offsetY}px)) scale(${cfg.scale})` }}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative" style={{ width: `${cfg.ringSize}px`, height: `${cfg.ringSize}px` }}>
+            <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
+              <circle
+                cx="100"
+                cy="100"
+                r={radius}
+                fill="none"
+                stroke={ringColor}
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span
+                className="font-sans font-black tabular-nums leading-none text-white"
+                style={{ fontSize: `${cfg.countdownFontSize}px`, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
+              >
+                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+              </span>
+              <span
+                className="mt-1 font-sans font-bold uppercase tracking-[0.3em] text-white/80"
+                style={{ fontSize: `${cfg.stateLabelFontSize}px` }}
+              >
+                {stateLabel}
+              </span>
+            </div>
+          </div>
+          <span
+            className="font-sans font-bold uppercase tracking-wide text-white/70"
+            style={{ fontSize: `${cfg.nextChangeFontSize}px`, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
+          >
+            {nextChange}
+          </span>
         </div>
       </div>
-    </div>
     </>
   )
 }

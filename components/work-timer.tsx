@@ -293,8 +293,8 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
   const workColor = "rgba(145, 70, 255, 0.95)"
   const breakColor = "rgba(59, 130, 246, 0.95)"
   const ringColor = phase === "work" ? workColor : breakColor
-  const stateLabel = phase === "work" ? "FOCUS" : "BREAK"
-  const nextChange = phase === "work" ? `BREAK ${getNextBreakTime()}` : `FOCUS ${getNextFocusTime()}`
+  const stateLabel = phase === "work" ? "FOCUS TIME" : "BREAK TIME"
+  const nextChange = phase === "work" ? `NEXT BREAK ${getNextBreakTime()}` : `NEXT WORK CYCLE ${getNextFocusTime()}`
 
   return (
     <>

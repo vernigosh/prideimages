@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { SpinningWheel } from "@/components/spinning-wheel"
 import { AdminInterface } from "@/components/admin-interface"
 import { ResultDisplay } from "@/components/result-display"
@@ -28,7 +28,6 @@ import { StartingTimer } from "@/components/starting-timer" // Import StartingTi
 import { BrbOverlay } from "@/components/brb-overlay" // Import BRB overlay component
 import { RaidCelebration } from "@/components/raid-celebration" // Import Raid celebration component
 import { PrideTriviaTimer } from "@/components/pride-trivia-timer" // Import Pride Trivia Timer component
-import { StreamEventPopup, DEFAULT_EVENT_POPUP_SETTINGS, type StreamEventPopupSettings } from "@/components/stream-event-popup" // Import discrete stream event popup
 import { DEFAULT_WORK_TIMER_SETTINGS, type WorkTimerSettings } from "@/components/work-timer"
 import { OverlayExtrasSettings } from "@/components/overlay-extras-settings" // Settings for popup + work timer layout
 import {
@@ -251,10 +250,6 @@ export default function DJRandomizer() {
   // Layout/appearance settings for the extras. All are persisted in localStorage
   // (see usePersistentSettings) so they survive browser-source refresh, OBS
   // restart, editing-mode reload, and new v0 deployments without clearing storage.
-  const [eventPopupSettings, setEventPopupSettings, resetEventPopupSettings] = usePersistentSettings(
-    "overlay:eventPopup",
-    DEFAULT_EVENT_POPUP_SETTINGS,
-  )
   const [workTimerSettings, setWorkTimerSettings, resetWorkTimerSettings] = usePersistentSettings(
     "overlay:workTimer",
     DEFAULT_WORK_TIMER_SETTINGS,
@@ -296,25 +291,7 @@ export default function DJRandomizer() {
   // StreamElements service for tracking stream events
   const { streamCredits, streamEvents } = useStreamElements()
 
-  // Incremental delivery to the event popup. `streamEvents` is a CUMULATIVE array,
-  // so we track which ids the popup has already consumed and only hand it the ones
-  // it has not seen. This ref lives in the PARENT, so even if the popup unmounts and
-  // remounts, previously consumed events are never re-enqueued. Bounded + expiring.
-  const consumedEventIdsRef = useRef<Map<string, number>>(new Map())
-  const markEventConsumed = (id: string) => {
-    const map = consumedEventIdsRef.current
-    map.set(id, Date.now())
-    if (map.size > 400) {
-      // Drop the oldest ~200 entries to keep the cache bounded.
-      const sorted = Array.from(map.entries()).sort((a, b) => a[1] - b[1])
-      for (let i = 0; i < sorted.length - 200; i++) map.delete(sorted[i][0])
-    }
-  }
-  const pendingPopupEvents = useMemo(
-    () => streamEvents.filter((e) => !consumedEventIdsRef.current.has(e.id)),
-    [streamEvents],
-  )
-  
+
   // Use test data if available, otherwise use live data
   const activeStreamCredits = testCreditsData || streamCredits
 
@@ -331,6 +308,7 @@ export default function DJRandomizer() {
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = () => {
+      setShowSocialTimer(false)
       setShowDarkTimer(true)
     }
 
@@ -339,6 +317,7 @@ export default function DJRandomizer() {
     }
 
     const handleStartSocialTimer = () => {
+      setShowDarkTimer(false)
       setShowSocialTimer(true)
     }
 
@@ -804,11 +783,15 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     return null
   }
 
-  // Render timers - work timer always on right, other timers move to left when work timer is active
+  // Two-slot right rail. Work owns the lower primary slot; Dark or Social uses
+  // the upper secondary slot. The 253px center separation produces a 24px gap
+  // between the measured compact timer blocks (180px rings plus labels).
   const getTimerElements = () => {
     const elements: React.ReactNode[] = []
+    const primaryOffsetY = workTimerSettings.offsetY - 200
+    const secondaryOffsetY = primaryOffsetY - 253
+    const secondaryKind = showDarkTimer && !showPrideTrivia ? "dark" : showSocialTimer ? "social" : null
 
-    // Work timer always takes the right side when visible
     if (showWorkTimer) {
       elements.push(
         <WorkTimer
@@ -816,39 +799,42 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           isVisible={showWorkTimer}
           onConnectionChange={setWorkTimerConnected}
           onHide={() => setShowWorkTimer(false)}
-          settings={workTimerSettings}
+          settings={{
+            ...workTimerSettings,
+            offsetY: primaryOffsetY,
+            ringSize: 180,
+            countdownFontSize: timeFontSize,
+            stateLabelFontSize: 24,
+            nextChangeFontSize: 24,
+          }}
         />
       )
     }
 
-    // Dark timer: left side if work timer is active, otherwise right side
-    // When both dark timer and pride trivia are active, use 3D flip animation between them
-    if (showDarkTimer && !showPrideTrivia) {
-      // Only dark timer active - show normally
+    const auxiliaryOffsetY = showWorkTimer ? secondaryOffsetY : primaryOffsetY
+    if (secondaryKind === "dark") {
       elements.push(
         <DarkTimer
           key="dark-timer"
-          isVisible={showDarkTimer}
+          isVisible
           onConnectionChange={setDarkTimerConnected}
           onHide={() => setShowDarkTimer(false)}
-          workTimerActive={showWorkTimer}
-          socialTimerActive={showSocialTimer}
+          offsetX={workTimerSettings.offsetX}
+          offsetY={auxiliaryOffsetY}
+          countdownFontSize={timeFontSize}
         />
       )
-    }
-
-    // Social timer: left side if work timer is active, otherwise right side
-    if (showSocialTimer) {
+    } else if (secondaryKind === "social") {
       elements.push(
-<SocialTimer
-  key="social-timer"
-  isVisible={showSocialTimer}
-  onConnectionChange={setSocialTimerConnected}
-  onHide={() => setShowSocialTimer(false)}
-  workTimerActive={showWorkTimer}
-  darkTimerActive={showDarkTimer}
-  prideTimerActive={showPrideTrivia}
-/>
+        <SocialTimer
+          key="social-timer"
+          isVisible
+          onConnectionChange={setSocialTimerConnected}
+          onHide={() => setShowSocialTimer(false)}
+          offsetX={workTimerSettings.offsetX}
+          offsetY={auxiliaryOffsetY}
+          countdownFontSize={timeFontSize}
+        />
       )
     }
 
@@ -877,22 +863,10 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           />
         )}
 
-        {/* Discrete Stream Event Popup (follows, subs, gifts, cheers, tips, raids).
-            Suppressed while a full-screen takeover (BRB, Starting Soon, Credits) is active
-            so temporary notifications never collide with higher-priority scenes. */}
-        <StreamEventPopup
-          events={pendingPopupEvents}
-          settings={eventPopupSettings}
-          suppressed={showBrb || showStartingTimer || showStreamCredits}
-          onConsumed={markEventConsumed}
-        />
-
-        {/* Visible incoming Twitch chat. Deliberately rendered OUTSIDE any
-            takeover/suppression gating: its visibility is controlled ONLY by its
-            own enabled setting and the OBS browser-source visibility. It never
-            hides, moves, or clears in response to events, raids, timers, garden
-            activity, trivia, credits, Starting Soon, BRB, or any other state. */}
-        <ChatOverlay settings={chatOverlaySettings} />
+        {/* Incoming Twitch chat and discrete StreamElements activity share the
+            approved lower-left stack. Stable event ids prevent cumulative service
+            history from being shown twice. */}
+        <ChatOverlay settings={chatOverlaySettings} events={streamEvents} />
 
         {/* Blurb Overlay */}
         <BlurbOverlay
@@ -1259,13 +1233,19 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         blurbFontWeight={blurbFontWeight}
         setBlurbFontWeight={setBlurbFontWeight}
         showDarkTimer={showDarkTimer}
-        setShowDarkTimer={setShowDarkTimer}
-        darkTimerConnected={darkTimerConnected}
-        showWorkTimer={showWorkTimer}
-        setShowWorkTimer={setShowWorkTimer}
-        workTimerConnected={workTimerConnected}
-        showSocialTimer={showSocialTimer}
-        setShowSocialTimer={setShowSocialTimer}
+  setShowDarkTimer={(visible) => {
+    if (visible) setShowSocialTimer(false)
+    setShowDarkTimer(visible)
+  }}
+  darkTimerConnected={darkTimerConnected}
+  showWorkTimer={showWorkTimer}
+  setShowWorkTimer={setShowWorkTimer}
+  workTimerConnected={workTimerConnected}
+  showSocialTimer={showSocialTimer}
+  setShowSocialTimer={(visible) => {
+    if (visible) setShowDarkTimer(false)
+    setShowSocialTimer(visible)
+  }}
         socialTimerConnected={socialTimerConnected}
         showGarden={showGarden}
         setShowGarden={setShowGarden}
@@ -1282,11 +1262,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         lastCommand={lastCommand}
       />
 
-      {/* Layout/appearance controls for the discrete event popup and work timer */}
+      {/* Layout/appearance controls for the work timer, shared chat/event stack, and garden activity */}
       <OverlayExtrasSettings
-        popup={eventPopupSettings}
-        setPopup={setEventPopupSettings}
-        resetPopup={resetEventPopupSettings}
         workTimer={workTimerSettings}
         setWorkTimer={setWorkTimerSettings}
         resetWorkTimer={resetWorkTimerSettings}

@@ -1,16 +1,12 @@
 "use client"
 
-import { Bell, Timer, MessageSquare, Sprout, RotateCcw } from "lucide-react"
-import type { StreamEventPopupSettings } from "./stream-event-popup"
+import { Timer, MessageSquare, Sprout, RotateCcw } from "lucide-react"
 import type { WorkTimerSettings } from "./work-timer"
 import type { ChatOverlaySettings } from "./chat-overlay"
 import type { GardenActivitySettings } from "./community-garden"
 import type { NormalizedChatMessage } from "@/lib/chat-commands"
 
 interface OverlayExtrasSettingsProps {
-  popup: StreamEventPopupSettings
-  setPopup: (patch: Partial<StreamEventPopupSettings>) => void
-  resetPopup: () => void
   workTimer: WorkTimerSettings
   setWorkTimer: (patch: Partial<WorkTimerSettings>) => void
   resetWorkTimer: () => void
@@ -21,15 +17,6 @@ interface OverlayExtrasSettingsProps {
   setGardenActivity: (patch: Partial<GardenActivitySettings>) => void
   resetGardenActivity: () => void
 }
-
-const POPUP_POSITIONS: StreamEventPopupSettings["position"][] = [
-  "top-left",
-  "top-center",
-  "top-right",
-  "bottom-left",
-  "bottom-center",
-  "bottom-right",
-]
 
 // --- Small reusable controls (match the existing bold/black settings style) ---
 function Range({
@@ -104,9 +91,6 @@ function dispatchTestChat(msg: Partial<NormalizedChatMessage>) {
 }
 
 export function OverlayExtrasSettings({
-  popup,
-  setPopup,
-  resetPopup,
   workTimer,
   setWorkTimer,
   resetWorkTimer,
@@ -120,50 +104,6 @@ export function OverlayExtrasSettings({
   return (
     <div className="border-b-4 border-black bg-gray-50 p-6">
       <div className="grid gap-8 md:grid-cols-2">
-        {/* ---------------- Event Popup ---------------- */}
-        <div>
-          <h3 className="mb-4 flex items-center gap-2 text-2xl font-bold text-black">
-            <Bell className="h-6 w-6" />
-            Event Popup
-          </h3>
-          <div className="space-y-4">
-            <Check
-              label="Show event popups (follows, subs, gifts, cheers, tips, raids)"
-              checked={popup.enabled}
-              onChange={(v) => setPopup({ enabled: v })}
-            />
-            <div>
-              <label className="mb-2 block text-sm font-bold text-black">Position</label>
-              <select
-                value={popup.position}
-                onChange={(e) => setPopup({ position: e.target.value as StreamEventPopupSettings["position"] })}
-                className="w-full rounded border-2 border-black p-2"
-              >
-                {POPUP_POSITIONS.map((p) => (
-                  <option key={p} value={p}>
-                    {p.replace("-", " ")}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Range label={`Scale (${popup.scale.toFixed(2)}x)`} min={0.5} max={2} step={0.05} value={popup.scale} onChange={(v) => setPopup({ scale: v })} />
-            <div className="grid grid-cols-2 gap-4">
-              <Range label={`Offset X (${popup.offsetX}px)`} min={-400} max={400} value={popup.offsetX} onChange={(v) => setPopup({ offsetX: v })} />
-              <Range label={`Offset Y (${popup.offsetY}px)`} min={0} max={400} value={popup.offsetY} onChange={(v) => setPopup({ offsetY: v })} />
-            </div>
-            <Range
-              label={`Follow expiry (${Math.round(popup.followExpiryMs / 1000)}s)`}
-              min={10}
-              max={120}
-              value={Math.round(popup.followExpiryMs / 1000)}
-              onChange={(v) => setPopup({ followExpiryMs: v * 1000 })}
-            />
-            <button type="button" onClick={resetPopup} className="flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-black">
-              <RotateCcw className="h-3.5 w-3.5" /> Reset defaults
-            </button>
-          </div>
-        </div>
-
         {/* ---------------- Work Timer Layout ---------------- */}
         <div>
           <h3 className="mb-4 flex items-center gap-2 text-2xl font-bold text-black">
@@ -198,7 +138,7 @@ export function OverlayExtrasSettings({
         <div>
           <h3 className="mb-4 flex items-center gap-2 text-2xl font-bold text-black">
             <MessageSquare className="h-6 w-6" />
-            Chat Overlay
+            Chat & Event Stack
           </h3>
           <div className="space-y-4">
             <Check label="Enabled" checked={chat.enabled} onChange={(v) => setChat({ enabled: v })} />

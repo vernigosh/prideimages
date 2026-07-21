@@ -15,9 +15,9 @@ export interface StreamCredits {
   redeemers: Array<{ name: string; redeems: string[] }>
 }
 
-// Discrete, per-occurrence realtime event used to feed the temporary popup queue.
-// This is intentionally SEPARATE from the aggregate `StreamCredits` above so the
-// popup never changes or double-counts the end-of-stream credits behavior.
+// Discrete, per-occurrence realtime event used by the on-screen chat/event stack.
+// This stays separate from aggregate `StreamCredits` so event cards never change
+// or double-count the end-of-stream credits behavior.
 export type StreamEventType = "follow" | "subscriber" | "giftSub" | "cheer" | "tip" | "raid"
 
 export interface StreamEvent {

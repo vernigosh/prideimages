@@ -12,6 +12,7 @@ import {
   OVERLAY_WEIGHT_LABEL,
   OVERLAY_WEIGHT_BODY,
 } from "@/lib/overlay-typography"
+import type { StreamEvent } from "./streamelements-service"
 
 export interface ChatOverlaySettings {
   enabled: boolean
@@ -49,7 +50,7 @@ export interface ChatOverlaySettings {
 
 // Bump this when the layout defaults below change. On load, any persisted settings
 // with a lower (or missing) version have ONLY their layout fields refreshed once.
-export const CHAT_LAYOUT_VERSION = 4
+export const CHAT_LAYOUT_VERSION = 5
 
 // Layout-only fields refreshed by the migration. Behavioral/filter fields
 // (enabled, filters, colors, uppercase, ignoredUsers, lifetime, etc.) are preserved.
@@ -74,7 +75,7 @@ export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   width: 400,
   visibleCount: 2,
   usernameFontSize: 20,
-  messageFontSize: 20,
+  messageFontSize: 24, // shared readable size for chat messages and stream events
   lifetimeMs: 20000,
   backgroundOpacity: 0.58,
   borderRadius: 14,
@@ -111,9 +112,46 @@ function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
 }
 
-interface DisplayMessage extends NormalizedChatMessage {
+interface DisplayChatMessage extends NormalizedChatMessage {
+  kind: "chat"
   addedAt: number
   leaving?: boolean // fading out prior to removal
+}
+
+interface DisplayStreamEvent {
+  kind: "event"
+  id: string
+  label: string
+  message: string
+  addedAt: number
+  leaving?: boolean
+}
+
+type DisplayItem = DisplayChatMessage | DisplayStreamEvent
+
+function formatStreamEvent(event: StreamEvent): Pick<DisplayStreamEvent, "label" | "message"> {
+  const testSuffix = event.isTest ? " (test)" : ""
+  switch (event.type) {
+    case "follow":
+      return { label: event.username, message: `just followed${testSuffix}` }
+    case "subscriber": {
+      const months = event.value && event.value > 1 ? ` for ${event.value} months` : ""
+      if (event.gifted && event.gifter) {
+        return { label: event.username, message: `received a gifted sub from ${event.gifter}${testSuffix}` }
+      }
+      return { label: event.username, message: `just subscribed${months}${testSuffix}` }
+    }
+    case "giftSub": {
+      const count = event.value ?? 1
+      return { label: event.gifter || event.username, message: `gifted ${count} sub${count === 1 ? "" : "s"}${testSuffix}` }
+    }
+    case "cheer":
+      return { label: event.username, message: `cheered ${event.value ?? 0} bits${testSuffix}` }
+    case "tip":
+      return { label: event.username, message: `tipped $${(event.value ?? 0).toFixed(2)}${testSuffix}` }
+    case "raid":
+      return { label: event.username, message: `raided with ${event.value ?? 0} viewers${testSuffix}` }
+  }
 }
 
 // Only a #RGB or #RRGGBB string is a valid Twitch color.
@@ -167,12 +205,13 @@ function renderContent(text: string, emotes: OverlayChatEmote[], showEmotes: boo
 
 interface ChatOverlayProps {
   settings?: Partial<ChatOverlaySettings>
+  events?: StreamEvent[]
 }
 
-export function ChatOverlay({ settings }: ChatOverlayProps) {
+export function ChatOverlay({ settings, events = [] }: ChatOverlayProps) {
   const s: ChatOverlaySettings = { ...DEFAULT_CHAT_OVERLAY_SETTINGS, ...settings }
 
-  const [messages, setMessages] = useState<DisplayMessage[]>([])
+  const [messages, setMessages] = useState<DisplayItem[]>([])
   const seenIdsRef = useRef<Set<string>>(new Set())
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   const removeTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
@@ -230,7 +269,7 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
       }
 
       setMessages((prev) => {
-        const next = [...prev, { ...m, addedAt: Date.now() }]
+        const next: DisplayItem[] = [...prev, { ...m, kind: "chat", addedAt: Date.now() }]
         // Bound retained history; drop + un-time oldest overflow.
         while (next.length > HISTORY_MAX) {
           const removed = next.shift()
@@ -261,6 +300,39 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // StreamElements returns a cumulative bounded event array. Ingest each stable id
+  // once so events join the same upward-growing stack and expire independently.
+  useEffect(() => {
+    const cfg = settingsRef.current
+    if (!cfg.enabled) return
+
+    for (const event of events) {
+      const id = `event:${event.id}`
+      if (seenIdsRef.current.has(id)) continue
+      seenIdsRef.current.add(id)
+      const copy = formatStreamEvent(event)
+      setMessages((prev) => {
+        const next: DisplayItem[] = [...prev, { kind: "event", id, ...copy, addedAt: Date.now() }]
+        while (next.length > HISTORY_MAX) {
+          const removed = next.shift()
+          if (removed) {
+            const timer = timersRef.current.get(removed.id)
+            if (timer) clearTimeout(timer)
+            timersRef.current.delete(removed.id)
+          }
+        }
+        return next
+      })
+      scheduleExpiry(id, cfg.lifetimeMs)
+    }
+
+    if (seenIdsRef.current.size > 500) {
+      seenIdsRef.current = new Set(Array.from(seenIdsRef.current).slice(-200))
+    }
+    // `scheduleExpiry` reads no render state; settings are read through settingsRef.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events])
 
   // Clean up all timers on unmount.
   useEffect(() => {
@@ -347,37 +419,39 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
       className="pointer-events-none fixed z-40 flex flex-col justify-end"
       style={{ left: `${s.offsetX}px`, bottom: `${s.offsetY}px`, width: `${s.width}px`, gap: `${s.cardGap}px` }}
     >
-      {visible.map((m) => {
-        const nameColor = resolveUsernameColor(m.color, s.useTwitchUsernameColors)
+      {visible.map((item) => {
+        const isEvent = item.kind === "event"
+        const nameColor = item.kind === "chat"
+          ? resolveUsernameColor(item.color, s.useTwitchUsernameColors)
+          : "#171717"
+
         return (
           <div
-            key={m.id}
+            key={item.id}
             ref={(el) => {
-              if (el) cardRefs.current.set(m.id, el)
-              else cardRefs.current.delete(m.id)
+              if (el) cardRefs.current.set(item.id, el)
+              else cardRefs.current.delete(item.id)
             }}
-            data-leaving={m.leaving ? "true" : "false"}
-            className="w-full"
+            data-leaving={item.leaving ? "true" : "false"}
+            className={isEvent ? "w-fit max-w-full self-start" : "w-full"}
             style={{
-              backgroundColor: `rgba(10, 10, 12, ${s.backgroundOpacity})`,
+              backgroundColor: isEvent ? PINK_FALLBACK : `rgba(10, 10, 12, ${s.backgroundOpacity})`,
               borderRadius: `${s.borderRadius}px`,
-              border: CARD_BORDER,
+              border: isEvent ? "1px solid rgba(23,23,23,0.3)" : CARD_BORDER,
               boxShadow: CARD_SHADOW,
               padding: `${s.paddingY}px ${s.paddingX}px`,
               willChange: "transform, opacity",
             }}
           >
-            {/* Username and message share one size + baseline; text flows inline.
-                Uppercase is applied ONLY here at render time (when enabled) — the
-                stored display name, message, and color are never mutated. */}
             <p
-              className={`m-0 font-sans text-white${s.uppercase ? " uppercase" : ""}`}
+              className={`m-0 font-sans${s.uppercase ? " uppercase" : ""}`}
               style={{
+                color: isEvent ? "#171717" : "#ffffff",
                 fontSize: `${s.messageFontSize}px`,
                 lineHeight: OVERLAY_LINE_HEIGHT_CHAT,
                 letterSpacing: 0,
                 fontWeight: OVERLAY_WEIGHT_BODY,
-                textShadow: NAME_TEXT_SHADOW,
+                textShadow: isEvent ? "none" : NAME_TEXT_SHADOW,
                 display: "-webkit-box",
                 WebkitLineClamp: s.maxLines + 1,
                 WebkitBoxOrient: "vertical",
@@ -385,16 +459,20 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
                 wordBreak: "break-word",
               }}
             >
-              {/* USERNAME: — the name and its trailing colon share the exact
-                  resolved Twitch color (or pink fallback). No badges or role pills. */}
               <span
-                style={{ color: nameColor, fontSize: `${s.usernameFontSize}px`, fontWeight: OVERLAY_WEIGHT_LABEL }}
+                style={{
+                  color: nameColor,
+                  fontSize: isEvent ? `${s.messageFontSize}px` : `${s.usernameFontSize}px`,
+                  fontWeight: OVERLAY_WEIGHT_LABEL,
+                }}
               >
-                {m.username}:
+                {item.kind === "event" ? item.label : item.username}:
               </span>{" "}
-              {/* Message text stays white; emotes are parsed from the original
-                  unmodified message, so image emotes are never uppercased. */}
-              <span>{renderContent(m.message, m.emotes, s.showEmotes, s.messageFontSize)}</span>
+              <span>
+                {item.kind === "event"
+                  ? item.message
+                  : renderContent(item.message, item.emotes, s.showEmotes, s.messageFontSize)}
+              </span>
             </p>
           </div>
         )

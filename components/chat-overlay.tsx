@@ -28,6 +28,8 @@ export interface ChatOverlaySettings {
   paddingY: number // px, card vertical padding
   cardGap: number // px, vertical gap between individual cards
   maxLines: number // max text lines per message
+  /** @deprecated Badges were removed from the presentation. Field kept so older
+   *  saved settings still load; the value is ignored and no badge is rendered. */
   showBadges: boolean
   showEmotes: boolean
   hideRecognizedCommands: boolean
@@ -37,12 +39,14 @@ export interface ChatOverlaySettings {
   // When true (default), each username renders in that viewer's exact Twitch chat
   // color from the message tags. When false, every username uses the pink fallback.
   useTwitchUsernameColors: boolean
+  // Render-only uppercase presentation. Never mutates stored message data.
+  uppercase: boolean
 }
 
 export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   enabled: true,
   offsetX: 60, // inset from right — aligns near the clock/timer right edge
-  offsetY: 205, // above the highest normal flower area, below the timer
+  offsetY: 270, // below all timer external text, above the tallest normal flower
   width: 500,
   visibleCount: 2,
   usernameFontSize: 28, // 28px, weight 600
@@ -54,13 +58,14 @@ export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   paddingY: 10,
   cardGap: 7,
   maxLines: 2,
-  showBadges: true,
+  showBadges: false, // deprecated; badges are no longer rendered
   showEmotes: true,
   hideRecognizedCommands: true,
   hideAllCommands: false,
   hideBots: true,
   ignoredUsers: [],
   useTwitchUsernameColors: true,
+  uppercase: true,
 }
 
 // Established Vernigosh pink, used only when there is no valid Twitch color.
@@ -130,19 +135,10 @@ function renderContent(text: string, emotes: OverlayChatEmote[], showEmotes: boo
   return nodes
 }
 
-// Compact text-pill fallback for Twitch badges (official icons are not resolvable
-// in this environment — see the badge report). Kept small so it never grows the
-// card height beyond the ~28px text line.
-function Badge({ label, className }: { label: string; className: string }) {
-  return (
-    <span
-      className={`inline-block rounded-sm px-1 py-px text-[0.42em] font-bold uppercase leading-none align-middle ${className}`}
-      style={{ letterSpacing: 0 }}
-    >
-      {label}
-    </span>
-  )
-}
+// Badges and role pills were intentionally removed from the chat presentation.
+// Role data still lives on normalized messages (used elsewhere for command
+// permissions), it is simply never rendered here. No badge icons, placeholders,
+// or role abbreviations appear, and no badge API is contacted.
 
 interface ChatOverlayProps {
   settings?: Partial<ChatOverlaySettings>
@@ -341,10 +337,10 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
             }}
           >
             {/* Username and message share one size + baseline; text flows inline.
-                Uppercase is applied ONLY here at render time — the stored display
-                name and color are never mutated. */}
+                Uppercase is applied ONLY here at render time (when enabled) — the
+                stored display name, message, and color are never mutated. */}
             <p
-              className="m-0 font-sans text-white uppercase"
+              className={`m-0 font-sans text-white${s.uppercase ? " uppercase" : ""}`}
               style={{
                 fontSize: `${s.messageFontSize}px`,
                 lineHeight: OVERLAY_LINE_HEIGHT_CHAT,
@@ -358,31 +354,15 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
                 wordBreak: "break-word",
               }}
             >
-              {s.showBadges && m.badges.broadcaster && (
-                <>
-                  <Badge label="HOST" className="bg-[#ff6b9d] text-neutral-900" />{" "}
-                </>
-              )}
-              {s.showBadges && m.badges.moderator && (
-                <>
-                  <Badge label="MOD" className="bg-emerald-500 text-neutral-900" />{" "}
-                </>
-              )}
-              {s.showBadges && m.badges.vip && (
-                <>
-                  <Badge label="VIP" className="bg-fuchsia-400 text-neutral-900" />{" "}
-                </>
-              )}
-              {s.showBadges && m.badges.subscriber && !m.badges.broadcaster && (
-                <>
-                  <Badge label="SUB" className="bg-sky-400 text-neutral-900" />{" "}
-                </>
-              )}
+              {/* USERNAME: — the name and its trailing colon share the exact
+                  resolved Twitch color (or pink fallback). No badges or role pills. */}
               <span
                 style={{ color: nameColor, fontSize: `${s.usernameFontSize}px`, fontWeight: OVERLAY_WEIGHT_LABEL }}
               >
-                {m.username}
+                {m.username}:
               </span>{" "}
+              {/* Message text stays white; emotes are parsed from the original
+                  unmodified message, so image emotes are never uppercased. */}
               <span>{renderContent(m.message, m.emotes, s.showEmotes, s.messageFontSize)}</span>
             </p>
           </div>

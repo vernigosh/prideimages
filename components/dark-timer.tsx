@@ -186,8 +186,8 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
               style={{ transition: "stroke-dashoffset 0.5s ease-out", filter: "drop-shadow(0 0 8px #ff0000)" }}
             />
           </svg>
-          {/* Countdown pinned to the exact geometric center; label sits below,
-              independent of the countdown's centering. */}
+          {/* Ring interior: ONLY the countdown, pinned to the exact geometric
+              center. No phase label lives inside the ring. */}
           <span
             className="absolute font-sans tabular-nums"
             style={{
@@ -204,12 +204,12 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
           >
             {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
           </span>
+        </div>
+        {/* Timer copy: normal centered vertical layout beneath the ring. */}
+        <div className="flex flex-col items-center gap-1">
           <span
-            className="absolute font-sans uppercase"
+            className="font-sans uppercase"
             style={{
-              left: "50%",
-              top: "calc(50% + 34px)",
-              transform: "translateX(-50%)",
               fontSize: `${OVERLAY_FONT_STANDARD}px`,
               letterSpacing: 0,
               fontWeight: OVERLAY_WEIGHT_LABEL,
@@ -219,14 +219,14 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
           >
             DARK
           </span>
+          {/* Supporting text: preserve exact capitalization, no uppercase transform. */}
+          <span
+            className="font-sans"
+            style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
+          >
+            Exploring Darker Sounds
+          </span>
         </div>
-        {/* Supporting text: preserve exact capitalization, no uppercase transform. */}
-        <span
-          className="font-sans"
-          style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
-        >
-          Exploring Darker Sounds
-        </span>
       </div>
     </div>
   )

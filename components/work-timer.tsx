@@ -355,9 +355,8 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
                 style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
               />
             </svg>
-            {/* Countdown: its own layer, pinned to the exact geometric center of
-                the ring. The state label is positioned independently below it and
-                never participates in centering the countdown. */}
+            {/* Ring interior: ONLY the countdown, pinned to the exact geometric
+                center. No phase label or subtitle lives inside the ring. */}
             <span
               className="absolute font-sans tabular-nums text-white"
               style={{
@@ -373,31 +372,33 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
             >
               {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
             </span>
+          </div>
+          {/* Timer copy: normal centered vertical layout BENEATH the ring, giving
+              a predictable measured bottom edge for chat placement. */}
+          <div className="flex flex-col items-center gap-1">
             <span
-              className="absolute font-sans uppercase text-white/80"
+              className="font-sans uppercase text-white"
               style={{
-                left: "50%",
-                top: "calc(50% + 34px)",
-                transform: "translateX(-50%)",
                 fontSize: `${cfg.stateLabelFontSize}px`,
                 letterSpacing: 0,
                 fontWeight: OVERLAY_WEIGHT_LABEL,
+                textShadow: "0 2px 6px rgba(0,0,0,0.6)",
               }}
             >
               {stateLabel}
             </span>
+            <span
+              className="font-sans uppercase text-white/70"
+              style={{
+                fontSize: `${cfg.nextChangeFontSize}px`,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_BODY,
+                textShadow: "0 2px 6px rgba(0,0,0,0.6)",
+              }}
+            >
+              {nextChange}
+            </span>
           </div>
-          <span
-            className="font-sans uppercase text-white/70"
-            style={{
-              fontSize: `${cfg.nextChangeFontSize}px`,
-              letterSpacing: 0,
-              fontWeight: OVERLAY_WEIGHT_BODY,
-              textShadow: "0 2px 6px rgba(0,0,0,0.6)",
-            }}
-          >
-            {nextChange}
-          </span>
         </div>
       </div>
     </>

@@ -28,8 +28,9 @@ export interface GardenActivitySettings {
   fontSize: number
   lifetimeMs: number
   backgroundOpacity: number // 0-1 (0 = no card background)
-  highlightEnabled: boolean // pulse-highlight the specific flower tied to an activity
-  highlightMs: number // how long a targeted flower highlight lingers
+  highlightEnabled: boolean // power-up the specific flower tied to a plant activity
+  highlightMs: number // duration of the targeted flower power-up effect
+  highlightIntensity: "low" | "medium" | "high" // strength of the power-up treatment
 }
 
 export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
@@ -40,7 +41,21 @@ export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
   lifetimeMs: 6000,
   backgroundOpacity: 0,
   highlightEnabled: true,
-  highlightMs: 4000,
+  highlightMs: 1300, // ~1200-1400ms classic power-up
+  highlightIntensity: "medium",
+}
+
+// Maps the intensity setting to the peak brightness/saturation used by the
+// power-up. The animation keyframes read these via CSS custom properties.
+function intensityFactors(intensity: GardenActivitySettings["highlightIntensity"]) {
+  switch (intensity) {
+    case "low":
+      return { brightness: 1.25, saturate: 1.4 }
+    case "high":
+      return { brightness: 1.6, saturate: 2.2 }
+    default:
+      return { brightness: 1.4, saturate: 1.9 }
+  }
 }
 
 // Respect the viewer's OS-level reduced-motion preference for the flower effect.
@@ -975,7 +990,22 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       const kind = (e as CustomEvent<{ kind?: string }>).detail?.kind
       if (kind === "water") addActivity("💧 TESTGARDENER WATERED THE ENTIRE GARDEN!", 5000, { type: "water", username: "TestGardener" })
       else if (kind === "pick") addActivity("🌸 TESTGARDENER PICKED 3 OF THEIR OWN FLOWERS!", 5000, { type: "pick", username: "TestGardener" })
-      else {
+      else if (kind === "plant-burst") {
+        // Rapid three-activity test: queue three plant activities back-to-back,
+        // each carrying a DISTINCT flower id. Because effects only fire when an
+        // activity becomes the visible message, the 2nd and 3rd flowers must stay
+        // normal until their own message surfaces — verifying queue-safe timing.
+        const flowers = flowersRef.current
+        const targets = flowers.slice(-3)
+        for (let i = 0; i < 3; i++) {
+          const target = targets[targets.length - 1 - i] ?? flowers[flowers.length - 1]
+          addActivity(`🌱 BURSTGARDENER PLANTED FLOWER #${i + 1}!`, 5000, {
+            type: "plant",
+            username: "BurstGardener",
+            flowerId: target?.id,
+          })
+        }
+      } else {
         // Attach the newest flower's id so the power-up fires when this message
         // becomes visible (queue-safe) rather than being triggered imperatively.
         const newest = flowersRef.current[flowersRef.current.length - 1]
@@ -1350,10 +1380,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             // detached shape. Motion path cycles color/brightness and a tiny scale;
             // reduced-motion path holds a static brightness/saturation boost only.
             const powerUpClass = isPoweredUp ? (reduceMotion ? "gardenPowerUpStatic" : "gardenPowerUp") : ""
-            const powerUpStyle =
-              isPoweredUp && !reduceMotion
-                ? { animationDuration: `${Math.max(600, activityCfg.highlightMs)}ms` }
-                : undefined
+            const pu = intensityFactors(activityCfg.highlightIntensity)
+            const powerUpStyle = isPoweredUp
+              ? ({
+                  animationDuration: `${Math.max(600, activityCfg.highlightMs)}ms`,
+                  // Consumed by the keyframes / static class below.
+                  ["--pu-bright" as string]: `${pu.brightness}`,
+                  ["--pu-sat" as string]: `${pu.saturate}`,
+                } as React.CSSProperties)
+              : undefined
             return (
               <div
                 key={flower.id}
@@ -1386,32 +1421,35 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             opacity: 0.8;
           }
         }
-        /* Restrained classic power-up: the sprite briefly cycles bright colors,
-           gains brightness/saturation, grows a hair, and returns to its exact
-           original state at 100%. A silhouette-following glow uses drop-shadow so
-           it hugs the sprite rather than forming a detached disc. */
+        /* Restrained classic power-up: the sprite briefly cycles a few bright
+           colors, gains brightness/saturation, grows a hair (max ~1.05), and
+           returns to its EXACT original state at 100%. Peak brightness/saturation
+           come from --pu-bright / --pu-sat (driven by the intensity setting). A
+           silhouette-following glow uses drop-shadow so it hugs the sprite rather
+           than forming a detached disc. No white/black flash, no strobe. */
         @keyframes gardenPowerUp {
           0% {
             filter: brightness(1) saturate(1) hue-rotate(0deg);
             transform: scale(1);
           }
           20% {
-            filter: brightness(1.45) saturate(1.8) hue-rotate(35deg)
-              drop-shadow(0 0 4px rgba(255, 220, 90, 0.8));
+            filter: brightness(var(--pu-bright, 1.4)) saturate(calc(var(--pu-sat, 1.9) * 0.95))
+              hue-rotate(35deg) drop-shadow(0 0 4px rgba(255, 220, 90, 0.8));
             transform: scale(1.04);
           }
           42% {
-            filter: brightness(1.35) saturate(2) hue-rotate(145deg)
-              drop-shadow(0 0 4px rgba(80, 230, 255, 0.8));
+            filter: brightness(calc(var(--pu-bright, 1.4) * 0.95)) saturate(var(--pu-sat, 1.9))
+              hue-rotate(145deg) drop-shadow(0 0 4px rgba(80, 230, 255, 0.8));
             transform: scale(1.05);
           }
           64% {
-            filter: brightness(1.4) saturate(1.9) hue-rotate(255deg)
-              drop-shadow(0 0 4px rgba(255, 100, 220, 0.8));
+            filter: brightness(var(--pu-bright, 1.4)) saturate(calc(var(--pu-sat, 1.9) * 0.97))
+              hue-rotate(255deg) drop-shadow(0 0 4px rgba(255, 100, 220, 0.8));
             transform: scale(1.04);
           }
           82% {
-            filter: brightness(1.3) saturate(1.6) hue-rotate(65deg);
+            filter: brightness(calc(var(--pu-bright, 1.4) * 0.92)) saturate(calc(var(--pu-sat, 1.9) * 0.85))
+              hue-rotate(65deg);
             transform: scale(1.02);
           }
           100% {
@@ -1421,7 +1459,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         }
         .gardenPowerUp {
           animation-name: gardenPowerUp;
-          animation-duration: 1400ms;
+          animation-duration: 1300ms;
           animation-timing-function: ease-in-out;
           animation-iteration-count: 1;
           transform-origin: center bottom;
@@ -1430,12 +1468,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         /* Reduced-motion: a static, non-animated brightness/saturation lift that
            still makes the referenced flower obvious, with no movement or hue cycling. */
         .gardenPowerUpStatic {
-          filter: brightness(1.35) saturate(1.6) drop-shadow(0 0 4px rgba(255, 220, 120, 0.85));
+          filter: brightness(var(--pu-bright, 1.35)) saturate(var(--pu-sat, 1.6))
+            drop-shadow(0 0 4px rgba(255, 220, 120, 0.85));
         }
         @media (prefers-reduced-motion: reduce) {
           .gardenPowerUp {
             animation: none;
-            filter: brightness(1.35) saturate(1.6) drop-shadow(0 0 4px rgba(255, 220, 120, 0.85));
+            filter: brightness(var(--pu-bright, 1.35)) saturate(var(--pu-sat, 1.6))
+              drop-shadow(0 0 4px rgba(255, 220, 120, 0.85));
           }
         }
       `}</style>

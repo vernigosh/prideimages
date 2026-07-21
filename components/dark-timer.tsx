@@ -220,14 +220,14 @@ export function DarkTimer({
               textShadow: "0 0 10px #ff0000",
             }}
           >
-            DARK
+            DARK VERNIGOSH
           </span>
           {/* Supporting text: preserve exact capitalization, no uppercase transform. */}
           <span
-            className="font-sans"
-            style={{ fontSize: "20px", lineHeight: 1.08, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
+            className="font-sans text-center"
+            style={{ fontSize: "24px", lineHeight: 1.08, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
           >
-            Exploring Darker Sounds
+            Exploring the darker parts of the library!
           </span>
         </div>
       </div>

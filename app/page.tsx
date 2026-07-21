@@ -788,7 +788,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
   // between the measured compact timer blocks (180px rings plus labels).
   const getTimerElements = () => {
     const elements: React.ReactNode[] = []
-    const primaryOffsetY = workTimerSettings.offsetY
+    const primaryOffsetY = workTimerSettings.offsetY - 200
     const secondaryOffsetY = primaryOffsetY - 253
     const secondaryKind = showDarkTimer && !showPrideTrivia ? "dark" : showSocialTimer ? "social" : null
 
@@ -799,7 +799,14 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           isVisible={showWorkTimer}
           onConnectionChange={setWorkTimerConnected}
           onHide={() => setShowWorkTimer(false)}
-          settings={{ ...workTimerSettings, ringSize: 180, countdownFontSize: timeFontSize }}
+          settings={{
+            ...workTimerSettings,
+            offsetY: primaryOffsetY,
+            ringSize: 180,
+            countdownFontSize: timeFontSize,
+            stateLabelFontSize: 24,
+            nextChangeFontSize: 24,
+          }}
         />
       )
     }

@@ -3,6 +3,16 @@
 import { useEffect, useRef, useState } from "react"
 import { UserPlus, Star, Gift, Gem, DollarSign, Swords } from "lucide-react"
 import type { StreamEvent, StreamEventType } from "./streamelements-service"
+import {
+  OVERLAY_FONT_STANDARD,
+  OVERLAY_LINE_HEIGHT_STANDARD,
+  OVERLAY_WEIGHT_LABEL,
+  OVERLAY_WEIGHT_BODY,
+  OVERLAY_CARD,
+} from "@/lib/overlay-typography"
+
+// Established Vernigosh pink accent used for names across the overlay.
+const ACCENT_PINK = "#ff6b9d"
 
 export interface StreamEventPopupSettings {
   enabled: boolean
@@ -234,19 +244,33 @@ export function StreamEventPopup({
           opacity: visible ? 1 : 0,
         }}
       >
-        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-neutral-900/85 px-5 py-3 shadow-2xl backdrop-blur-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#ff6b9d]">
-            <Icon className="h-6 w-6 text-neutral-900" strokeWidth={2.5} aria-hidden="true" />
+        <div
+          className="flex items-center gap-4"
+          style={{
+            borderRadius: `${OVERLAY_CARD.borderRadius}px`,
+            border: OVERLAY_CARD.border,
+            background: OVERLAY_CARD.background,
+            boxShadow: OVERLAY_CARD.boxShadow,
+            padding: `${OVERLAY_CARD.paddingY}px ${OVERLAY_CARD.paddingX}px`,
+          }}
+        >
+          <div
+            className="flex shrink-0 items-center justify-center rounded-lg"
+            style={{ height: 48, width: 48, background: ACCENT_PINK }}
+          >
+            <Icon className="h-7 w-7 text-neutral-900" strokeWidth={2.5} aria-hidden="true" />
           </div>
-          <div className="flex flex-col leading-tight">
-            <span className="text-lg font-bold text-white">{title}</span>
-            <span className="text-sm font-medium text-white/70">{detail}</span>
-          </div>
-          {current.isTest && (
-            <span className="ml-2 rounded bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/60">
-              Test
+          {/* Single baseline, one size for username + action; wraps to max 2 lines. */}
+          <p
+            className="m-0 line-clamp-2 max-w-[26ch] font-sans"
+            style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, lineHeight: OVERLAY_LINE_HEIGHT_STANDARD, letterSpacing: 0 }}
+          >
+            <span style={{ fontWeight: OVERLAY_WEIGHT_LABEL, color: ACCENT_PINK }}>{title}</span>{" "}
+            <span style={{ fontWeight: OVERLAY_WEIGHT_BODY, color: "#ffffff" }}>
+              {detail}
+              {current.isTest ? " (test)" : ""}
             </span>
-          )}
+          </p>
         </div>
       </div>
     </div>

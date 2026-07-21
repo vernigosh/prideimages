@@ -1,6 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import {
+  OVERLAY_FONT_DISPLAY,
+  OVERLAY_FONT_STANDARD,
+  OVERLAY_WEIGHT_PRIMARY,
+  OVERLAY_WEIGHT_LABEL,
+  OVERLAY_WEIGHT_BODY,
+} from "@/lib/overlay-typography"
 
 export interface WorkTimerSettings {
   offsetX: number // px from the right edge
@@ -21,13 +28,13 @@ export const DEFAULT_WORK_TIMER_SETTINGS: WorkTimerSettings = {
   offsetY: 0,
   scale: 1,
   ringSize: 240,
-  countdownFontSize: 56,
-  stateLabelFontSize: 22,
-  nextChangeFontSize: 26,
+  countdownFontSize: OVERLAY_FONT_DISPLAY, // 60 (display)
+  stateLabelFontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
+  nextChangeFontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
   introEnabled: true,
   introDuration: 6000,
-  focusIntroText: "FOCUS TIME",
-  breakIntroText: "BREAK TIME",
+  focusIntroText: "25 MIN WORK CHALLENGE",
+  breakIntroText: "5 MIN BREAK",
 }
 
 interface WorkTimerProps {
@@ -302,21 +309,25 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
         />
       )}
 
-      {/* Temporary intro banner - only shown briefly on an actual phase transition */}
+      {/* Temporary intro banner - only shown briefly on an actual phase transition.
+          Single display-size line, max two lines, no subtitle. */}
       {intro && (
         <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
           <div
-            className="flex flex-col items-center rounded-3xl border border-white/10 bg-neutral-900/85 px-16 py-10 shadow-2xl backdrop-blur-sm"
+            className="flex max-w-[80vw] flex-col items-center rounded-xl border border-white/10 bg-neutral-900/85 px-16 py-10 shadow-2xl"
             style={{ animation: "pulse 2.5s ease-in-out infinite" }}
           >
             <span
-              className="font-sans font-black uppercase tracking-widest text-white"
-              style={{ fontSize: "64px", color: intro.phase === "work" ? "#b18cff" : "#7fb0ff" }}
+              className="font-sans uppercase text-white text-center text-balance"
+              style={{
+                fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+                lineHeight: 1,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_PRIMARY,
+                color: intro.phase === "work" ? "#b18cff" : "#7fb0ff",
+              }}
             >
               {intro.text}
-            </span>
-            <span className="mt-2 font-sans text-2xl font-semibold uppercase tracking-wide text-white/70">
-              {intro.phase === "work" ? "25 minutes of deep work" : "5 minutes to recharge"}
             </span>
           </div>
         </div>
@@ -346,22 +357,33 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span
-                className="font-sans font-black tabular-nums leading-none text-white"
-                style={{ fontSize: `${cfg.countdownFontSize}px`, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
+                className="font-sans tabular-nums text-white"
+                style={{
+                  fontSize: `${cfg.countdownFontSize}px`,
+                  lineHeight: 1,
+                  letterSpacing: 0,
+                  fontWeight: OVERLAY_WEIGHT_PRIMARY,
+                  textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+                }}
               >
                 {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
               </span>
               <span
-                className="mt-1 font-sans font-bold uppercase tracking-[0.3em] text-white/80"
-                style={{ fontSize: `${cfg.stateLabelFontSize}px` }}
+                className="mt-1 font-sans uppercase text-white/80"
+                style={{ fontSize: `${cfg.stateLabelFontSize}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL }}
               >
                 {stateLabel}
               </span>
             </div>
           </div>
           <span
-            className="font-sans font-bold uppercase tracking-wide text-white/70"
-            style={{ fontSize: `${cfg.nextChangeFontSize}px`, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
+            className="font-sans uppercase text-white/70"
+            style={{
+              fontSize: `${cfg.nextChangeFontSize}px`,
+              letterSpacing: 0,
+              fontWeight: OVERLAY_WEIGHT_BODY,
+              textShadow: "0 2px 6px rgba(0,0,0,0.6)",
+            }}
           >
             {nextChange}
           </span>

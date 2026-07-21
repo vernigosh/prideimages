@@ -7,6 +7,7 @@ import { BeeParadeCelebration } from "./bee-parade-celebration" // Import the ne
 import { MasterGardenerCelebration } from "./master-gardener-celebration" // Import the new Master Gardener celebration component
 import { NaturesGuardianCelebration } from "./natures-guardian-celebration" // Import the new Nature's Guardian celebration component
 import { GardenEliteCelebration } from "./garden-elite-celebration" // Import the new Garden Elite celebration component
+import { OVERLAY_FONT_STANDARD, OVERLAY_LINE_HEIGHT_STANDARD, OVERLAY_WEIGHT_LABEL } from "@/lib/overlay-typography"
 
 interface Flower {
   id: string
@@ -33,7 +34,7 @@ export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
   offsetX: 0,
   offsetY: 328,
   width: 640,
-  fontSize: 24,
+  fontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
   lifetimeMs: 6000,
   backgroundOpacity: 0,
 }
@@ -1134,14 +1135,20 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                   ? {
                       backgroundColor: `rgba(10, 10, 12, ${activityCfg.backgroundOpacity})`,
                       borderRadius: "12px",
-                      padding: "8px 16px",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      padding: "14px 22px",
                     }
                   : undefined
               }
             >
               <span
-                className="font-black text-white font-sans uppercase animate-pulse text-balance"
-                style={{ fontSize: `${activityCfg.fontSize}px` }}
+                className="text-white font-sans uppercase animate-pulse text-balance"
+                style={{
+                  fontSize: `${activityCfg.fontSize}px`,
+                  lineHeight: OVERLAY_LINE_HEIGHT_STANDARD,
+                  letterSpacing: 0,
+                  fontWeight: OVERLAY_WEIGHT_LABEL,
+                }}
               >
                 {recentActivity[0]}
               </span>

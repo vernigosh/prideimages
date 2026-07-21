@@ -949,12 +949,13 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
 
         {/* Community Garden - Always at bottom when visible */}
         {showGarden && (
-          <CommunityGarden
-            isVisible={showGarden}
-            onConnectionChange={setGardenConnected}
-            onHide={() => setShowGarden(false)}
-            onFlowerLegendsUpdate={(legends) => setFlowerLegends(legends)}
-          />
+                <CommunityGarden
+                  isVisible={showGarden}
+                  onConnectionChange={setGardenConnected}
+                  onHide={() => setShowGarden(false)}
+                  onFlowerLegendsUpdate={(legends) => setFlowerLegends(legends)}
+                  activitySettings={gardenActivitySettings}
+                />
         )}
 
         {/* Flower Shop - Always at bottom when visible */}
@@ -1263,8 +1264,16 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
       <OverlayExtrasSettings
         popup={eventPopupSettings}
         setPopup={setEventPopupSettings}
+        resetPopup={resetEventPopupSettings}
         workTimer={workTimerSettings}
         setWorkTimer={setWorkTimerSettings}
+        resetWorkTimer={resetWorkTimerSettings}
+        chat={chatOverlaySettings}
+        setChat={setChatOverlaySettings}
+        resetChat={resetChatOverlaySettings}
+        gardenActivity={gardenActivitySettings}
+        setGardenActivity={setGardenActivitySettings}
+        resetGardenActivity={resetGardenActivitySettings}
       />
 
       {/* Chat Integration Setup */}

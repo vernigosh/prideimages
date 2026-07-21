@@ -7,6 +7,12 @@ import {
   twitchEmoteUrl,
   isKnownBot,
 } from "@/lib/chat-commands"
+import {
+  OVERLAY_FONT_STANDARD,
+  OVERLAY_LINE_HEIGHT_CHAT,
+  OVERLAY_WEIGHT_LABEL,
+  OVERLAY_WEIGHT_BODY,
+} from "@/lib/overlay-typography"
 
 export interface ChatOverlaySettings {
   enabled: boolean
@@ -31,10 +37,10 @@ export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   enabled: true,
   offsetX: 40,
   offsetY: 40,
-  width: 380,
+  width: 560, // wide enough for two clean lines at the 32px standard size
   visibleCount: 2,
-  usernameFontSize: 15,
-  messageFontSize: 16,
+  usernameFontSize: OVERLAY_FONT_STANDARD, // 32 (standard) - same as message
+  messageFontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
   lifetimeMs: 20000,
   backgroundOpacity: 0.72,
   maxLines: 2,
@@ -83,7 +89,7 @@ function renderContent(text: string, emotes: OverlayChatEmote[], showEmotes: boo
         src={twitchEmoteUrl(emote.id) || "/placeholder.svg"}
         alt={emote.code}
         className="inline-block align-middle"
-        style={{ height: `${Math.round(size * 1.4)}px`, margin: "0 1px" }}
+        style={{ height: `${Math.round(size * 1.15)}px`, margin: "0 1px" }}
         crossOrigin="anonymous"
       />,
     )
@@ -98,7 +104,8 @@ function renderContent(text: string, emotes: OverlayChatEmote[], showEmotes: boo
 function Badge({ label, className }: { label: string; className: string }) {
   return (
     <span
-      className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wide ${className}`}
+      className={`inline-block rounded px-1.5 py-0.5 text-[0.5em] font-bold uppercase leading-none align-middle ${className}`}
+      style={{ letterSpacing: 0 }}
     >
       {label}
     </span>
@@ -209,37 +216,56 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
         return (
           <div
             key={m.id}
-            className="w-full rounded-lg px-3 py-2 shadow-lg backdrop-blur-sm"
-            style={{ backgroundColor: `rgba(10, 10, 12, ${s.backgroundOpacity})` }}
+            className="w-full shadow-lg"
+            style={{
+              backgroundColor: `rgba(10, 10, 12, ${s.backgroundOpacity})`,
+              borderRadius: "12px",
+              border: "1px solid rgba(255,255,255,0.12)",
+              padding: "14px 20px",
+            }}
           >
-            <div className="mb-0.5 flex items-center gap-1.5">
-              {s.showBadges && m.badges.broadcaster && <Badge label="HOST" className="bg-[#ff6b9d] text-neutral-900" />}
-              {s.showBadges && m.badges.moderator && <Badge label="MOD" className="bg-emerald-500 text-neutral-900" />}
-              {s.showBadges && m.badges.vip && <Badge label="VIP" className="bg-fuchsia-400 text-neutral-900" />}
-              {s.showBadges && m.badges.subscriber && !m.badges.broadcaster && (
-                <Badge label="SUB" className="bg-sky-400 text-neutral-900" />
-              )}
-              <span
-                className="font-bold leading-tight"
-                style={{ color: nameColor, fontSize: `${s.usernameFontSize}px` }}
-              >
-                {m.username}
-              </span>
-            </div>
-            <div
-              className="font-medium text-white"
+            {/* Username and message share one size + baseline; text flows inline. */}
+            <p
+              className="m-0 font-sans text-white"
               style={{
                 fontSize: `${s.messageFontSize}px`,
-                lineHeight: 1.35,
+                lineHeight: OVERLAY_LINE_HEIGHT_CHAT,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_BODY,
                 display: "-webkit-box",
-                WebkitLineClamp: s.maxLines,
+                WebkitLineClamp: s.maxLines + 1,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
                 wordBreak: "break-word",
               }}
             >
-              {renderContent(m.message, m.emotes, s.showEmotes, s.messageFontSize)}
-            </div>
+              {s.showBadges && m.badges.broadcaster && (
+                <>
+                  <Badge label="HOST" className="bg-[#ff6b9d] text-neutral-900" />{" "}
+                </>
+              )}
+              {s.showBadges && m.badges.moderator && (
+                <>
+                  <Badge label="MOD" className="bg-emerald-500 text-neutral-900" />{" "}
+                </>
+              )}
+              {s.showBadges && m.badges.vip && (
+                <>
+                  <Badge label="VIP" className="bg-fuchsia-400 text-neutral-900" />{" "}
+                </>
+              )}
+              {s.showBadges && m.badges.subscriber && !m.badges.broadcaster && (
+                <>
+                  <Badge label="SUB" className="bg-sky-400 text-neutral-900" />{" "}
+                </>
+              )}
+              <span
+                style={{ color: nameColor, fontSize: `${s.usernameFontSize}px`, fontWeight: OVERLAY_WEIGHT_LABEL }}
+              >
+                {m.username}
+              </span>{" "}
+              <span>{renderContent(m.message, m.emotes, s.showEmotes, s.messageFontSize)}</span>
+            </p>
           </div>
         )
       })}

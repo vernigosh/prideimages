@@ -62,7 +62,7 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
         {/* Header */}
         <div className="flex items-center justify-center gap-3 mb-6">
           <h2
-            className="text-3xl font-black text-center font-sans uppercase tracking-wider"
+            className="text-3xl font-black text-center font-sans uppercase"
             style={{
               background: "linear-gradient(135deg, #ffd700 0%, #ffec80 50%, #ffd700 100%)",
               WebkitBackgroundClip: "text",
@@ -74,7 +74,7 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
           </h2>
         </div>
 
-        <p className="text-center text-yellow-200/80 mb-6 font-sans text-xl font-black uppercase">
+        <p className="text-center text-yellow-200/80 mb-6 font-sans text-2xl font-black uppercase">
           Protectors of the Gardenverse (50+)
         </p>
 

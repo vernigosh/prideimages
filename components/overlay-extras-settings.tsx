@@ -17,9 +17,9 @@ interface OverlayExtrasSettingsProps {
   chat: ChatOverlaySettings
   setChat: (patch: Partial<ChatOverlaySettings>) => void
   resetChat: () => void
-  garden: GardenActivitySettings
-  setGarden: (patch: Partial<GardenActivitySettings>) => void
-  resetGarden: () => void
+  gardenActivity: GardenActivitySettings
+  setGardenActivity: (patch: Partial<GardenActivitySettings>) => void
+  resetGardenActivity: () => void
 }
 
 const POPUP_POSITIONS: StreamEventPopupSettings["position"][] = [
@@ -113,9 +113,9 @@ export function OverlayExtrasSettings({
   chat,
   setChat,
   resetChat,
-  garden,
-  setGarden,
-  resetGarden,
+  gardenActivity: garden,
+  setGardenActivity: setGarden,
+  resetGardenActivity: resetGarden,
 }: OverlayExtrasSettingsProps) {
   return (
     <div className="border-b-4 border-black bg-gray-50 p-6">

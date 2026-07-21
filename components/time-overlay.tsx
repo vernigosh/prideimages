@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { OVERLAY_FONT_STANDARD, OVERLAY_LINE_HEIGHT_STANDARD, OVERLAY_WEIGHT_LABEL } from "@/lib/overlay-typography"
 
 interface TimeOverlayProps {
   position: "top-left" | "top-right" | "bottom-left" | "bottom-right"
@@ -80,21 +81,24 @@ export function TimeOverlay({
 
   return (
     <div className={`absolute ${getPositionClasses()} z-10`}>
-      <div className="flex flex-col items-center leading-none">
+      <div className="flex flex-col items-end">
+        {/* Time: display size */}
         <span
-          className={`${getFontWeight()} font-sans tabular-nums tracking-tight`}
-          style={{ fontSize: `${fontSize}px`, color: textColor, textShadow }}
+          className={`${getFontWeight()} font-sans tabular-nums`}
+          style={{ fontSize: `${fontSize}px`, lineHeight: 1, letterSpacing: 0, color: textColor, textShadow }}
         >
           {formatTime(currentTime)}
         </span>
+        {/* Location: standard size */}
         <span
-          className="font-sans font-semibold uppercase tracking-[0.35em]"
+          className="font-sans uppercase"
           style={{
-            fontSize: `${Math.max(10, Math.round(fontSize * 0.28))}px`,
+            fontSize: `${OVERLAY_FONT_STANDARD}px`,
+            lineHeight: OVERLAY_LINE_HEIGHT_STANDARD,
+            letterSpacing: 0,
+            fontWeight: OVERLAY_WEIGHT_LABEL,
             color: textColor,
             textShadow,
-            marginTop: `${Math.round(fontSize * 0.08)}px`,
-            marginRight: `-0.35em`,
           }}
         >
           Rome

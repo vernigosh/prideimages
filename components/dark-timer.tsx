@@ -1,6 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import {
+  OVERLAY_FONT_DISPLAY,
+  OVERLAY_FONT_STANDARD,
+  OVERLAY_WEIGHT_PRIMARY,
+  OVERLAY_WEIGHT_LABEL,
+  OVERLAY_WEIGHT_BODY,
+} from "@/lib/overlay-typography"
 
 interface DarkTimerProps {
   isVisible: boolean
@@ -127,26 +134,29 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
   if (isComplete) {
     return (
       <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
-        <div className="flex flex-col items-center justify-center font-bold">
+        <div className="flex flex-col items-center justify-center">
           <div className="text-center">
             <div
-              className="text-4xl mb-2 drop-shadow-lg font-bold uppercase animate-pulse"
+              className="mb-2 font-sans uppercase animate-pulse"
               style={{
-                fontFamily: "Orbitron, monospace",
+                fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+                lineHeight: 1,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_PRIMARY,
                 color: "#ffffff",
                 textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000",
-                letterSpacing: "0.1em",
               }}
             >
               DARKNESS COMPLETE
             </div>
             <div
-              className="text-2xl drop-shadow-lg font-bold uppercase"
+              className="font-sans uppercase"
               style={{
-                fontFamily: "Orbitron, monospace",
+                fontSize: `${OVERLAY_FONT_STANDARD}px`,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_BODY,
                 color: "#ff0000",
                 textShadow: "0 0 10px #ff0000",
-                letterSpacing: "0.05em",
               }}
             >
               RETURNING TO THE LIGHT
@@ -178,22 +188,29 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span
-              className="font-black tabular-nums leading-none"
-              style={{ fontFamily: "Orbitron, monospace", fontSize: "56px", color: "#ffffff", textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000" }}
+              className="font-sans tabular-nums"
+              style={{
+                fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+                lineHeight: 1,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_PRIMARY,
+                color: "#ffffff",
+                textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000",
+              }}
             >
               {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
             </span>
             <span
-              className="mt-1 font-bold uppercase tracking-[0.3em]"
-              style={{ fontFamily: "Orbitron, monospace", fontSize: "22px", color: "#ff6b6b", textShadow: "0 0 10px #ff0000" }}
+              className="mt-1 font-sans uppercase"
+              style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL, color: "#ff6b6b", textShadow: "0 0 10px #ff0000" }}
             >
               DARK
             </span>
           </div>
         </div>
         <span
-          className="font-bold uppercase tracking-wide"
-          style={{ fontFamily: "Orbitron, monospace", fontSize: "24px", color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
+          className="font-sans uppercase"
+          style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
         >
           EXPLORING THE SHADOWS
         </span>

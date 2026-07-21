@@ -1,6 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import {
+  OVERLAY_FONT_DISPLAY,
+  OVERLAY_FONT_STANDARD,
+  OVERLAY_WEIGHT_PRIMARY,
+  OVERLAY_WEIGHT_LABEL,
+  OVERLAY_WEIGHT_BODY,
+} from "@/lib/overlay-typography"
 
 interface SocialTimerProps {
   isVisible: boolean
@@ -135,8 +142,18 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-4xl text-white mb-2 drop-shadow-lg font-sans">Cheers everyone!</div>
-              <div className="text-4xl text-white drop-shadow-lg font-sans">Thank you for being here!</div>
+              <div
+                className="mb-2 text-white font-sans"
+                style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL }}
+              >
+                Cheers everyone!
+              </div>
+              <div
+                className="text-white font-sans"
+                style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY }}
+              >
+                Thank you for being here!
+              </div>
             </div>
           </div>
         </div>
@@ -167,19 +184,28 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span
-              className="font-sans font-black tabular-nums leading-none text-white"
-              style={{ fontSize: "56px", textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
+              className="font-sans tabular-nums text-white"
+              style={{
+                fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+                lineHeight: 1,
+                letterSpacing: 0,
+                fontWeight: OVERLAY_WEIGHT_PRIMARY,
+                textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+              }}
             >
               {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
             </span>
-            <span className="mt-1 font-sans font-bold uppercase tracking-[0.3em] text-white/80" style={{ fontSize: "22px" }}>
+            <span
+              className="mt-1 font-sans uppercase text-white/80"
+              style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL }}
+            >
               SOCIAL
             </span>
           </div>
         </div>
         <span
-          className="font-sans font-bold uppercase tracking-wide text-white/70"
-          style={{ fontSize: "24px", textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
+          className="font-sans uppercase text-white/70"
+          style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
         >
           SAY HI IN CHAT
         </span>

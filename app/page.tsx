@@ -783,14 +783,18 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     return null
   }
 
-  // Two-slot right rail. Work owns the lower primary slot; Dark or Social uses
-  // the upper secondary slot. The 253px center separation produces a 24px gap
-  // between the measured compact timer blocks (180px rings plus labels).
+  // Shared two-slot right rail. One timer is centered in the safe area. With
+  // Work plus a secondary timer, the complete stack is centered as a group with
+  // a measured 24px gap between blocks; every ring shares the same horizontal axis.
   const getTimerElements = () => {
     const elements: React.ReactNode[] = []
-    const primaryOffsetY = workTimerSettings.offsetY - 200
-    const secondaryOffsetY = primaryOffsetY - 253
     const secondaryKind = showDarkTimer && !showPrideTrivia ? "dark" : showSocialTimer ? "social" : null
+    const hasTimerPair = showWorkTimer && secondaryKind !== null
+    const secondaryBlockHeight = secondaryKind === "dark" ? 242 : 213
+    const workBlockHeight = 239
+    const timerGap = 24
+    const primaryOffsetY = hasTimerPair ? (secondaryBlockHeight + timerGap) / 2 : 0
+    const secondaryOffsetY = hasTimerPair ? -(workBlockHeight + timerGap) / 2 : 0
 
     if (showWorkTimer) {
       elements.push(

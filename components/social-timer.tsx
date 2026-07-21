@@ -133,7 +133,7 @@ export function SocialTimer({
 
   if (isComplete) {
     return (
-      <div className="absolute top-1/2 z-10 w-[260px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
+      <div className="absolute top-1/2 z-10 w-[400px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
@@ -159,7 +159,7 @@ export function SocialTimer({
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
   return (
-    <div className="absolute top-1/2 z-10 w-[260px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
+    <div className="absolute top-1/2 z-10 w-[400px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
       <div className="flex flex-col items-center gap-[7px]">
         <div className="relative" style={{ width: "180px", height: "180px" }}>
           <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">

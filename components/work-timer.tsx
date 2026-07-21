@@ -335,8 +335,12 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
 
       {/* Persistent compact timer */}
       <div
-        className="absolute right-0 top-1/2 z-10"
-        style={{ transform: `translate(${-cfg.offsetX}px, calc(-50% + ${cfg.offsetY}px)) scale(${cfg.scale})` }}
+        className="absolute top-1/2 z-10 w-[400px]"
+        style={{
+          right: `${cfg.offsetX}px`,
+          transform: `translateY(calc(-50% + ${cfg.offsetY}px)) scale(${cfg.scale})`,
+          transformOrigin: "center",
+        }}
       >
         <div className="flex flex-col items-center gap-[7px]">
           <div className="relative" style={{ width: `${cfg.ringSize}px`, height: `${cfg.ringSize}px` }}>

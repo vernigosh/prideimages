@@ -308,6 +308,7 @@ export default function DJRandomizer() {
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = () => {
+      setShowSocialTimer(false)
       setShowDarkTimer(true)
     }
 
@@ -316,6 +317,7 @@ export default function DJRandomizer() {
     }
 
     const handleStartSocialTimer = () => {
+      setShowDarkTimer(false)
       setShowSocialTimer(true)
     }
 
@@ -781,11 +783,15 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     return null
   }
 
-  // Render timers - work timer always on right, other timers move to left when work timer is active
+  // Two-slot right rail. Work owns the lower primary slot; Dark or Social uses
+  // the upper secondary slot. The 253px center separation produces a 24px gap
+  // between the measured compact timer blocks (180px rings plus labels).
   const getTimerElements = () => {
     const elements: React.ReactNode[] = []
+    const primaryOffsetY = workTimerSettings.offsetY
+    const secondaryOffsetY = primaryOffsetY - 253
+    const secondaryKind = showDarkTimer && !showPrideTrivia ? "dark" : showSocialTimer ? "social" : null
 
-    // Work timer always takes the right side when visible
     if (showWorkTimer) {
       elements.push(
         <WorkTimer
@@ -793,39 +799,35 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           isVisible={showWorkTimer}
           onConnectionChange={setWorkTimerConnected}
           onHide={() => setShowWorkTimer(false)}
-          settings={workTimerSettings}
+          settings={{ ...workTimerSettings, ringSize: 180, countdownFontSize: timeFontSize }}
         />
       )
     }
 
-    // Dark timer: left side if work timer is active, otherwise right side
-    // When both dark timer and pride trivia are active, use 3D flip animation between them
-    if (showDarkTimer && !showPrideTrivia) {
-      // Only dark timer active - show normally
+    const auxiliaryOffsetY = showWorkTimer ? secondaryOffsetY : primaryOffsetY
+    if (secondaryKind === "dark") {
       elements.push(
         <DarkTimer
           key="dark-timer"
-          isVisible={showDarkTimer}
+          isVisible
           onConnectionChange={setDarkTimerConnected}
           onHide={() => setShowDarkTimer(false)}
-          workTimerActive={showWorkTimer}
-          socialTimerActive={showSocialTimer}
+          offsetX={workTimerSettings.offsetX}
+          offsetY={auxiliaryOffsetY}
+          countdownFontSize={timeFontSize}
         />
       )
-    }
-
-    // Social timer: left side if work timer is active, otherwise right side
-    if (showSocialTimer) {
+    } else if (secondaryKind === "social") {
       elements.push(
-<SocialTimer
-  key="social-timer"
-  isVisible={showSocialTimer}
-  onConnectionChange={setSocialTimerConnected}
-  onHide={() => setShowSocialTimer(false)}
-  workTimerActive={showWorkTimer}
-  darkTimerActive={showDarkTimer}
-  prideTimerActive={showPrideTrivia}
-/>
+        <SocialTimer
+          key="social-timer"
+          isVisible
+          onConnectionChange={setSocialTimerConnected}
+          onHide={() => setShowSocialTimer(false)}
+          offsetX={workTimerSettings.offsetX}
+          offsetY={auxiliaryOffsetY}
+          countdownFontSize={timeFontSize}
+        />
       )
     }
 
@@ -1224,13 +1226,19 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         blurbFontWeight={blurbFontWeight}
         setBlurbFontWeight={setBlurbFontWeight}
         showDarkTimer={showDarkTimer}
-        setShowDarkTimer={setShowDarkTimer}
-        darkTimerConnected={darkTimerConnected}
-        showWorkTimer={showWorkTimer}
-        setShowWorkTimer={setShowWorkTimer}
-        workTimerConnected={workTimerConnected}
-        showSocialTimer={showSocialTimer}
-        setShowSocialTimer={setShowSocialTimer}
+  setShowDarkTimer={(visible) => {
+    if (visible) setShowSocialTimer(false)
+    setShowDarkTimer(visible)
+  }}
+  darkTimerConnected={darkTimerConnected}
+  showWorkTimer={showWorkTimer}
+  setShowWorkTimer={setShowWorkTimer}
+  workTimerConnected={workTimerConnected}
+  showSocialTimer={showSocialTimer}
+  setShowSocialTimer={(visible) => {
+    if (visible) setShowDarkTimer(false)
+    setShowSocialTimer(visible)
+  }}
         socialTimerConnected={socialTimerConnected}
         showGarden={showGarden}
         setShowGarden={setShowGarden}

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  OVERLAY_FONT_DISPLAY,
   OVERLAY_FONT_STANDARD,
   OVERLAY_WEIGHT_PRIMARY,
   OVERLAY_WEIGHT_LABEL,
@@ -13,8 +12,9 @@ interface DarkTimerProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
-  workTimerActive?: boolean
-  socialTimerActive?: boolean
+  offsetX?: number
+  offsetY?: number
+  countdownFontSize?: number
 }
 
 const DARK_DURATION = 20 * 60
@@ -27,7 +27,14 @@ function getRingProps(progress: number) {
   return { radius, circumference, strokeDashoffset }
 }
 
-export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActive = false, socialTimerActive = false }: DarkTimerProps) {
+export function DarkTimer({
+  isVisible,
+  onConnectionChange,
+  onHide,
+  offsetX = 60,
+  offsetY = 230,
+  countdownFontSize = 40,
+}: DarkTimerProps) {
   const [timeLeft, setTimeLeft] = useState(DARK_DURATION)
   const [isComplete, setIsComplete] = useState(false)
   const rafRef = useRef<number | null>(null)
@@ -122,19 +129,19 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
   const seconds = timeLeft % 60
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
-  // Compact right rail: work occupies the lower slot; Dark is the optional
-  // secondary timer directly above it. When work is hidden, Dark uses the lower slot.
-  const timerTop = workTimerActive ? "42%" : "68%"
+  // Position is shared with the work-timer rail. The parent supplies an exact
+  // secondary offset when Work is active, keeping a fixed 24px block gap.
+  const timerTransform = `translateY(calc(-50% + ${offsetY}px))`
 
   if (isComplete) {
     return (
-      <div className="absolute right-[60px] z-10 w-[260px] -translate-y-1/2" style={{ top: timerTop }}>
+      <div className="absolute top-1/2 z-10 w-[260px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
         <div className="flex flex-col items-center justify-center">
           <div className="text-center">
             <div
               className="mb-2 font-sans uppercase animate-pulse"
               style={{
-              fontSize: "46px",
+                fontSize: "46px",
                 lineHeight: 1,
                 letterSpacing: 0,
                 fontWeight: OVERLAY_WEIGHT_PRIMARY,
@@ -163,7 +170,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
   }
 
   return (
-    <div className="absolute right-[60px] z-10 w-[260px] -translate-y-1/2" style={{ top: timerTop }}>
+    <div className="absolute top-1/2 z-10 w-[260px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
       <div className="flex flex-col items-center gap-[7px]">
         <div className="relative" style={{ width: "180px", height: "180px" }}>
           <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
@@ -189,7 +196,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
               left: "50%",
               top: "50%",
               transform: "translate(-50%, -50%)",
-              fontSize: "46px",
+              fontSize: `${countdownFontSize}px`,
               lineHeight: 1,
               letterSpacing: 0,
               fontWeight: OVERLAY_WEIGHT_PRIMARY,

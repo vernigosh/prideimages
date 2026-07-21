@@ -43,6 +43,7 @@ interface WorkTimerProps {
   onHide: () => void
   settings?: Partial<WorkTimerSettings>
   onIntroActiveChange?: (active: boolean) => void
+  embedded?: boolean
 }
 
 const WORK_DURATION = 25 * 60
@@ -147,7 +148,7 @@ function getRingProps(progress: number) {
   return { radius, circumference, strokeDashoffset }
 }
 
-export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onIntroActiveChange }: WorkTimerProps) {
+export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onIntroActiveChange, embedded = false }: WorkTimerProps) {
   const cfg: WorkTimerSettings = { ...DEFAULT_WORK_TIMER_SETTINGS, ...settings }
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
@@ -335,14 +336,16 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
 
       {/* Persistent compact timer */}
       <div
-        className="absolute top-1/2 z-10 w-[400px]"
-        style={{
+        className={embedded ? "relative z-10 flex w-[400px] justify-center" : "absolute top-1/2 z-10 w-[400px]"}
+        style={embedded ? undefined : {
           right: `${cfg.offsetX}px`,
-          transform: `translateY(calc(-50% + ${cfg.offsetY}px)) scale(${cfg.scale})`,
-          transformOrigin: "center",
+          transform: `translateY(calc(-50% + ${cfg.offsetY}px))`,
         }}
       >
-        <div className="flex flex-col items-center gap-[7px]">
+        <div
+          className="flex flex-col items-center gap-[7px]"
+          style={{ transform: `scale(${cfg.scale})`, transformOrigin: "center" }}
+        >
           <div className="relative" style={{ width: `${cfg.ringSize}px`, height: `${cfg.ringSize}px` }}>
             <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />

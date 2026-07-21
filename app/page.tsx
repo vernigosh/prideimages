@@ -783,66 +783,64 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     return null
   }
 
-  // Shared two-slot right rail. One timer is centered in the safe area. With
-  // Work plus a secondary timer, the complete stack is centered as a group with
-  // a measured 24px gap between blocks; every ring shares the same horizontal axis.
+  // OBS-safe shared timer rail. A single in-flow parent owns both axes, so every
+  // ring has the same horizontal center and one/two timer groups remain centered
+  // between the clock/city above and garden below at any 16:9 browser-source size.
   const getTimerElements = () => {
-    const elements: React.ReactNode[] = []
     const secondaryKind = showDarkTimer && !showPrideTrivia ? "dark" : showSocialTimer ? "social" : null
-    const hasTimerPair = showWorkTimer && secondaryKind !== null
-    const secondaryBlockHeight = secondaryKind === "dark" ? 242 : 213
-    const workBlockHeight = 239
-    const timerGap = 24
-    const primaryOffsetY = hasTimerPair ? (secondaryBlockHeight + timerGap) / 2 : 0
-    const secondaryOffsetY = hasTimerPair ? -(workBlockHeight + timerGap) / 2 : 0
+    if (!showWorkTimer && !secondaryKind) return null
 
-    if (showWorkTimer) {
-      elements.push(
-        <WorkTimer
-          key="work-timer"
-          isVisible={showWorkTimer}
-          onConnectionChange={setWorkTimerConnected}
-          onHide={() => setShowWorkTimer(false)}
-          settings={{
-            ...workTimerSettings,
-            offsetY: primaryOffsetY,
-            ringSize: 180,
-            countdownFontSize: timeFontSize,
-            stateLabelFontSize: 24,
-            nextChangeFontSize: 24,
-          }}
-        />
-      )
-    }
+    const secondaryTimer = secondaryKind === "dark" ? (
+      <DarkTimer
+        key="dark-timer"
+        isVisible
+        embedded
+        onConnectionChange={setDarkTimerConnected}
+        onHide={() => setShowDarkTimer(false)}
+        countdownFontSize={timeFontSize}
+      />
+    ) : secondaryKind === "social" ? (
+      <SocialTimer
+        key="social-timer"
+        isVisible
+        embedded
+        onConnectionChange={setSocialTimerConnected}
+        onHide={() => setShowSocialTimer(false)}
+        countdownFontSize={timeFontSize}
+      />
+    ) : null
 
-    const auxiliaryOffsetY = showWorkTimer ? secondaryOffsetY : primaryOffsetY
-    if (secondaryKind === "dark") {
-      elements.push(
-        <DarkTimer
-          key="dark-timer"
-          isVisible
-          onConnectionChange={setDarkTimerConnected}
-          onHide={() => setShowDarkTimer(false)}
-          offsetX={workTimerSettings.offsetX}
-          offsetY={auxiliaryOffsetY}
-          countdownFontSize={timeFontSize}
-        />
-      )
-    } else if (secondaryKind === "social") {
-      elements.push(
-        <SocialTimer
-          key="social-timer"
-          isVisible
-          onConnectionChange={setSocialTimerConnected}
-          onHide={() => setShowSocialTimer(false)}
-          offsetX={workTimerSettings.offsetX}
-          offsetY={auxiliaryOffsetY}
-          countdownFontSize={timeFontSize}
-        />
-      )
-    }
-
-    return elements.length > 0 ? <>{elements}</> : null
+    return (
+      <div
+        className="pointer-events-none absolute z-10 flex items-center justify-center"
+        style={{
+          top: "18%",
+          right: `${workTimerSettings.offsetX}px`,
+          bottom: "22%",
+          width: "400px",
+        }}
+      >
+        <div className="flex w-[400px] flex-col items-center justify-center gap-6">
+          {secondaryTimer}
+          {showWorkTimer && (
+            <WorkTimer
+              key="work-timer"
+              isVisible
+              embedded
+              onConnectionChange={setWorkTimerConnected}
+              onHide={() => setShowWorkTimer(false)}
+              settings={{
+                ...workTimerSettings,
+                ringSize: 180,
+                countdownFontSize: timeFontSize,
+                stateLabelFontSize: 24,
+                nextChangeFontSize: 24,
+              }}
+            />
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (

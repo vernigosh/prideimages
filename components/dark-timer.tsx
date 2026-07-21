@@ -15,6 +15,7 @@ interface DarkTimerProps {
   offsetX?: number
   offsetY?: number
   countdownFontSize?: number
+  embedded?: boolean
 }
 
 const DARK_DURATION = 20 * 60
@@ -34,6 +35,7 @@ export function DarkTimer({
   offsetX = 60,
   offsetY = 230,
   countdownFontSize = 40,
+  embedded = false,
 }: DarkTimerProps) {
   const [timeLeft, setTimeLeft] = useState(DARK_DURATION)
   const [isComplete, setIsComplete] = useState(false)
@@ -135,7 +137,10 @@ export function DarkTimer({
 
   if (isComplete) {
     return (
-      <div className="absolute top-1/2 z-10 w-[400px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
+      <div
+        className={embedded ? "relative z-10 flex w-[400px] justify-center" : "absolute top-1/2 z-10 w-[400px]"}
+        style={embedded ? undefined : { right: `${offsetX}px`, transform: timerTransform }}
+      >
         <div className="flex flex-col items-center justify-center">
           <div className="text-center">
             <div
@@ -170,7 +175,10 @@ export function DarkTimer({
   }
 
   return (
-    <div className="absolute top-1/2 z-10 w-[400px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
+    <div
+        className={embedded ? "relative z-10 flex w-[400px] justify-center" : "absolute top-1/2 z-10 w-[400px]"}
+        style={embedded ? undefined : { right: `${offsetX}px`, transform: timerTransform }}
+      >
       <div className="flex flex-col items-center gap-[7px]">
         <div className="relative" style={{ width: "180px", height: "180px" }}>
           <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">

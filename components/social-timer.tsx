@@ -15,6 +15,7 @@ interface SocialTimerProps {
   offsetX?: number
   offsetY?: number
   countdownFontSize?: number
+  embedded?: boolean
 }
 
 const SOCIAL_DURATION = 2 * 60
@@ -34,6 +35,7 @@ export function SocialTimer({
   offsetX = 60,
   offsetY = 230,
   countdownFontSize = 40,
+  embedded = false,
 }: SocialTimerProps) {
   const [timeLeft, setTimeLeft] = useState(SOCIAL_DURATION)
   const [isComplete, setIsComplete] = useState(false)
@@ -133,7 +135,10 @@ export function SocialTimer({
 
   if (isComplete) {
     return (
-      <div className="absolute top-1/2 z-10 w-[400px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
+      <div
+        className={embedded ? "relative z-10 flex w-[400px] justify-center" : "absolute top-1/2 z-10 w-[400px]"}
+        style={embedded ? undefined : { right: `${offsetX}px`, transform: timerTransform }}
+      >
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
@@ -159,7 +164,10 @@ export function SocialTimer({
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
   return (
-    <div className="absolute top-1/2 z-10 w-[400px]" style={{ right: `${offsetX}px`, transform: timerTransform }}>
+    <div
+        className={embedded ? "relative z-10 flex w-[400px] justify-center" : "absolute top-1/2 z-10 w-[400px]"}
+        style={embedded ? undefined : { right: `${offsetX}px`, transform: timerTransform }}
+      >
       <div className="flex flex-col items-center gap-[7px]">
         <div className="relative" style={{ width: "180px", height: "180px" }}>
           <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">

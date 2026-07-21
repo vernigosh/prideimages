@@ -15,7 +15,7 @@ import {
 
 export interface ChatOverlaySettings {
   enabled: boolean
-  offsetX: number // px inset from the right edge
+  offsetX: number // px inset from the left edge
   offsetY: number // px inset from the bottom edge
   width: number // px
   visibleCount: number // 1-3
@@ -49,7 +49,7 @@ export interface ChatOverlaySettings {
 
 // Bump this when the layout defaults below change. On load, any persisted settings
 // with a lower (or missing) version have ONLY their layout fields refreshed once.
-export const CHAT_LAYOUT_VERSION = 3
+export const CHAT_LAYOUT_VERSION = 4
 
 // Layout-only fields refreshed by the migration. Behavioral/filter fields
 // (enabled, filters, colors, uppercase, ignoredUsers, lifetime, etc.) are preserved.
@@ -69,12 +69,12 @@ export const CHAT_LAYOUT_FIELDS = [
 
 export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   enabled: true,
-  offsetX: 60, // inset from right — aligns near the clock/timer right edge
-  offsetY: 300, // in the clear band below timer copy, above the tallest flower
-  width: 450,
+  offsetX: 50, // inset from left — lower-left chat rail in the approved layout
+  offsetY: 250, // stack grows upward from this lower-left anchor
+  width: 400,
   visibleCount: 2,
-  usernameFontSize: 28, // 28px, weight 600
-  messageFontSize: 28, // 28px, weight 500
+  usernameFontSize: 20,
+  messageFontSize: 20,
   lifetimeMs: 20000,
   backgroundOpacity: 0.58,
   borderRadius: 14,
@@ -345,7 +345,7 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
   return (
     <div
       className="pointer-events-none fixed z-40 flex flex-col justify-end"
-      style={{ right: `${s.offsetX}px`, bottom: `${s.offsetY}px`, width: `${s.width}px`, gap: `${s.cardGap}px` }}
+      style={{ left: `${s.offsetX}px`, bottom: `${s.offsetY}px`, width: `${s.width}px`, gap: `${s.cardGap}px` }}
     >
       {visible.map((m) => {
         const nameColor = resolveUsernameColor(m.color, s.useTwitchUsernameColors)

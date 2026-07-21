@@ -25,12 +25,12 @@ export interface WorkTimerSettings {
 
 export const DEFAULT_WORK_TIMER_SETTINGS: WorkTimerSettings = {
   offsetX: 60,
-  offsetY: 0,
+  offsetY: 230, // lower-right primary slot, clear of the camera area
   scale: 1,
-  ringSize: 240,
-  countdownFontSize: OVERLAY_FONT_DISPLAY, // 60 (display)
-  stateLabelFontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
-  nextChangeFontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
+  ringSize: 180,
+  countdownFontSize: 46,
+  stateLabelFontSize: 24,
+  nextChangeFontSize: 22,
   introEnabled: true,
   introDuration: 6000,
   focusIntroText: "25 MIN WORK CHALLENGE",

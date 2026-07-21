@@ -275,7 +275,6 @@ export default function DJRandomizer() {
         migrated[field] = defaults[field] as never
       }
       migrated.chatLayoutVersion = CHAT_LAYOUT_VERSION
-      console.log("[v0] Migrated chat layout from version", storedVersion, "to", CHAT_LAYOUT_VERSION)
       return migrated
     },
   )
@@ -284,29 +283,7 @@ export default function DJRandomizer() {
     DEFAULT_GARDEN_ACTIVITY_SETTINGS,
   )
 
-  // One-time diagnostic: reports the real browser-source geometry and the chat
-  // settings actually loaded in THIS environment (Chrome vs the OBS browser source
-  // each have their own localStorage). Compare the two logs to confirm whether a
-  // stale stored layout — not the code — was the source of a position mismatch.
-  useEffect(() => {
-    console.log("[v0] Overlay environment:", {
-      innerWidth: window.innerWidth,
-      innerHeight: window.innerHeight,
-      devicePixelRatio: window.devicePixelRatio,
-      overlayRoot: {
-        width: document.documentElement.clientWidth,
-        height: document.documentElement.clientHeight,
-      },
-    })
-    console.log("[v0] Loaded chat settings:", {
-      offsetX: chatOverlaySettings.offsetX,
-      offsetY: chatOverlaySettings.offsetY,
-      width: chatOverlaySettings.width,
-      chatLayoutVersion: chatOverlaySettings.chatLayoutVersion,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  
+
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
     subscribers: Array<{ name: string; months: number; tier: string; gifted: boolean; gifter?: string }>

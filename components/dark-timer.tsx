@@ -122,24 +122,19 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
   const seconds = timeLeft % 60
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
-  // Position based on which other timers are active:
-  // - Work timer takes right side
-  // - Dark timer takes left side when work OR social is active
-  // - Social takes center-left when all 3 are active, or right when alone with dark
-  let positionClass = "right-8" // default when alone
-  if (workTimerActive || socialTimerActive) {
-    positionClass = "left-8" // left side when work or social timer is also active
-  }
+  // Compact right rail: work occupies the lower slot; Dark is the optional
+  // secondary timer directly above it. When work is hidden, Dark uses the lower slot.
+  const timerTop = workTimerActive ? "42%" : "68%"
 
   if (isComplete) {
     return (
-      <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
+      <div className="absolute right-[60px] z-10 w-[260px] -translate-y-1/2" style={{ top: timerTop }}>
         <div className="flex flex-col items-center justify-center">
           <div className="text-center">
             <div
               className="mb-2 font-sans uppercase animate-pulse"
               style={{
-                fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+              fontSize: "46px",
                 lineHeight: 1,
                 letterSpacing: 0,
                 fontWeight: OVERLAY_WEIGHT_PRIMARY,
@@ -168,9 +163,9 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
   }
 
   return (
-    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2`}>
+    <div className="absolute right-[60px] z-10 w-[260px] -translate-y-1/2" style={{ top: timerTop }}>
       <div className="flex flex-col items-center gap-[7px]">
-        <div className="relative" style={{ width: "240px", height: "240px" }}>
+        <div className="relative" style={{ width: "180px", height: "180px" }}>
           <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255, 0, 0, 0.18)" strokeWidth="10" />
             <circle
@@ -194,7 +189,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
               left: "50%",
               top: "50%",
               transform: "translate(-50%, -50%)",
-              fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+              fontSize: "46px",
               lineHeight: 1,
               letterSpacing: 0,
               fontWeight: OVERLAY_WEIGHT_PRIMARY,
@@ -210,7 +205,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
           <span
             className="font-sans uppercase"
             style={{
-              fontSize: `${OVERLAY_FONT_STANDARD}px`,
+              fontSize: "24px",
               lineHeight: 1.08,
               letterSpacing: 0,
               fontWeight: OVERLAY_WEIGHT_LABEL,
@@ -223,7 +218,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
           {/* Supporting text: preserve exact capitalization, no uppercase transform. */}
           <span
             className="font-sans"
-            style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, lineHeight: 1.08, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
+            style={{ fontSize: "20px", lineHeight: 1.08, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
           >
             Exploring Darker Sounds
           </span>

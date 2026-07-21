@@ -203,7 +203,7 @@ export function OverlayExtrasSettings({
           <div className="space-y-4">
             <Check label="Enabled" checked={chat.enabled} onChange={(v) => setChat({ enabled: v })} />
             <div className="grid grid-cols-2 gap-4">
-              <Range label={`X inset from right (${chat.offsetX}px)`} min={0} max={600} value={chat.offsetX} onChange={(v) => setChat({ offsetX: v })} />
+              <Range label={`X inset from left (${chat.offsetX}px)`} min={0} max={600} value={chat.offsetX} onChange={(v) => setChat({ offsetX: v })} />
               <Range label={`Y inset from bottom (${chat.offsetY}px)`} min={0} max={600} value={chat.offsetY} onChange={(v) => setChat({ offsetY: v })} />
             </div>
             <div className="grid grid-cols-2 gap-4">

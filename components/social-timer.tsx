@@ -121,24 +121,13 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
 
-  // Position based on which other timers are active:
-  // - Work timer takes right side
-  // - Dark timer takes left side when work or social is active
-  // - Pride trivia timer takes right side with its circular progress
-  // - Social goes to center when pride timer is active, right when alone or with dark only
-  let positionClass = "right-8" // default when alone or with dark timer only
-  if (prideTimerActive) {
-    positionClass = "left-1/2 -translate-x-1/2" // center when pride timer is active (it uses right side)
-  } else if (workTimerActive && darkTimerActive) {
-    positionClass = "left-1/3 -translate-x-1/2" // center-left position when all 3 are active
-  } else if (workTimerActive) {
-    positionClass = "left-8" // left side when only work timer is also active
-  }
-  // When only social + dark are active: social stays right, dark moves to left
+  // Compact right rail: work occupies the lower slot; Social is the optional
+  // secondary timer directly above it. When work is hidden, Social uses the lower slot.
+  const timerTop = workTimerActive ? "42%" : "68%"
 
   if (isComplete) {
     return (
-      <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`} style={workTimerActive && darkTimerActive ? { left: '33%', transform: 'translate(-50%, -50%)' } : undefined}>
+      <div className="absolute right-[60px] z-10 w-[260px] -translate-y-1/2" style={{ top: timerTop }}>
         <div className="flex flex-col items-center justify-center font-bold">
           <div className="relative w-64 h-64 flex items-center justify-center">
             <div className="text-center">
@@ -164,9 +153,9 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
   return (
-    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2`} style={workTimerActive && darkTimerActive ? { left: '33%', transform: 'translate(-50%, -50%)' } : undefined}>
+    <div className="absolute right-[60px] z-10 w-[260px] -translate-y-1/2" style={{ top: timerTop }}>
       <div className="flex flex-col items-center gap-[7px]">
-        <div className="relative" style={{ width: "240px", height: "240px" }}>
+        <div className="relative" style={{ width: "180px", height: "180px" }}>
           <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
             <circle
@@ -190,7 +179,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
               left: "50%",
               top: "50%",
               transform: "translate(-50%, -50%)",
-              fontSize: `${OVERLAY_FONT_DISPLAY}px`,
+              fontSize: "46px",
               lineHeight: 1,
               letterSpacing: 0,
               fontWeight: OVERLAY_WEIGHT_PRIMARY,
@@ -203,7 +192,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
         {/* Single external label beneath the ring — no duplicate SOCIAL inside. */}
         <span
           className="font-sans uppercase text-white"
-          style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, lineHeight: 1.08, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
+          style={{ fontSize: "24px", lineHeight: 1.08, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
         >
           SOCIAL!
         </span>

@@ -165,7 +165,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
 
   return (
     <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2`} style={workTimerActive && darkTimerActive ? { left: '33%', transform: 'translate(-50%, -50%)' } : undefined}>
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-[7px]">
         <div className="relative" style={{ width: "240px", height: "240px" }}>
           <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
@@ -203,7 +203,7 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
         {/* Single external label beneath the ring — no duplicate SOCIAL inside. */}
         <span
           className="font-sans uppercase text-white"
-          style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
+          style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, lineHeight: 1.08, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_LABEL, textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
         >
           SOCIAL!
         </span>

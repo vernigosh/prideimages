@@ -257,6 +257,12 @@ export function OverlayExtrasSettings({
                 setTimeout(() => dispatchTestChat({ username: "GoldenGoose", color: "#daa520", message: "second color" }), 120)
                 setTimeout(() => dispatchTestChat({ username: "TealTina", color: "#008080", message: "third color" }), 240)
               }} />
+              {/* Spaced ~500ms apart so each enter + slide-up is clearly visible. */}
+              <TestButton label="Test 3 staggered" onClick={() => {
+                dispatchTestChat({ username: "AnimOne", color: "#38bdf8", message: "message one — watch me slide in" })
+                setTimeout(() => dispatchTestChat({ username: "AnimTwo", color: "#f59e0b", message: "message two pushes one up" }), 500)
+                setTimeout(() => dispatchTestChat({ username: "AnimThree", color: "#34d399", message: "message three, smooth flow" }), 1000)
+              }} />
               <TestButton label="Clear messages" onClick={() => window.dispatchEvent(new Event("clearChatOverlay"))} />
             </div>
             <button type="button" onClick={resetChat} className="flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-black">

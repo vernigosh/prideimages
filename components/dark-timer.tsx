@@ -169,7 +169,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
 
   return (
     <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2`}>
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-[7px]">
         <div className="relative" style={{ width: "240px", height: "240px" }}>
           <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255, 0, 0, 0.18)" strokeWidth="10" />
@@ -206,11 +206,12 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
           </span>
         </div>
         {/* Timer copy: normal centered vertical layout beneath the ring. */}
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-[3px]">
           <span
             className="font-sans uppercase"
             style={{
               fontSize: `${OVERLAY_FONT_STANDARD}px`,
+              lineHeight: 1.08,
               letterSpacing: 0,
               fontWeight: OVERLAY_WEIGHT_LABEL,
               color: "#ff6b6b",
@@ -222,7 +223,7 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
           {/* Supporting text: preserve exact capitalization, no uppercase transform. */}
           <span
             className="font-sans"
-            style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
+            style={{ fontSize: `${OVERLAY_FONT_STANDARD}px`, lineHeight: 1.08, letterSpacing: 0, fontWeight: OVERLAY_WEIGHT_BODY, color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
           >
             Exploring Darker Sounds
           </span>

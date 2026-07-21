@@ -18,17 +18,27 @@ import { useCallback, useEffect, useRef, useState } from "react"
 export function usePersistentSettings<T extends Record<string, unknown>>(
   key: string,
   defaults: T,
+  // Optional one-time migration. Receives the raw stored object and the current
+  // defaults, and returns the object to merge over defaults. Use this to refresh
+  // stale layout fields loaded from a separate store (e.g. OBS vs Chrome) without
+  // clobbering unrelated saved values. Runs once per mount, before merging.
+  migrate?: (stored: Partial<T>, defaults: T) => Partial<T>,
 ): [T, (update: Partial<T> | ((prev: T) => T)) => void, () => void] {
   const [value, setValue] = useState<T>(defaults)
   const defaultsRef = useRef(defaults)
+  const migrateRef = useRef(migrate)
+  migrateRef.current = migrate
   const hydratedRef = useRef(false)
 
-  // Load persisted value after mount (merged over current defaults).
+  // Load persisted value after mount (optionally migrated, then merged over defaults).
   useEffect(() => {
     try {
       const raw = localStorage.getItem(key)
       if (raw) {
-        const parsed = JSON.parse(raw) as Partial<T>
+        let parsed = JSON.parse(raw) as Partial<T>
+        if (migrateRef.current) {
+          parsed = migrateRef.current(parsed, defaultsRef.current)
+        }
         setValue({ ...defaultsRef.current, ...parsed })
       }
     } catch (err) {

@@ -103,6 +103,17 @@ interface DepartingFlower {
 // How long the fade/shrink-away runs after the color animation finishes.
 const DEPART_LEAVE_MS = 420
 
+// Shared garden baseline: the bottom offset (px) of the single container that
+// parents every ground actor (flowers, departing snapshots, the bunny — all
+// positioned `bottom-2` inside it). Previously 38px to clear the old scrolling
+// chat ticker, which no longer exists. Lowered to a small NEGATIVE value so the
+// visible stem bases meet the canvas bottom edge: the flower/bunny webp sprites
+// carry transparent padding beneath the stems, so aligning the image bounding box
+// to 0 would float the visible stems above the edge. The negative offset lets that
+// transparent padding clip against the overflow-hidden root, seating the visible
+// pixels on the bottom. Changing only this value keeps all relative spacing intact.
+const GARDEN_BASELINE_BOTTOM_PX = -10
+
 interface CommunityGardenProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
@@ -1338,7 +1349,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         onHide={() => setShowGardenEliteCelebration(false)}
       />
 
-      <div className="absolute left-0 right-0 z-10 pointer-events-none" style={{ bottom: "38px" }}>
+      <div className="absolute left-0 right-0 z-10 pointer-events-none" style={{ bottom: `${GARDEN_BASELINE_BOTTOM_PX}px` }}>
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div

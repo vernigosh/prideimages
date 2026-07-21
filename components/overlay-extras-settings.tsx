@@ -225,6 +225,7 @@ export function OverlayExtrasSettings({
               <Check label="Hide recognized commands" checked={chat.hideRecognizedCommands} onChange={(v) => setChat({ hideRecognizedCommands: v })} />
               <Check label="Hide all ! messages" checked={chat.hideAllCommands} onChange={(v) => setChat({ hideAllCommands: v })} />
               <Check label="Hide known bots" checked={chat.hideBots} onChange={(v) => setChat({ hideBots: v })} />
+              <Check label="Use Twitch username colors" checked={chat.useTwitchUsernameColors} onChange={(v) => setChat({ useTwitchUsernameColors: v })} />
             </div>
             <div>
               <label className="mb-2 block text-sm font-bold text-black">Ignored users (comma separated)</label>
@@ -242,6 +243,14 @@ export function OverlayExtrasSettings({
               <TestButton label="Test broadcaster" onClick={() => dispatchTestChat({ username: "Vernigosh", color: "#ff6b9d", badges: { broadcaster: true, moderator: false, vip: false, subscriber: true }, message: "welcome to the stream!" })} />
               <TestButton label="Test mod/VIP" onClick={() => dispatchTestChat({ username: "ModSquad", color: "#22c55e", badges: { broadcaster: false, moderator: true, vip: true, subscriber: true }, message: "keeping chat tidy" })} />
               <TestButton label="Test badges/emotes" onClick={() => dispatchTestChat({ username: "EmoteLord", color: "#38bdf8", badges: { broadcaster: false, moderator: false, vip: true, subscriber: true }, message: "Kappa nice one Kappa", emotes: [ { id: "25", code: "Kappa", start: 0, end: 4 }, { id: "25", code: "Kappa", start: 15, end: 19 } ] })} />
+              <TestButton label="Test bright color" onClick={() => dispatchTestChat({ username: "NeonNova", color: "#00ff7f", message: "bright spring-green username here!" })} />
+              <TestButton label="Test dark color" onClick={() => dispatchTestChat({ username: "MidnightMax", color: "#0000ff", message: "dark blue username stays exactly this color" })} />
+              <TestButton label="Test no color (pink)" onClick={() => dispatchTestChat({ username: "ColorlessCarl", color: undefined, message: "no twitch color, falls back to vernigosh pink" })} />
+              <TestButton label="Test mixed colors" onClick={() => {
+                dispatchTestChat({ username: "RubyRed", color: "#ff0000", message: "first color" })
+                setTimeout(() => dispatchTestChat({ username: "GoldenGoose", color: "#daa520", message: "second color" }), 120)
+                setTimeout(() => dispatchTestChat({ username: "TealTina", color: "#008080", message: "third color" }), 240)
+              }} />
               <TestButton label="Clear messages" onClick={() => window.dispatchEvent(new Event("clearChatOverlay"))} />
             </div>
             <button type="button" onClick={resetChat} className="flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-black">

@@ -8,7 +8,6 @@ import {
   isKnownBot,
 } from "@/lib/chat-commands"
 import {
-  OVERLAY_FONT_STANDARD,
   OVERLAY_LINE_HEIGHT_CHAT,
   OVERLAY_WEIGHT_LABEL,
   OVERLAY_WEIGHT_BODY,
@@ -31,16 +30,19 @@ export interface ChatOverlaySettings {
   hideAllCommands: boolean // hide every message starting with "!"
   hideBots: boolean
   ignoredUsers: string[]
+  // When true (default), each username renders in that viewer's exact Twitch chat
+  // color from the message tags. When false, every username uses the pink fallback.
+  useTwitchUsernameColors: boolean
 }
 
 export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   enabled: true,
   offsetX: 40,
   offsetY: 40,
-  width: 560, // wide enough for two clean lines at the 32px standard size
+  width: 560, // wide enough for two clean lines at the standard chat size
   visibleCount: 2,
-  usernameFontSize: OVERLAY_FONT_STANDARD, // 32 (standard) - same as message
-  messageFontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
+  usernameFontSize: 28, // spec: 28px, weight 600
+  messageFontSize: 28, // spec: 28px, weight 500
   lifetimeMs: 20000,
   backgroundOpacity: 0.72,
   maxLines: 2,
@@ -50,27 +52,33 @@ export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   hideAllCommands: false,
   hideBots: true,
   ignoredUsers: [],
+  useTwitchUsernameColors: true,
 }
 
+// Established Vernigosh pink, used only when there is no valid Twitch color.
 const PINK_FALLBACK = "#ff6b9d"
+// Subtle dark shadow keeps any Twitch color legible over video without altering it.
+const NAME_TEXT_SHADOW = "0 1px 2px rgba(0,0,0,0.85), 0 0 3px rgba(0,0,0,0.65)"
 const HISTORY_MAX = 20
 
 interface DisplayMessage extends NormalizedChatMessage {
   addedAt: number
 }
 
-// Ensure username colors stay readable on the near-black cards.
-function readableColor(color?: string): string {
-  if (!color) return PINK_FALLBACK
-  const hex = color.replace("#", "")
-  if (hex.length !== 6) return color
-  const r = Number.parseInt(hex.slice(0, 2), 16)
-  const g = Number.parseInt(hex.slice(2, 4), 16)
-  const b = Number.parseInt(hex.slice(4, 6), 16)
-  // Relative luminance; if too dark, fall back to pink.
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  if (luminance < 0.25) return PINK_FALLBACK
-  return color
+// Only a #RGB or #RRGGBB string is a valid Twitch color.
+function isValidHexColor(color?: string): color is string {
+  return typeof color === "string" && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(color.trim())
+}
+
+// Resolve the username color WITHOUT ever altering a valid Twitch value.
+// - Colors disabled  -> pink fallback for everyone.
+// - Valid Twitch hex -> returned exactly as provided (no brighten/darken/desaturate).
+// - Missing/invalid  -> pink fallback.
+// Role (broadcaster/mod/vip/sub) never influences color; that comes from badges.
+function resolveUsernameColor(color: string | undefined, useTwitchColors: boolean): string {
+  if (!useTwitchColors) return PINK_FALLBACK
+  if (isValidHexColor(color)) return color.trim()
+  return PINK_FALLBACK
 }
 
 // Render message text, substituting Twitch emotes with their images.
@@ -212,7 +220,7 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
       style={{ right: `${s.offsetX}px`, bottom: `${s.offsetY}px`, width: `${s.width}px` }}
     >
       {visible.map((m) => {
-        const nameColor = readableColor(m.color)
+        const nameColor = resolveUsernameColor(m.color, s.useTwitchUsernameColors)
         return (
           <div
             key={m.id}
@@ -224,14 +232,17 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
               padding: "14px 20px",
             }}
           >
-            {/* Username and message share one size + baseline; text flows inline. */}
+            {/* Username and message share one size + baseline; text flows inline.
+                Uppercase is applied ONLY here at render time — the stored display
+                name and color are never mutated. */}
             <p
-              className="m-0 font-sans text-white"
+              className="m-0 font-sans text-white uppercase"
               style={{
                 fontSize: `${s.messageFontSize}px`,
                 lineHeight: OVERLAY_LINE_HEIGHT_CHAT,
                 letterSpacing: 0,
                 fontWeight: OVERLAY_WEIGHT_BODY,
+                textShadow: NAME_TEXT_SHADOW,
                 display: "-webkit-box",
                 WebkitLineClamp: s.maxLines + 1,
                 WebkitBoxOrient: "vertical",

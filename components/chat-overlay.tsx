@@ -41,22 +41,46 @@ export interface ChatOverlaySettings {
   useTwitchUsernameColors: boolean
   // Render-only uppercase presentation. Never mutates stored message data.
   uppercase: boolean
+  // Layout-schema version. Bumped whenever the compact layout defaults change so a
+  // one-time migration can refresh legacy layout values loaded from OBS/Chrome
+  // localStorage (which are separate stores). See CHAT_LAYOUT_VERSION.
+  chatLayoutVersion: number
 }
+
+// Bump this when the layout defaults below change. On load, any persisted settings
+// with a lower (or missing) version have ONLY their layout fields refreshed once.
+export const CHAT_LAYOUT_VERSION = 3
+
+// Layout-only fields refreshed by the migration. Behavioral/filter fields
+// (enabled, filters, colors, uppercase, ignoredUsers, lifetime, etc.) are preserved.
+export const CHAT_LAYOUT_FIELDS = [
+  "offsetX",
+  "offsetY",
+  "width",
+  "visibleCount",
+  "usernameFontSize",
+  "messageFontSize",
+  "borderRadius",
+  "paddingX",
+  "paddingY",
+  "cardGap",
+  "maxLines",
+] as const
 
 export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   enabled: true,
   offsetX: 60, // inset from right — aligns near the clock/timer right edge
-  offsetY: 270, // below all timer external text, above the tallest normal flower
-  width: 500,
+  offsetY: 300, // in the clear band below timer copy, above the tallest flower
+  width: 450,
   visibleCount: 2,
   usernameFontSize: 28, // 28px, weight 600
   messageFontSize: 28, // 28px, weight 500
   lifetimeMs: 20000,
   backgroundOpacity: 0.58,
-  borderRadius: 16,
-  paddingX: 17,
-  paddingY: 10,
-  cardGap: 7,
+  borderRadius: 14,
+  paddingX: 13,
+  paddingY: 7,
+  cardGap: 6,
   maxLines: 2,
   showBadges: false, // deprecated; badges are no longer rendered
   showEmotes: true,
@@ -66,6 +90,7 @@ export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   ignoredUsers: [],
   useTwitchUsernameColors: true,
   uppercase: true,
+  chatLayoutVersion: CHAT_LAYOUT_VERSION,
 }
 
 // Established Vernigosh pink, used only when there is no valid Twitch color.
@@ -78,8 +103,8 @@ const CARD_SHADOW = "0 1px 3px rgba(0,0,0,0.35)"
 const HISTORY_MAX = 20
 
 // Message-flow animation timing.
-const ENTER_OFFSET_PX = 14 // new messages rise from ~14px below their final spot
-const ANIM_MS = 200 // enter / move / exit duration
+const ENTER_OFFSET_PX = 16 // new messages rise from ~16px below their final spot
+const ANIM_MS = 300 // enter / move / exit duration
 const ANIM_EASE = "cubic-bezier(0.22, 1, 0.36, 1)" // smooth ease-out, no bounce/overshoot
 
 function prefersReducedMotion(): boolean {
@@ -271,7 +296,9 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
       naturalTops.set(id, el.getBoundingClientRect().top)
     })
 
-    // 2. Invert: seed the starting transform/opacity for new + moved cards.
+    // 2. Invert: seed the starting transform/opacity for new + moved cards. New
+    //    cards start ENTER_OFFSET_PX below + transparent; moved cards start at their
+    //    previous position (transition still disabled from step 1).
     cardRefs.current.forEach((el, id) => {
       if (el.dataset.leaving === "true") return
       const prevTop = prevTopsRef.current.get(id)
@@ -285,24 +312,28 @@ export function ChatOverlay({ settings }: ChatOverlayProps) {
       }
     })
 
-    // 3. Play: next frame, transition every card to its resting state.
-    const raf = requestAnimationFrame(() => {
-      cardRefs.current.forEach((el) => {
-        el.style.transition = `transform ${ANIM_MS}ms ${ANIM_EASE}, opacity ${ANIM_MS}ms ${ANIM_EASE}`
-        if (el.dataset.leaving === "true") {
-          el.style.opacity = "0"
-        } else {
-          el.style.transform = "translateY(0)"
-          el.style.opacity = "1"
-        }
-      })
+    // 2b. Force a synchronous reflow so the seeded (inverted) transform/opacity is
+    //     committed as the transition's START value. Without this flush the browser
+    //     coalesces the seed and target into a single style change and NO motion is
+    //     painted — the bug that made the animation look instantaneous.
+    void document.body.offsetHeight
+
+    // 3. Play: enable transitions and set every card to its resting state. Because
+    //    the start value was just committed, the browser animates seed -> target.
+    cardRefs.current.forEach((el) => {
+      el.style.transition = `transform ${ANIM_MS}ms ${ANIM_EASE}, opacity ${ANIM_MS}ms ${ANIM_EASE}`
+      if (el.dataset.leaving === "true") {
+        el.style.opacity = "0"
+      } else {
+        el.style.transform = "translateY(0)"
+        el.style.opacity = "1"
+      }
     })
 
     prevTopsRef.current = naturalTops
     enteredRef.current.forEach((id) => {
       if (!cardRefs.current.has(id)) enteredRef.current.delete(id)
     })
-    return () => cancelAnimationFrame(raf)
   })
 
   if (!s.enabled) return null

@@ -338,7 +338,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
         className="absolute right-0 top-1/2 z-10"
         style={{ transform: `translate(${-cfg.offsetX}px, calc(-50% + ${cfg.offsetY}px)) scale(${cfg.scale})` }}
       >
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-[7px]">
           <div className="relative" style={{ width: `${cfg.ringSize}px`, height: `${cfg.ringSize}px` }}>
             <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
@@ -375,11 +375,12 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
           </div>
           {/* Timer copy: normal centered vertical layout BENEATH the ring, giving
               a predictable measured bottom edge for chat placement. */}
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex flex-col items-center gap-[3px]">
             <span
               className="font-sans uppercase text-white"
               style={{
                 fontSize: `${cfg.stateLabelFontSize}px`,
+                lineHeight: 1.08,
                 letterSpacing: 0,
                 fontWeight: OVERLAY_WEIGHT_LABEL,
                 textShadow: "0 2px 6px rgba(0,0,0,0.6)",
@@ -391,6 +392,7 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
               className="font-sans uppercase text-white/70"
               style={{
                 fontSize: `${cfg.nextChangeFontSize}px`,
+                lineHeight: 1.08,
                 letterSpacing: 0,
                 fontWeight: OVERLAY_WEIGHT_BODY,
                 textShadow: "0 2px 6px rgba(0,0,0,0.6)",

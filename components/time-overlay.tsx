@@ -81,9 +81,10 @@ export function TimeOverlay({
 
   return (
     <div className={`absolute ${getPositionClasses()} z-10`}>
-      {/* Left-align the two lines with each other. The outer container position,
-          offsets, and sizes are unchanged — only the internal alignment differs. */}
-      <div className="flex flex-col items-start">
+      {/* Center ROME horizontally beneath the time. The outer container position,
+          offsets, and sizes are unchanged — only the internal alignment differs.
+          width:fit-content keeps the block sized to the widest line (the time). */}
+      <div className="flex w-fit flex-col items-center text-center">
         {/* Time: display size */}
         <span
           className={`${getFontWeight()} font-sans tabular-nums`}

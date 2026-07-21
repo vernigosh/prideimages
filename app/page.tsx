@@ -31,7 +31,13 @@ import { PrideTriviaTimer } from "@/components/pride-trivia-timer" // Import Pri
 import { StreamEventPopup, DEFAULT_EVENT_POPUP_SETTINGS, type StreamEventPopupSettings } from "@/components/stream-event-popup" // Import discrete stream event popup
 import { DEFAULT_WORK_TIMER_SETTINGS, type WorkTimerSettings } from "@/components/work-timer"
 import { OverlayExtrasSettings } from "@/components/overlay-extras-settings" // Settings for popup + work timer layout
-import { ChatOverlay, DEFAULT_CHAT_OVERLAY_SETTINGS } from "@/components/chat-overlay" // Visible incoming Twitch chat
+import {
+  ChatOverlay,
+  DEFAULT_CHAT_OVERLAY_SETTINGS,
+  CHAT_LAYOUT_VERSION,
+  CHAT_LAYOUT_FIELDS,
+  type ChatOverlaySettings,
+} from "@/components/chat-overlay" // Visible incoming Twitch chat
 import { DEFAULT_GARDEN_ACTIVITY_SETTINGS } from "@/components/community-garden"
 import { usePersistentSettings } from "@/lib/use-persistent-settings"
 
@@ -256,11 +262,50 @@ export default function DJRandomizer() {
   const [chatOverlaySettings, setChatOverlaySettings, resetChatOverlaySettings] = usePersistentSettings(
     "overlay:chat",
     DEFAULT_CHAT_OVERLAY_SETTINGS,
+    // One-time layout migration. OBS and Chrome keep SEPARATE localStorage, so a
+    // browser source can load an older layout (e.g. a low offsetY that dropped chat
+    // over the flowers). When the stored layout version is behind, refresh ONLY the
+    // layout fields from the current compact defaults and stamp the new version;
+    // unrelated saved fields (filters, colors, uppercase, ignored users) are kept.
+    (stored, defaults) => {
+      const storedVersion = typeof stored.chatLayoutVersion === "number" ? stored.chatLayoutVersion : 0
+      if (storedVersion >= CHAT_LAYOUT_VERSION) return stored
+      const migrated: Partial<ChatOverlaySettings> = { ...stored }
+      for (const field of CHAT_LAYOUT_FIELDS) {
+        migrated[field] = defaults[field] as never
+      }
+      migrated.chatLayoutVersion = CHAT_LAYOUT_VERSION
+      console.log("[v0] Migrated chat layout from version", storedVersion, "to", CHAT_LAYOUT_VERSION)
+      return migrated
+    },
   )
   const [gardenActivitySettings, setGardenActivitySettings, resetGardenActivitySettings] = usePersistentSettings(
     "overlay:gardenActivity",
     DEFAULT_GARDEN_ACTIVITY_SETTINGS,
   )
+
+  // One-time diagnostic: reports the real browser-source geometry and the chat
+  // settings actually loaded in THIS environment (Chrome vs the OBS browser source
+  // each have their own localStorage). Compare the two logs to confirm whether a
+  // stale stored layout — not the code — was the source of a position mismatch.
+  useEffect(() => {
+    console.log("[v0] Overlay environment:", {
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio,
+      overlayRoot: {
+        width: document.documentElement.clientWidth,
+        height: document.documentElement.clientHeight,
+      },
+    })
+    console.log("[v0] Loaded chat settings:", {
+      offsetX: chatOverlaySettings.offsetX,
+      offsetY: chatOverlaySettings.offsetY,
+      width: chatOverlaySettings.width,
+      chatLayoutVersion: chatOverlaySettings.chatLayoutVersion,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]

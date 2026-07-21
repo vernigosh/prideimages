@@ -68,7 +68,7 @@ function gardenPrefersReducedMotion(): boolean {
 // referenced by THIS message when it becomes the visible item.
 interface GardenActivity {
   id: string
-  type?: "plant" | "water" | "pick" | "rain"
+  type?: "plant" | "water" | "pick" | "rain" | "bunny"
   username?: string
   message: string
   timestamp: number
@@ -88,6 +88,20 @@ function nextActivityId(): string {
 // An activity older than this when it first becomes visible is treated as stale
 // (e.g. surviving a remount) and will not fire its flower effect.
 const STALE_ACTIVITY_MS = 4000
+
+// A temporary visual copy of a flower that has already been removed from garden
+// state (picked, or eaten by the bunny) but must remain on screen at its original
+// position to play the power-up + fade-away. Tied to the activity id that owns it,
+// so the animation only starts when that activity's message becomes visible.
+interface DepartingFlower {
+  key: string // unique render key: `${activityId}_${flower.id}`
+  activityId: string // the Garden Activity whose visibility starts the animation
+  flower: Flower // snapshot captured before removal (position, type, stage, etc.)
+  phase: "waiting" | "animating" | "leaving"
+}
+
+// How long the fade/shrink-away runs after the color animation finishes.
+const DEPART_LEAVE_MS = 420
 
 interface CommunityGardenProps {
   isVisible: boolean
@@ -181,6 +195,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   // Ids of flowers currently playing the power-up effect (tied to the visible message).
   const [highlightedFlowerIds, setHighlightedFlowerIds] = useState<string[]>([])
   const highlightTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  // Temporary on-screen copies of flowers that were removed by a pick or bunny-eat.
+  const [departingFlowers, setDepartingFlowers] = useState<DepartingFlower[]>([])
+  const departTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set())
   // Tracks which visible-activity id has already triggered its effect (fires once).
   const poweredActivityIdRef = useRef<string | null>(null)
   // Mirror of flowers for stable reads inside stable (empty-dep) event handlers.
@@ -335,15 +352,22 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
           setBunnyOpacity(1)
 
           if (bunnyEatenCount > 0) {
-            addActivity(`🐰 THE BUNNY IS MUNCHING ON ${bunnyEatenCount} DELICIOUS FLOWERS!`, 4000)
+            // Capture the EXACT flowers about to be eaten (by unique id) before they
+            // leave garden state, so temporary copies can animate at their spots.
+            const matureFlowers = flowersRef.current.filter((f) => f.stage === "fully-mature")
+            const eatenSnapshots = matureFlowers.slice(0, bunnyEatenCount).map((f) => ({ ...f }))
+            const eatenIds = new Set(eatenSnapshots.map((f) => f.id))
 
-            // Remove flowers from garden
-            setFlowers((currentFlowers) => {
-              const matureFlowers = currentFlowers.filter((f) => f.stage === "fully-mature")
-              const flowersToRemove = matureFlowers.slice(0, bunnyEatenCount)
-              const remainingFlowers = currentFlowers.filter((f) => !flowersToRemove.includes(f))
-              return remainingFlowers
-            })
+            const bunnyActivityId = addActivity(
+              `🐰 THE BUNNY IS MUNCHING ON ${bunnyEatenCount} DELICIOUS FLOWERS!`,
+              4000,
+              { type: "bunny", username: "Bunny" },
+            )
+            // All eaten copies animate simultaneously when the message appears.
+            spawnDepartingFlowers(eatenSnapshots, bunnyActivityId)
+
+            // Remove exactly those flowers from garden state.
+            setFlowers((currentFlowers) => currentFlowers.filter((f) => !eatenIds.has(f.id)))
           } else {
             addActivity("🐰 THE BUNNY IS HAPPILY MUNCHING ON GARDEN WEEDS!", 4000)
           }
@@ -726,13 +750,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         [username]: 0,
       }))
 
-      // Show picking message with lifetime total. Picking removes flowers, so
-      // there is no single sprite to power up — only the type is tagged.
-      addActivity(
+      // Snapshot the exact flowers being picked (by unique id) BEFORE they leave
+      // garden state, so temporary copies can play the power-up at their spots.
+      const pickedSnapshots = userPickableFlowers.map((f) => ({ ...f }))
+
+      // Show picking message with lifetime total. The returned activity id links
+      // the departing copies to this message so the effect starts when it shows.
+      const pickActivityId = addActivity(
         `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}! USE !FLOWERS TO CHECK INVENTORY!`,
         5000,
         { type: "pick", username },
       )
+      spawnDepartingFlowers(pickedSnapshots, pickActivityId)
 
       // Remove only the user's pickable flowers
       setFlowers((prev) =>
@@ -929,7 +958,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
 
-  const addActivity = (activity: string, duration = 5000, meta?: GardenActivityMeta) => {
+  const addActivity = (activity: string, duration = 5000, meta?: GardenActivityMeta): string => {
     // Show one routine message at a time (newest wins); history stays bounded to 5.
     const item: GardenActivity = {
       id: nextActivityId(),
@@ -947,6 +976,43 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     setTimeout(() => {
       setRecentActivity((current) => current.filter((i) => i.id !== item.id))
     }, effective)
+    // Returned so callers can associate departing-flower copies with this activity.
+    return item.id
+  }
+
+  // Register temporary visual copies of flowers that were just removed (picked or
+  // eaten). They render in the "waiting" phase and stay perfectly still until their
+  // owning activity becomes the visible message, at which point the effect starts.
+  const spawnDepartingFlowers = (snapshots: Flower[], activityId: string) => {
+    if (!activityCfgRef.current.highlightEnabled) return
+    if (snapshots.length === 0) return
+    setDepartingFlowers((prev) => [
+      ...prev,
+      ...snapshots.map((f) => ({ key: `${activityId}_${f.id}`, activityId, flower: f, phase: "waiting" as const })),
+    ])
+  }
+
+  // Start the power-up on every departing copy tied to `activityId`: switch them to
+  // "animating", then to "leaving" (fade/shrink) after the color animation, then
+  // remove them. All copies for one bunny/pick event animate simultaneously.
+  const startDepartingAnimation = (activityId: string) => {
+    setDepartingFlowers((prev) => {
+      if (!prev.some((d) => d.activityId === activityId && d.phase === "waiting")) return prev
+      return prev.map((d) => (d.activityId === activityId && d.phase === "waiting" ? { ...d, phase: "animating" } : d))
+    })
+    const dur = Math.max(600, activityCfgRef.current.highlightMs)
+    const toLeave = setTimeout(() => {
+      setDepartingFlowers((prev) =>
+        prev.map((d) => (d.activityId === activityId && d.phase === "animating" ? { ...d, phase: "leaving" } : d)),
+      )
+      const toRemove = setTimeout(() => {
+        setDepartingFlowers((prev) => prev.filter((d) => d.activityId !== activityId))
+        departTimersRef.current.delete(toRemove)
+      }, DEPART_LEAVE_MS)
+      departTimersRef.current.add(toRemove)
+      departTimersRef.current.delete(toLeave)
+    }, dur)
+    departTimersRef.current.add(toLeave)
   }
 
   // Play the power-up effect on one specific flower sprite. Additive and
@@ -983,15 +1049,23 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     if (visible.id === poweredActivityIdRef.current) return
     poweredActivityIdRef.current = visible.id
     const isFresh = Date.now() - visible.timestamp <= STALE_ACTIVITY_MS
-    if (isFresh && visible.flowerId) powerUpFlower(visible.flowerId)
+    if (!isFresh) return
+    // Planted flower still lives in garden state → highlight it in place.
+    if (visible.flowerId) powerUpFlower(visible.flowerId)
+    // Picked / eaten flowers were removed → start their temporary-copy animations
+    // now that this activity's message is the one on screen.
+    startDepartingAnimation(visible.id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recentActivity])
 
-  // Clear power-up timers on unmount.
+  // Clear power-up + departing-flower timers on unmount.
   useEffect(() => {
+    const departTimers = departTimersRef.current
     return () => {
       highlightTimersRef.current.forEach((t) => clearTimeout(t))
       highlightTimersRef.current.clear()
+      departTimers.forEach((t) => clearTimeout(t))
+      departTimers.clear()
     }
   }, [])
 
@@ -1414,6 +1488,42 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                 {flower.stage !== "fully-mature" && (
                   <div className="absolute -top-2 -right-2 text-lg animate-pulse">✨</div>
                 )}
+              </div>
+            )
+          })}
+
+          {/* Departing flowers: temporary copies of picked / eaten flowers, held at
+              their original positions so the power-up + fade-away can play after the
+              real flower has already left garden state. No halo or ring is used. */}
+          {departingFlowers.map((d) => {
+            const reduceMotion = gardenPrefersReducedMotion()
+            const pu = intensityFactors(activityCfg.highlightIntensity)
+            const animating = d.phase === "animating"
+            const leaving = d.phase === "leaving"
+            const effectClass = animating ? (reduceMotion ? "gardenPowerUpStatic" : "gardenPowerUp") : ""
+            const effectStyle = animating
+              ? ({
+                  animationDuration: `${Math.max(600, activityCfg.highlightMs)}ms`,
+                  ["--pu-bright" as string]: `${pu.brightness}`,
+                  ["--pu-sat" as string]: `${pu.saturate}`,
+                } as CSSProperties)
+              : undefined
+            return (
+              <div
+                key={d.key}
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-2"
+                style={{
+                  left: `${d.flower.x}%`,
+                  // Match the live flower's -translate-x-1/2 anchor, then fade/shrink on leave.
+                  transform: `translateX(-50%) scale(${leaving ? 0.85 : 1})`,
+                  opacity: leaving ? 0 : 1,
+                  transition: `opacity ${DEPART_LEAVE_MS}ms ease, transform ${DEPART_LEAVE_MS}ms ease`,
+                }}
+              >
+                <div className={effectClass} style={effectStyle}>
+                  {getFlowerDisplay(d.flower)}
+                </div>
               </div>
             )
           })}

@@ -8,6 +8,31 @@
   }
 }
 
+/* ==========================================================================
+   Shared overlay typography tokens.
+   Two primary on-stream sizes (display / standard) + one optional chat size.
+   Functional overlay text should reference these instead of inventing sizes.
+   ========================================================================== */
+:root {
+  --overlay-font-display: 60px;
+  --overlay-font-standard: 32px;
+  --overlay-font-chat: 30px;
+
+  --overlay-line-height-display: 1;
+  --overlay-line-height-standard: 1.2;
+  --overlay-line-height-chat: 1.25;
+
+  --overlay-letter-spacing: 0;
+
+  /* Shared card system for popup / chat / garden activity */
+  --overlay-card-radius: 12px;
+  --overlay-card-bg: rgba(10, 10, 12, 0.76);
+  --overlay-card-border: 1px solid rgba(255, 255, 255, 0.12);
+  --overlay-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --overlay-card-padding-x: 22px;
+  --overlay-card-padding-y: 16px;
+}
+
 @theme inline {
   --font-sans: var(--font-roboto);
 }

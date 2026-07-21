@@ -2,6 +2,12 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Wifi, WifiOff, Settings, Play } from "lucide-react"
+import {
+  isRecognizedCommand as checkRecognizedCommand,
+  isKnownBot,
+  parseEmotes,
+  type NormalizedChatMessage,
+} from "@/lib/chat-commands"
 
 interface ChatIntegrationProps {
   onSpin: (username: string) => void
@@ -162,6 +168,35 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
         const command = message.toLowerCase().trim()
         console.log("Processing command:", command)
+
+        // --- Visible chat overlay dispatch -------------------------------------
+        // Normalize EVERY incoming message and dispatch it to the presentation
+        // layer. This reuses the exact same messages that command parsing below
+        // examines; it never returns or short-circuits, so command EXECUTION is
+        // completely unaffected. The overlay decides on its own whether to DISPLAY.
+        try {
+          const normalized: NormalizedChatMessage = {
+            id: (tags.id as string) || `${username}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            username,
+            color: (tags.color as string) || undefined,
+            badges: {
+              broadcaster: isBroadcaster,
+              moderator: Boolean(isMod),
+              vip: Boolean(isVip),
+              subscriber: Boolean(isSubscriber),
+            },
+            message,
+            emotes: parseEmotes(message, tags.emotes as Record<string, string[]> | undefined),
+            isBot: isKnownBot(username),
+            isCommand: command.startsWith("!"),
+            isRecognizedCommand: checkRecognizedCommand(message),
+            timestamp: Date.now(),
+          }
+          window.dispatchEvent(new CustomEvent("overlayChatMessage", { detail: normalized }))
+        } catch (err) {
+          console.log("[v0] Failed to dispatch overlay chat message:", err)
+        }
+        // -----------------------------------------------------------------------
 
         if (
           message.includes("redeemed DJ Technique Challenge") ||

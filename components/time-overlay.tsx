@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { OVERLAY_FONT_STANDARD, OVERLAY_LINE_HEIGHT_STANDARD, OVERLAY_WEIGHT_LABEL } from "@/lib/overlay-typography"
 
 interface TimeOverlayProps {
   position: "top-left" | "top-right" | "bottom-left" | "bottom-right"
@@ -23,9 +24,11 @@ export function TimeOverlay({
   shadowSize,
   fontWeight,
 }: TimeOverlayProps) {
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTime, setCurrentTime] = useState<Date | null>(null)
 
   useEffect(() => {
+    // Set initial time after mount to avoid SSR/CSR hydration mismatch.
+    setCurrentTime(new Date())
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
@@ -35,7 +38,7 @@ export function TimeOverlay({
 
   const formatTime = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
-      timeZone: "Europe/Rome",
+      timeZone: timeZone || "Europe/Rome",
       hour: "2-digit",
       minute: "2-digit",
       ...(showSeconds && { second: "2-digit" }),
@@ -72,19 +75,34 @@ export function TimeOverlay({
     }
   }
 
+  if (!currentTime) return null
+
+  const textShadow = shadowSize > 0 ? `${shadowSize}px ${shadowSize}px ${shadowSize * 2}px ${shadowColor}` : "none"
+
   return (
     <div className={`absolute ${getPositionClasses()} z-10`}>
-      <div className="text-center">
-        <div
-          className={`${getFontWeight()} font-sans tracking-wider uppercase`}
+      <div className="flex flex-col items-end">
+        {/* Time: display size */}
+        <span
+          className={`${getFontWeight()} font-sans tabular-nums`}
+          style={{ fontSize: `${fontSize}px`, lineHeight: 1, letterSpacing: 0, color: textColor, textShadow }}
+        >
+          {formatTime(currentTime)}
+        </span>
+        {/* Location: standard size */}
+        <span
+          className="font-sans uppercase"
           style={{
-            fontSize: `${fontSize}px`,
+            fontSize: `${OVERLAY_FONT_STANDARD}px`,
+            lineHeight: OVERLAY_LINE_HEIGHT_STANDARD,
+            letterSpacing: 0,
+            fontWeight: OVERLAY_WEIGHT_LABEL,
             color: textColor,
-            textShadow: shadowSize > 0 ? `${shadowSize}px ${shadowSize}px ${shadowSize * 2}px ${shadowColor}` : "none",
+            textShadow,
           }}
         >
-          {formatTime(currentTime)} ROME, ITALY
-        </div>
+          Rome
+        </span>
       </div>
     </div>
   )

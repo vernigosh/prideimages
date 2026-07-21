@@ -72,7 +72,7 @@ export function FlowerLeaderboard({ isVisible, onHide }: FlowerLeaderboardProps)
     <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
       <div className="bg-black/70 backdrop-blur-sm rounded-lg p-8 border border-white/30 shadow-2xl w-[480px]">
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-black text-white font-sans uppercase tracking-wider">TODAY'S TOP PICKERS</h2>
+          <h2 className="text-3xl font-black text-white font-sans uppercase">TODAY'S TOP PICKERS</h2>
         </div>
 
         <div className="space-y-4">

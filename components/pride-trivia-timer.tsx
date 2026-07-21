@@ -1148,7 +1148,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
               >
                 {casualMode 
                   ? (isGuessing ? "GUESS TIME" : "ANSWER") 
-                  : (phase === "work" ? "WORK TIME" : "BREAK")}
+                  : (phase === "work" ? "FOCUS" : "BREAK")}
               </div>
             </div>
           </div>
@@ -1183,7 +1183,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
               }}
             >
               <div className="text-center mb-3">
-                <h2 className="text-2xl font-black text-black font-sans uppercase tracking-wider">TRIVIA LEADERS</h2>
+                <h2 className="text-2xl font-black text-black font-sans uppercase">TRIVIA LEADERS</h2>
               </div>
               
               {/* Last Question Winners */}

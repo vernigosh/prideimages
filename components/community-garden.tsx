@@ -7,6 +7,7 @@ import { BeeParadeCelebration } from "./bee-parade-celebration" // Import the ne
 import { MasterGardenerCelebration } from "./master-gardener-celebration" // Import the new Master Gardener celebration component
 import { NaturesGuardianCelebration } from "./natures-guardian-celebration" // Import the new Nature's Guardian celebration component
 import { GardenEliteCelebration } from "./garden-elite-celebration" // Import the new Garden Elite celebration component
+import { OVERLAY_FONT_STANDARD, OVERLAY_LINE_HEIGHT_STANDARD, OVERLAY_WEIGHT_LABEL } from "@/lib/overlay-typography"
 
 interface Flower {
   id: string
@@ -20,11 +21,30 @@ interface Flower {
   specificType?: string // For tulip colors, etc.
 }
 
+export interface GardenActivitySettings {
+  offsetX: number // px offset from horizontal center (positive = right)
+  offsetY: number // px from the bottom of the garden band
+  width: number // px
+  fontSize: number
+  lifetimeMs: number
+  backgroundOpacity: number // 0-1 (0 = no card background)
+}
+
+export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
+  offsetX: 0,
+  offsetY: 328,
+  width: 640,
+  fontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
+  lifetimeMs: 6000,
+  backgroundOpacity: 0,
+}
+
 interface CommunityGardenProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
   onFlowerLegendsUpdate?: (legends: Array<{ username: string; count: number }>) => void
+  activitySettings?: Partial<GardenActivitySettings>
 }
 
 const flowerTypes = {
@@ -96,7 +116,10 @@ async function sendChatMessage(message: string) {
   }
 }
 
-export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowerLegendsUpdate }: CommunityGardenProps) {
+export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowerLegendsUpdate, activitySettings }: CommunityGardenProps) {
+  const activityCfg: GardenActivitySettings = { ...DEFAULT_GARDEN_ACTIVITY_SETTINGS, ...activitySettings }
+  const activityCfgRef = useRef(activityCfg)
+  activityCfgRef.current = activityCfg
   const [flowers, setFlowers] = useState<Flower[]>([])
   const [gardenStats, setGardenStats] = useState({
     totalFlowers: 0,
@@ -114,9 +137,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   const [bunnyStartTime, setBunnyStartTime] = useState<number | null>(null) // Track when bunny visit started
   const growthIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const [rainTimeoutRef, setRainTimeoutRef] = useState<NodeJS.Timeout | null>(null) // Use state for rain timeout
-  const [flowerReveals, setFlowerReveals] = useState<{ [key: string]: { type: string; x: number; timestamp: number } }>(
-    {},
-  )
   const [lastWaterTime, setLastWaterTime] = useState(0) // New state variable for tracking the last water time
   const [userFlowerCounts, setUserFlowerCounts] = useState<{ [username: string]: number }>({}) // New state for user flower totals
   const [userPickedTotals, setUserPickedTotals] = useState<{ [username: string]: number }>({}) // New state for lifetime picked totals
@@ -294,7 +314,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
           if (flower.stage === "fully-mature") return flower
 
           const timeSincePlanted = Date.now() - flower.plantedAt
-          const oldStage = flower.stage
 
           let newStage: Flower["stage"] = "sprout"
           if (timeSincePlanted > 150000)
@@ -307,28 +326,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             newStage = "blooming" // 45s-1 minute
           else newStage = "sprout" // 0-45s
 
-          // Trigger reveal when flower reaches small stage (after sparkle)
-          if (oldStage === "blooming" && newStage === "small") {
-            const flowerName = flowerTypes[flower.type].name.toUpperCase()
-
-            setFlowerReveals((prev) => ({
-              ...prev,
-              [flower.id]: {
-                type: `${flower.plantedBy.toUpperCase()}'S ${flowerName}!`,
-                x: flower.x,
-                timestamp: Date.now(),
-              },
-            }))
-
-            // Remove reveal after 3 seconds
-            setTimeout(() => {
-              setFlowerReveals((prev) => {
-                const newReveals = { ...prev }
-                delete newReveals[flower.id]
-                return newReveals
-              })
-            }, 3000)
-          }
+          // Per-flower name labels removed by design; routine activity is
+          // surfaced through the centralized activity feed (addActivity) instead.
 
           return { ...flower, stage: newStage }
         })
@@ -863,13 +862,33 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   }, [isVisible, onConnectionChange, onHide, flowers])
 
   const addActivity = (activity: string, duration = 5000) => {
+    // Show one routine message at a time (newest wins); history stays bounded to 5.
     setRecentActivity((prev) => [activity, ...prev.slice(0, 4)])
 
-    // Clear banner after specified duration
+    // Lifetime is configurable via settings; falls back to the per-call duration.
+    const effective = activityCfgRef.current.lifetimeMs > 0 ? activityCfgRef.current.lifetimeMs : duration
     setTimeout(() => {
       setRecentActivity((current) => current.filter((item) => item !== activity))
-    }, duration)
+    }, effective)
   }
+
+  // Test + clear controls for the centralized activity panel (from settings).
+  useEffect(() => {
+    const handleActivityTest = (e: Event) => {
+      const kind = (e as CustomEvent<{ kind?: string }>).detail?.kind
+      if (kind === "water") addActivity("💧 TESTGARDENER WATERED THE ENTIRE GARDEN!")
+      else if (kind === "pick") addActivity("🌸 TESTGARDENER PICKED 3 OF THEIR OWN FLOWERS!")
+      else addActivity("🌱 TESTGARDENER PLANTED FLOWER #1! PLANT 1 MORE!")
+    }
+    const handleActivityClear = () => setRecentActivity([])
+    window.addEventListener("gardenActivityTest", handleActivityTest as EventListener)
+    window.addEventListener("clearGardenActivity", handleActivityClear as EventListener)
+    return () => {
+      window.removeEventListener("gardenActivityTest", handleActivityTest as EventListener)
+      window.removeEventListener("clearGardenActivity", handleActivityClear as EventListener)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const getFlowerDisplay = (flower: Flower) => {
     if (flower.stage === "sprout") {
@@ -1102,11 +1121,35 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
-            className="absolute left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "328px" }} // Moving activity text down 5px: 333px -> 328px
+            className="absolute left-1/2 z-20 pointer-events-none"
+            style={{
+              bottom: `${activityCfg.offsetY}px`,
+              width: `${activityCfg.width}px`,
+              transform: `translateX(calc(-50% + ${activityCfg.offsetX}px))`,
+            }}
           >
-            <div className="text-center">
-              <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
+            <div
+              className="mx-auto text-center"
+              style={
+                activityCfg.backgroundOpacity > 0
+                  ? {
+                      backgroundColor: `rgba(10, 10, 12, ${activityCfg.backgroundOpacity})`,
+                      borderRadius: "12px",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      padding: "14px 22px",
+                    }
+                  : undefined
+              }
+            >
+              <span
+                className="text-white font-sans uppercase animate-pulse text-balance"
+                style={{
+                  fontSize: `${activityCfg.fontSize}px`,
+                  lineHeight: OVERLAY_LINE_HEIGHT_STANDARD,
+                  letterSpacing: 0,
+                  fontWeight: OVERLAY_WEIGHT_LABEL,
+                }}
+              >
                 {recentActivity[0]}
               </span>
             </div>
@@ -1182,19 +1225,6 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
               />
             </div>
           )}
-
-          {/* Flower Reveals - centered horizontally above garden */}
-          {Object.keys(flowerReveals).map((flowerId) => (
-            <div
-              key={flowerId}
-              className="fixed transform -translate-x-1/2 z-30 pointer-events-none"
-              style={{ bottom: "358px", left: `${flowerReveals[flowerId].x}%` }} // Moving flower reveals down 5px: 363px -> 358px
-            >
-              <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
-                {flowerReveals[flowerId].type}
-              </span>
-            </div>
-          ))}
 
           {/* Flowers */}
           {flowers.map((flower) => {

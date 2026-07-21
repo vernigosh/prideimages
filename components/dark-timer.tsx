@@ -158,90 +158,45 @@ export function DarkTimer({ isVisible, onConnectionChange, onHide, workTimerActi
   }
 
   return (
-    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`}>
-      <div className="flex flex-col items-center justify-center gap-4 font-bold">
-        <div className="relative w-64 h-64">
-          <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">
-            {/* Background ring */}
+    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2`}>
+      <div className="flex flex-col items-center gap-3">
+        <div className="relative" style={{ width: "240px", height: "240px" }}>
+          <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255, 0, 0, 0.18)" strokeWidth="10" />
             <circle
               cx="100"
               cy="100"
               r={radius}
               fill="none"
-              stroke="rgba(255, 0, 0, 0.2)"
-              strokeWidth="12"
-            />
-            {/* Progress ring */}
-            <circle
-              cx="100"
-              cy="100"
-              r={radius}
-              fill="none"
-              stroke="rgba(255, 0, 0, 0.9)"
-              strokeWidth="12"
+              stroke="rgba(255, 0, 0, 0.95)"
+              strokeWidth="10"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
-              style={{ 
-                transition: "stroke-dashoffset 0.5s ease-out",
-                filter: "drop-shadow(0 0 10px #ff0000)"
-              }}
+              style={{ transition: "stroke-dashoffset 0.5s ease-out", filter: "drop-shadow(0 0 8px #ff0000)" }}
             />
           </svg>
-
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div
-                className="text-5xl drop-shadow-lg font-bold"
-                style={{
-                  fontFamily: "Orbitron, monospace",
-                  color: "#ffffff",
-                  textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000",
-                  letterSpacing: "0.05em",
-                }}
-              >
-                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-              </div>
-              <div
-                className="text-sm mt-2 drop-shadow-md font-semibold uppercase"
-                style={{
-                  fontFamily: "Orbitron, monospace",
-                  color: "#cccccc",
-                  letterSpacing: "0.1em",
-                }}
-              >
-                ACTIVE
-              </div>
-            </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span
+              className="font-black tabular-nums leading-none"
+              style={{ fontFamily: "Orbitron, monospace", fontSize: "56px", color: "#ffffff", textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000" }}
+            >
+              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </span>
+            <span
+              className="mt-1 font-bold uppercase tracking-[0.3em]"
+              style={{ fontFamily: "Orbitron, monospace", fontSize: "22px", color: "#ff6b6b", textShadow: "0 0 10px #ff0000" }}
+            >
+              DARK
+            </span>
           </div>
         </div>
-
-        <div className="text-center">
-          <div
-            className="text-3xl mb-2 drop-shadow-lg font-bold uppercase animate-pulse"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              color: "#ffffff",
-              textShadow: "0 0 20px #ff0000, 0 0 40px #ff0000",
-              letterSpacing: "0.1em",
-            }}
-          >
-            DARK VERNIGOSH ACTIVATED
-          </div>
-          <div
-            className="text-lg drop-shadow-lg font-semibold uppercase leading-tight"
-            style={{
-              fontFamily: "Orbitron, monospace",
-              color: "#ff0000",
-              textShadow: "0 0 15px #ff0000",
-              letterSpacing: "0.05em",
-            }}
-          >
-            EXPLORING THE SHADOWS
-            <br />
-            OF THE MUSIC LIBRARY
-          </div>
-        </div>
+        <span
+          className="font-bold uppercase tracking-wide"
+          style={{ fontFamily: "Orbitron, monospace", fontSize: "24px", color: "#ff3b3b", textShadow: "0 0 12px #ff0000" }}
+        >
+          EXPLORING THE SHADOWS
+        </span>
       </div>
     </div>
   )

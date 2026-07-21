@@ -26,6 +26,13 @@ interface StreamEventPopupProps {
   events: StreamEvent[]
   settings?: Partial<StreamEventPopupSettings>
   onActiveChange?: (active: boolean) => void
+  // When true (e.g. a full-screen takeover is active), events keep queuing but
+  // nothing is displayed. Display resumes automatically once suppression lifts.
+  suppressed?: boolean
+  // Called once per event when it is first ingested into the internal queue.
+  // The parent uses this to record consumed ids so that a popup remount (while the
+  // parent still holds the cumulative events array) never re-enqueues old events.
+  onConsumed?: (id: string) => void
 }
 
 // Per-type display durations (ms). Important events linger longer.
@@ -101,7 +108,13 @@ function positionClasses(position: StreamEventPopupSettings["position"]): string
   }
 }
 
-export function StreamEventPopup({ events, settings, onActiveChange }: StreamEventPopupProps) {
+export function StreamEventPopup({
+  events,
+  settings,
+  onActiveChange,
+  suppressed = false,
+  onConsumed,
+}: StreamEventPopupProps) {
   const s: StreamEventPopupSettings = { ...DEFAULT_EVENT_POPUP_SETTINGS, ...settings }
 
   const [current, setCurrent] = useState<StreamEvent | null>(null)
@@ -114,9 +127,13 @@ export function StreamEventPopup({ events, settings, onActiveChange }: StreamEve
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const settingsRef = useRef(s)
   settingsRef.current = s
+  const suppressedRef = useRef(suppressed)
+  suppressedRef.current = suppressed
 
   const onActiveChangeRef = useRef(onActiveChange)
   onActiveChangeRef.current = onActiveChange
+  const onConsumedRef = useRef(onConsumed)
+  onConsumedRef.current = onConsumed
 
   // Ingest new discrete events into the internal queue (bounded).
   useEffect(() => {
@@ -126,6 +143,7 @@ export function StreamEventPopup({ events, settings, onActiveChange }: StreamEve
       if (seenIdsRef.current.has(ev.id)) continue
       seenIdsRef.current.add(ev.id)
       queueRef.current.push({ event: ev, enqueuedAt: Date.now() })
+      onConsumedRef.current?.(ev.id)
       added = true
     }
     // Bound the internal queue; drop oldest low-priority (follow) first, else oldest.
@@ -152,6 +170,7 @@ export function StreamEventPopup({ events, settings, onActiveChange }: StreamEve
 
   const processNext = () => {
     if (processingRef.current) return
+    if (suppressedRef.current) return // hold the queue while a takeover is active
     const cfg = settingsRef.current
     // Skip stale follows that waited too long behind important events.
     let next: QueuedEvent | undefined
@@ -189,11 +208,19 @@ export function StreamEventPopup({ events, settings, onActiveChange }: StreamEve
     )
   }
 
+  // When suppression lifts, resume draining the queue.
+  useEffect(() => {
+    if (!suppressed && s.enabled && !processingRef.current && queueRef.current.length > 0) {
+      processNext()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suppressed, s.enabled])
+
   useEffect(() => {
     return () => clearTimers()
   }, [])
 
-  if (!s.enabled || !current) return null
+  if (!s.enabled || suppressed || !current) return null
 
   const Icon = getIcon(current.type)
   const { title, detail } = getMessage(current)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { SpinningWheel } from "@/components/spinning-wheel"
 import { AdminInterface } from "@/components/admin-interface"
 import { ResultDisplay } from "@/components/result-display"
@@ -28,7 +28,12 @@ import { StartingTimer } from "@/components/starting-timer" // Import StartingTi
 import { BrbOverlay } from "@/components/brb-overlay" // Import BRB overlay component
 import { RaidCelebration } from "@/components/raid-celebration" // Import Raid celebration component
 import { PrideTriviaTimer } from "@/components/pride-trivia-timer" // Import Pride Trivia Timer component
-import { StreamEventPopup } from "@/components/stream-event-popup" // Import discrete stream event popup
+import { StreamEventPopup, DEFAULT_EVENT_POPUP_SETTINGS, type StreamEventPopupSettings } from "@/components/stream-event-popup" // Import discrete stream event popup
+import { DEFAULT_WORK_TIMER_SETTINGS, type WorkTimerSettings } from "@/components/work-timer"
+import { OverlayExtrasSettings } from "@/components/overlay-extras-settings" // Settings for popup + work timer layout
+import { ChatOverlay, DEFAULT_CHAT_OVERLAY_SETTINGS } from "@/components/chat-overlay" // Visible incoming Twitch chat
+import { DEFAULT_GARDEN_ACTIVITY_SETTINGS } from "@/components/community-garden"
+import { usePersistentSettings } from "@/lib/use-persistent-settings"
 
 interface Trick {
   name: string
@@ -236,6 +241,26 @@ export default function DJRandomizer() {
   
   // Timer flip state - alternates between dark timer and pride timer every 30 seconds when both are active
   const [showDarkTimerInFlip, setShowDarkTimerInFlip] = useState(true)
+
+  // Layout/appearance settings for the extras. All are persisted in localStorage
+  // (see usePersistentSettings) so they survive browser-source refresh, OBS
+  // restart, editing-mode reload, and new v0 deployments without clearing storage.
+  const [eventPopupSettings, setEventPopupSettings, resetEventPopupSettings] = usePersistentSettings(
+    "overlay:eventPopup",
+    DEFAULT_EVENT_POPUP_SETTINGS,
+  )
+  const [workTimerSettings, setWorkTimerSettings, resetWorkTimerSettings] = usePersistentSettings(
+    "overlay:workTimer",
+    DEFAULT_WORK_TIMER_SETTINGS,
+  )
+  const [chatOverlaySettings, setChatOverlaySettings, resetChatOverlaySettings] = usePersistentSettings(
+    "overlay:chat",
+    DEFAULT_CHAT_OVERLAY_SETTINGS,
+  )
+  const [gardenActivitySettings, setGardenActivitySettings, resetGardenActivitySettings] = usePersistentSettings(
+    "overlay:gardenActivity",
+    DEFAULT_GARDEN_ACTIVITY_SETTINGS,
+  )
   
   const [testCreditsData, setTestCreditsData] = useState<{
     followers: string[]
@@ -248,6 +273,25 @@ export default function DJRandomizer() {
 
   // StreamElements service for tracking stream events
   const { streamCredits, streamEvents } = useStreamElements()
+
+  // Incremental delivery to the event popup. `streamEvents` is a CUMULATIVE array,
+  // so we track which ids the popup has already consumed and only hand it the ones
+  // it has not seen. This ref lives in the PARENT, so even if the popup unmounts and
+  // remounts, previously consumed events are never re-enqueued. Bounded + expiring.
+  const consumedEventIdsRef = useRef<Map<string, number>>(new Map())
+  const markEventConsumed = (id: string) => {
+    const map = consumedEventIdsRef.current
+    map.set(id, Date.now())
+    if (map.size > 400) {
+      // Drop the oldest ~200 entries to keep the cache bounded.
+      const sorted = Array.from(map.entries()).sort((a, b) => a[1] - b[1])
+      for (let i = 0; i < sorted.length - 200; i++) map.delete(sorted[i][0])
+    }
+  }
+  const pendingPopupEvents = useMemo(
+    () => streamEvents.filter((e) => !consumedEventIdsRef.current.has(e.id)),
+    [streamEvents],
+  )
   
   // Use test data if available, otherwise use live data
   const activeStreamCredits = testCreditsData || streamCredits
@@ -750,6 +794,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           isVisible={showWorkTimer}
           onConnectionChange={setWorkTimerConnected}
           onHide={() => setShowWorkTimer(false)}
+          settings={workTimerSettings}
         />
       )
     }
@@ -810,8 +855,22 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           />
         )}
 
-        {/* Discrete Stream Event Popup (follows, subs, gifts, cheers, tips, raids) */}
-        <StreamEventPopup events={streamEvents} />
+        {/* Discrete Stream Event Popup (follows, subs, gifts, cheers, tips, raids).
+            Suppressed while a full-screen takeover (BRB, Starting Soon, Credits) is active
+            so temporary notifications never collide with higher-priority scenes. */}
+        <StreamEventPopup
+          events={pendingPopupEvents}
+          settings={eventPopupSettings}
+          suppressed={showBrb || showStartingTimer || showStreamCredits}
+          onConsumed={markEventConsumed}
+        />
+
+        {/* Visible incoming Twitch chat. Deliberately rendered OUTSIDE any
+            takeover/suppression gating: its visibility is controlled ONLY by its
+            own enabled setting and the OBS browser-source visibility. It never
+            hides, moves, or clears in response to events, raids, timers, garden
+            activity, trivia, credits, Starting Soon, BRB, or any other state. */}
+        <ChatOverlay settings={chatOverlaySettings} />
 
         {/* Blurb Overlay */}
         <BlurbOverlay
@@ -1198,6 +1257,14 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         setOverlayBackground={setOverlayBackground}
         chatConnected={chatConnected}
         lastCommand={lastCommand}
+      />
+
+      {/* Layout/appearance controls for the discrete event popup and work timer */}
+      <OverlayExtrasSettings
+        popup={eventPopupSettings}
+        setPopup={setEventPopupSettings}
+        workTimer={workTimerSettings}
+        setWorkTimer={setWorkTimerSettings}
       />
 
       {/* Chat Integration Setup */}

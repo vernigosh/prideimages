@@ -1148,7 +1148,7 @@ export function PrideTriviaTimer({ isVisible, onConnectionChange, onHide, casual
               >
                 {casualMode 
                   ? (isGuessing ? "GUESS TIME" : "ANSWER") 
-                  : (phase === "work" ? "WORK TIME" : "BREAK")}
+                  : (phase === "work" ? "FOCUS" : "BREAK")}
               </div>
             </div>
           </div>

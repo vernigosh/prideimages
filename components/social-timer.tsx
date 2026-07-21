@@ -147,45 +147,42 @@ export function SocialTimer({ isVisible, onConnectionChange, onHide, workTimerAc
   const { radius, circumference, strokeDashoffset } = getRingProps(progress)
 
   return (
-    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2 w-1/3 max-w-md`} style={workTimerActive && darkTimerActive ? { left: '33%', transform: 'translate(-50%, -50%)' } : undefined}>
-      <div className="flex flex-col items-center justify-center gap-4 font-bold">
-        <div className="relative w-64 h-64">
-          <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 200 200">
-            {/* Background ring */}
+    <div className={`absolute ${positionClass} top-1/2 transform -translate-y-1/2`} style={workTimerActive && darkTimerActive ? { left: '33%', transform: 'translate(-50%, -50%)' } : undefined}>
+      <div className="flex flex-col items-center gap-3">
+        <div className="relative" style={{ width: "240px", height: "240px" }}>
+          <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />
             <circle
               cx="100"
               cy="100"
               r={radius}
               fill="none"
-              stroke="rgba(255, 255, 255, 0.2)"
-              strokeWidth="12"
-            />
-            {/* Progress ring */}
-            <circle
-              cx="100"
-              cy="100"
-              r={radius}
-              fill="none"
-              stroke="rgba(50, 205, 50, 0.9)"
-              strokeWidth="12"
+              stroke="rgba(50, 205, 50, 0.95)"
+              strokeWidth="10"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               style={{ transition: "stroke-dashoffset 0.5s ease-out" }}
             />
           </svg>
-
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-5xl text-white drop-shadow-lg font-bold font-sans">
-                {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
-              </div>
-              <div className="text-sm text-gray-300 mt-2 drop-shadow-md font-semibold font-sans">Running</div>
-            </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span
+              className="font-sans font-black tabular-nums leading-none text-white"
+              style={{ fontSize: "56px", textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
+            >
+              {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+            </span>
+            <span className="mt-1 font-sans font-bold uppercase tracking-[0.3em] text-white/80" style={{ fontSize: "22px" }}>
+              SOCIAL
+            </span>
           </div>
         </div>
-
-        <div className="text-4xl text-white text-center drop-shadow-lg font-bold font-sans">SOCIAL!</div>
+        <span
+          className="font-sans font-bold uppercase tracking-wide text-white/70"
+          style={{ fontSize: "24px", textShadow: "0 2px 6px rgba(0,0,0,0.6)" }}
+        >
+          SAY HI IN CHAT
+        </span>
       </div>
     </div>
   )

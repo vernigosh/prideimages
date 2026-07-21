@@ -20,11 +20,30 @@ interface Flower {
   specificType?: string // For tulip colors, etc.
 }
 
+export interface GardenActivitySettings {
+  offsetX: number // px offset from horizontal center (positive = right)
+  offsetY: number // px from the bottom of the garden band
+  width: number // px
+  fontSize: number
+  lifetimeMs: number
+  backgroundOpacity: number // 0-1 (0 = no card background)
+}
+
+export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
+  offsetX: 0,
+  offsetY: 328,
+  width: 640,
+  fontSize: 24,
+  lifetimeMs: 6000,
+  backgroundOpacity: 0,
+}
+
 interface CommunityGardenProps {
   isVisible: boolean
   onConnectionChange: (connected: boolean) => void
   onHide: () => void
   onFlowerLegendsUpdate?: (legends: Array<{ username: string; count: number }>) => void
+  activitySettings?: Partial<GardenActivitySettings>
 }
 
 const flowerTypes = {
@@ -96,7 +115,10 @@ async function sendChatMessage(message: string) {
   }
 }
 
-export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowerLegendsUpdate }: CommunityGardenProps) {
+export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowerLegendsUpdate, activitySettings }: CommunityGardenProps) {
+  const activityCfg: GardenActivitySettings = { ...DEFAULT_GARDEN_ACTIVITY_SETTINGS, ...activitySettings }
+  const activityCfgRef = useRef(activityCfg)
+  activityCfgRef.current = activityCfg
   const [flowers, setFlowers] = useState<Flower[]>([])
   const [gardenStats, setGardenStats] = useState({
     totalFlowers: 0,
@@ -839,13 +861,33 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   }, [isVisible, onConnectionChange, onHide, flowers])
 
   const addActivity = (activity: string, duration = 5000) => {
+    // Show one routine message at a time (newest wins); history stays bounded to 5.
     setRecentActivity((prev) => [activity, ...prev.slice(0, 4)])
 
-    // Clear banner after specified duration
+    // Lifetime is configurable via settings; falls back to the per-call duration.
+    const effective = activityCfgRef.current.lifetimeMs > 0 ? activityCfgRef.current.lifetimeMs : duration
     setTimeout(() => {
       setRecentActivity((current) => current.filter((item) => item !== activity))
-    }, duration)
+    }, effective)
   }
+
+  // Test + clear controls for the centralized activity panel (from settings).
+  useEffect(() => {
+    const handleActivityTest = (e: Event) => {
+      const kind = (e as CustomEvent<{ kind?: string }>).detail?.kind
+      if (kind === "water") addActivity("💧 TESTGARDENER WATERED THE ENTIRE GARDEN!")
+      else if (kind === "pick") addActivity("🌸 TESTGARDENER PICKED 3 OF THEIR OWN FLOWERS!")
+      else addActivity("🌱 TESTGARDENER PLANTED FLOWER #1! PLANT 1 MORE!")
+    }
+    const handleActivityClear = () => setRecentActivity([])
+    window.addEventListener("gardenActivityTest", handleActivityTest as EventListener)
+    window.addEventListener("clearGardenActivity", handleActivityClear as EventListener)
+    return () => {
+      window.removeEventListener("gardenActivityTest", handleActivityTest as EventListener)
+      window.removeEventListener("clearGardenActivity", handleActivityClear as EventListener)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const getFlowerDisplay = (flower: Flower) => {
     if (flower.stage === "sprout") {
@@ -1078,11 +1120,29 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         {/* Floating Activity Text - centered above garden */}
         {recentActivity.length > 0 && (
           <div
-            className="absolute left-1/2 transform -translate-x-1/2 z-20 pointer-events-none"
-            style={{ bottom: "328px" }} // Moving activity text down 5px: 333px -> 328px
+            className="absolute left-1/2 z-20 pointer-events-none"
+            style={{
+              bottom: `${activityCfg.offsetY}px`,
+              width: `${activityCfg.width}px`,
+              transform: `translateX(calc(-50% + ${activityCfg.offsetX}px))`,
+            }}
           >
-            <div className="text-center">
-              <span className="text-2xl font-black text-white font-sans uppercase animate-pulse">
+            <div
+              className="mx-auto text-center"
+              style={
+                activityCfg.backgroundOpacity > 0
+                  ? {
+                      backgroundColor: `rgba(10, 10, 12, ${activityCfg.backgroundOpacity})`,
+                      borderRadius: "12px",
+                      padding: "8px 16px",
+                    }
+                  : undefined
+              }
+            >
+              <span
+                className="font-black text-white font-sans uppercase animate-pulse text-balance"
+                style={{ fontSize: `${activityCfg.fontSize}px` }}
+              >
                 {recentActivity[0]}
               </span>
             </div>

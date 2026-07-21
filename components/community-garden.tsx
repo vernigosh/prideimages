@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, type CSSProperties } from "react"
 import FlowerCelebration from "./flower-celebration" // Import FlowerCelebration component
 import { GardenLegendCelebration } from "./garden-legend-celebration" // Import the new Garden Legend celebration component
 import { BeeParadeCelebration } from "./bee-parade-celebration" // Import the new Bee Parade celebration component
@@ -84,6 +84,10 @@ function nextActivityId(): string {
   gardenActivitySeq += 1
   return `ga_${Date.now().toString(36)}_${gardenActivitySeq}`
 }
+
+// An activity older than this when it first becomes visible is treated as stale
+// (e.g. surviving a remount) and will not fire its flower effect.
+const STALE_ACTIVITY_MS = 4000
 
 interface CommunityGardenProps {
   isVisible: boolean
@@ -964,6 +968,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   // Queue-safe synchronization: the effect fires only when an activity carrying a
   // flowerId becomes the VISIBLE (newest, index 0) message — never when it is
   // merely created or queued. Each visible activity triggers exactly once.
+  //
+  // Bounded consumed-tracking: `poweredActivityIdRef` holds only the single last
+  // activated id (never grows). A timestamp-age check is the explicit mount-time
+  // baseline — any activity older than STALE_ACTIVITY_MS (e.g. one restored or
+  // still present at first mount) is marked consumed WITHOUT firing, so effects
+  // cannot replay after a remount or unrelated rerender.
   useEffect(() => {
     const visible = recentActivity[0]
     if (!visible) {
@@ -972,7 +982,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     }
     if (visible.id === poweredActivityIdRef.current) return
     poweredActivityIdRef.current = visible.id
-    if (visible.flowerId) powerUpFlower(visible.flowerId)
+    const isFresh = Date.now() - visible.timestamp <= STALE_ACTIVITY_MS
+    if (isFresh && visible.flowerId) powerUpFlower(visible.flowerId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recentActivity])
 
@@ -1387,7 +1398,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                   // Consumed by the keyframes / static class below.
                   ["--pu-bright" as string]: `${pu.brightness}`,
                   ["--pu-sat" as string]: `${pu.saturate}`,
-                } as React.CSSProperties)
+                } as CSSProperties)
               : undefined
             return (
               <div

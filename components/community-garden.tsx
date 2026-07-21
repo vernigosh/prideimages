@@ -28,6 +28,8 @@ export interface GardenActivitySettings {
   fontSize: number
   lifetimeMs: number
   backgroundOpacity: number // 0-1 (0 = no card background)
+  highlightEnabled: boolean // pulse-highlight the specific flower tied to an activity
+  highlightMs: number // how long a targeted flower highlight lingers
 }
 
 export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
@@ -37,6 +39,35 @@ export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
   fontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
   lifetimeMs: 6000,
   backgroundOpacity: 0,
+  highlightEnabled: true,
+  highlightMs: 4000,
+}
+
+// Respect the viewer's OS-level reduced-motion preference for the flower effect.
+function gardenPrefersReducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+}
+
+// A single centralized garden activity item. Only `message` is shown; the
+// optional `flowerId` is what lets the power-up effect target the exact flower
+// referenced by THIS message when it becomes the visible item.
+interface GardenActivity {
+  id: string
+  type?: "plant" | "water" | "pick" | "rain"
+  username?: string
+  message: string
+  timestamp: number
+  flowerId?: string
+  flowerType?: string
+}
+
+// Optional metadata a caller can attach to an activity for sprite targeting.
+type GardenActivityMeta = Pick<GardenActivity, "type" | "username" | "flowerId" | "flowerType">
+
+let gardenActivitySeq = 0
+function nextActivityId(): string {
+  gardenActivitySeq += 1
+  return `ga_${Date.now().toString(36)}_${gardenActivitySeq}`
 }
 
 interface CommunityGardenProps {
@@ -127,7 +158,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     lastActivity: "",
     waterLevel: 100, // Garden health
   })
-  const [recentActivity, setRecentActivity] = useState<string[]>([])
+  const [recentActivity, setRecentActivity] = useState<GardenActivity[]>([])
+  // Ids of flowers currently playing the power-up effect (tied to the visible message).
+  const [highlightedFlowerIds, setHighlightedFlowerIds] = useState<string[]>([])
+  const highlightTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  // Tracks which visible-activity id has already triggered its effect (fires once).
+  const poweredActivityIdRef = useRef<string | null>(null)
+  // Mirror of flowers for stable reads inside stable (empty-dep) event handlers.
+  const flowersRef = useRef<Flower[]>(flowers)
+  flowersRef.current = flowers
   const [bunnyActive, setBunnyActive] = useState(false)
   const [bunnyPhase, setBunnyPhase] = useState<"arriving" | "exploring" | "eating" | "playing" | "leaving">("arriving")
   const [bunnyOpacity, setBunnyOpacity] = useState(0)
@@ -520,11 +559,18 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         lastActivity: `${username} planted a ${flowerTypes[newFlower.type].name}!`,
       }))
 
-      // Clean session-based messaging
+      // Clean session-based messaging. The flowerId is carried on the activity so
+      // the sprite power-up fires when THIS message becomes visible (queue-safe).
+      const plantMeta: GardenActivityMeta = {
+        type: "plant",
+        username,
+        flowerId: newFlower.id,
+        flowerType: flowerTypes[newFlower.type].name,
+      }
       if (userFlowerCount === 1) {
-        addActivity(`🌱 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLANT 1 MORE!`, 5000)
+        addActivity(`🌱 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLANT 1 MORE!`, 5000, plantMeta)
       } else {
-        addActivity(`🌸 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLOT COMPLETE!`, 5000)
+        addActivity(`🌸 ${username.toUpperCase()} PLANTED FLOWER #${userFlowerCount}! PLOT COMPLETE!`, 5000, plantMeta)
       }
     }
 
@@ -543,7 +589,8 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         waterLevel: Math.min(100, prev.waterLevel + 10),
         lastActivity: `${username} watered the garden!`,
       }))
-      addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`, 5000)
+      // Water targets the whole garden, so no single flowerId is attached.
+      addActivity(`💧 ${username.toUpperCase()} WATERED THE ENTIRE GARDEN!`, 5000, { type: "water", username })
 
       console.log("Starting rain animation...")
       // Clear any existing rain timeout before setting a new one
@@ -660,10 +707,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         [username]: 0,
       }))
 
-      // Show picking message with lifetime total
+      // Show picking message with lifetime total. Picking removes flowers, so
+      // there is no single sprite to power up — only the type is tagged.
       addActivity(
         `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}! USE !FLOWERS TO CHECK INVENTORY!`,
         5000,
+        { type: "pick", username },
       )
 
       // Remove only the user's pickable flowers
@@ -861,24 +910,81 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     }
   }, [isVisible, onConnectionChange, onHide, flowers])
 
-  const addActivity = (activity: string, duration = 5000) => {
+  const addActivity = (activity: string, duration = 5000, meta?: GardenActivityMeta) => {
     // Show one routine message at a time (newest wins); history stays bounded to 5.
-    setRecentActivity((prev) => [activity, ...prev.slice(0, 4)])
+    const item: GardenActivity = {
+      id: nextActivityId(),
+      message: activity,
+      timestamp: Date.now(),
+      type: meta?.type,
+      username: meta?.username,
+      flowerId: meta?.flowerId,
+      flowerType: meta?.flowerType,
+    }
+    setRecentActivity((prev) => [item, ...prev.slice(0, 4)])
 
     // Lifetime is configurable via settings; falls back to the per-call duration.
     const effective = activityCfgRef.current.lifetimeMs > 0 ? activityCfgRef.current.lifetimeMs : duration
     setTimeout(() => {
-      setRecentActivity((current) => current.filter((item) => item !== activity))
+      setRecentActivity((current) => current.filter((i) => i.id !== item.id))
     }, effective)
   }
+
+  // Play the power-up effect on one specific flower sprite. Additive and
+  // self-clearing; re-triggering the same flower refreshes its timer rather
+  // than stacking. Duration mirrors the configured highlight duration so the
+  // clear timer and the CSS animation stay in sync.
+  const powerUpFlower = (flowerId: string) => {
+    if (!activityCfgRef.current.highlightEnabled) return
+    setHighlightedFlowerIds((prev) => (prev.includes(flowerId) ? prev : [...prev, flowerId]))
+    const existing = highlightTimersRef.current.get(flowerId)
+    if (existing) clearTimeout(existing)
+    const t = setTimeout(() => {
+      setHighlightedFlowerIds((prev) => prev.filter((id) => id !== flowerId))
+      highlightTimersRef.current.delete(flowerId)
+    }, Math.max(600, activityCfgRef.current.highlightMs))
+    highlightTimersRef.current.set(flowerId, t)
+  }
+
+  // Queue-safe synchronization: the effect fires only when an activity carrying a
+  // flowerId becomes the VISIBLE (newest, index 0) message — never when it is
+  // merely created or queued. Each visible activity triggers exactly once.
+  useEffect(() => {
+    const visible = recentActivity[0]
+    if (!visible) {
+      poweredActivityIdRef.current = null
+      return
+    }
+    if (visible.id === poweredActivityIdRef.current) return
+    poweredActivityIdRef.current = visible.id
+    if (visible.flowerId) powerUpFlower(visible.flowerId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recentActivity])
+
+  // Clear power-up timers on unmount.
+  useEffect(() => {
+    return () => {
+      highlightTimersRef.current.forEach((t) => clearTimeout(t))
+      highlightTimersRef.current.clear()
+    }
+  }, [])
 
   // Test + clear controls for the centralized activity panel (from settings).
   useEffect(() => {
     const handleActivityTest = (e: Event) => {
       const kind = (e as CustomEvent<{ kind?: string }>).detail?.kind
-      if (kind === "water") addActivity("💧 TESTGARDENER WATERED THE ENTIRE GARDEN!")
-      else if (kind === "pick") addActivity("🌸 TESTGARDENER PICKED 3 OF THEIR OWN FLOWERS!")
-      else addActivity("🌱 TESTGARDENER PLANTED FLOWER #1! PLANT 1 MORE!")
+      if (kind === "water") addActivity("💧 TESTGARDENER WATERED THE ENTIRE GARDEN!", 5000, { type: "water", username: "TestGardener" })
+      else if (kind === "pick") addActivity("🌸 TESTGARDENER PICKED 3 OF THEIR OWN FLOWERS!", 5000, { type: "pick", username: "TestGardener" })
+      else {
+        // Attach the newest flower's id so the power-up fires when this message
+        // becomes visible (queue-safe) rather than being triggered imperatively.
+        const newest = flowersRef.current[flowersRef.current.length - 1]
+        addActivity("🌱 TESTGARDENER PLANTED FLOWER #1! PLANT 1 MORE!", 5000, {
+          type: "plant",
+          username: "TestGardener",
+          flowerId: newest?.id,
+        })
+      }
     }
     const handleActivityClear = () => setRecentActivity([])
     window.addEventListener("gardenActivityTest", handleActivityTest as EventListener)
@@ -1150,7 +1256,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                   fontWeight: OVERLAY_WEIGHT_LABEL,
                 }}
               >
-                {recentActivity[0]}
+                {recentActivity[0].message}
               </span>
             </div>
           </div>
@@ -1238,6 +1344,16 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             else if (timeSincePlanted > 45000) currentStage = "blooming"
             else currentStage = "sprout"
 
+            const isPoweredUp = highlightedFlowerIds.includes(flower.id)
+            const reduceMotion = gardenPrefersReducedMotion()
+            // Power-up is applied directly to the sprite wrapper: no halo, ring, or
+            // detached shape. Motion path cycles color/brightness and a tiny scale;
+            // reduced-motion path holds a static brightness/saturation boost only.
+            const powerUpClass = isPoweredUp ? (reduceMotion ? "gardenPowerUpStatic" : "gardenPowerUp") : ""
+            const powerUpStyle =
+              isPoweredUp && !reduceMotion
+                ? { animationDuration: `${Math.max(600, activityCfg.highlightMs)}ms` }
+                : undefined
             return (
               <div
                 key={flower.id}
@@ -1245,7 +1361,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                 style={{ left: `${flower.x}%` }}
                 title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${currentStage}) - ${Math.floor(timeSincePlanted / 1000)}s old`}
               >
-                {getFlowerDisplay(flower)}
+                <div className={powerUpClass} style={powerUpStyle}>
+                  {getFlowerDisplay(flower)}
+                </div>
                 {/* Show sparkles only on non-fully-mature flowers */}
                 {flower.stage !== "fully-mature" && (
                   <div className="absolute -top-2 -right-2 text-lg animate-pulse">✨</div>
@@ -1266,6 +1384,58 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
           100% {
             left: 100vw;
             opacity: 0.8;
+          }
+        }
+        /* Restrained classic power-up: the sprite briefly cycles bright colors,
+           gains brightness/saturation, grows a hair, and returns to its exact
+           original state at 100%. A silhouette-following glow uses drop-shadow so
+           it hugs the sprite rather than forming a detached disc. */
+        @keyframes gardenPowerUp {
+          0% {
+            filter: brightness(1) saturate(1) hue-rotate(0deg);
+            transform: scale(1);
+          }
+          20% {
+            filter: brightness(1.45) saturate(1.8) hue-rotate(35deg)
+              drop-shadow(0 0 4px rgba(255, 220, 90, 0.8));
+            transform: scale(1.04);
+          }
+          42% {
+            filter: brightness(1.35) saturate(2) hue-rotate(145deg)
+              drop-shadow(0 0 4px rgba(80, 230, 255, 0.8));
+            transform: scale(1.05);
+          }
+          64% {
+            filter: brightness(1.4) saturate(1.9) hue-rotate(255deg)
+              drop-shadow(0 0 4px rgba(255, 100, 220, 0.8));
+            transform: scale(1.04);
+          }
+          82% {
+            filter: brightness(1.3) saturate(1.6) hue-rotate(65deg);
+            transform: scale(1.02);
+          }
+          100% {
+            filter: brightness(1) saturate(1) hue-rotate(0deg);
+            transform: scale(1);
+          }
+        }
+        .gardenPowerUp {
+          animation-name: gardenPowerUp;
+          animation-duration: 1400ms;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: 1;
+          transform-origin: center bottom;
+          will-change: filter, transform;
+        }
+        /* Reduced-motion: a static, non-animated brightness/saturation lift that
+           still makes the referenced flower obvious, with no movement or hue cycling. */
+        .gardenPowerUpStatic {
+          filter: brightness(1.35) saturate(1.6) drop-shadow(0 0 4px rgba(255, 220, 120, 0.85));
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .gardenPowerUp {
+            animation: none;
+            filter: brightness(1.35) saturate(1.6) drop-shadow(0 0 4px rgba(255, 220, 120, 0.85));
           }
         }
       `}</style>

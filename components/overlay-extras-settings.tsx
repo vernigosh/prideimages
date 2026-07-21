@@ -287,6 +287,11 @@ export function OverlayExtrasSettings({
               <Range label={`Lifetime (${Math.round(garden.lifetimeMs / 1000)}s)`} min={2} max={20} value={Math.round(garden.lifetimeMs / 1000)} onChange={(v) => setGarden({ lifetimeMs: v * 1000 })} />
               <Range label={`Background opacity (${garden.backgroundOpacity.toFixed(2)})`} min={0} max={1} step={0.02} value={garden.backgroundOpacity} onChange={(v) => setGarden({ backgroundOpacity: v })} />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Check label="Power-up the planted flower" checked={garden.highlightEnabled} onChange={(v) => setGarden({ highlightEnabled: v })} />
+              <Range label={`Power-up duration (${(garden.highlightMs / 1000).toFixed(1)}s)`} min={1} max={10} step={0.5} value={garden.highlightMs / 1000} onChange={(v) => setGarden({ highlightMs: Math.round(v * 1000) })} />
+            </div>
+            <p className="text-xs text-gray-600">Plays a brief power-up on the exact flower a plant message references, when that message becomes visible. Respects reduced-motion.</p>
             <div className="flex flex-wrap gap-2">
               <TestButton label="Test plant" onClick={() => window.dispatchEvent(new CustomEvent("gardenActivityTest", { detail: { kind: "plant" } }))} />
               <TestButton label="Test water" onClick={() => window.dispatchEvent(new CustomEvent("gardenActivityTest", { detail: { kind: "water" } }))} />

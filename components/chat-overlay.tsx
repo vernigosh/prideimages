@@ -50,7 +50,7 @@ export interface ChatOverlaySettings {
 
 // Bump this when the layout defaults below change. On load, any persisted settings
 // with a lower (or missing) version have ONLY their layout fields refreshed once.
-export const CHAT_LAYOUT_VERSION = 7
+export const CHAT_LAYOUT_VERSION = 8
 
 // Layout-only fields refreshed by the migration. Behavioral/filter fields
 // (enabled, filters, colors, uppercase, ignoredUsers, lifetime, etc.) are preserved.
@@ -72,10 +72,10 @@ export const DEFAULT_CHAT_OVERLAY_SETTINGS: ChatOverlaySettings = {
   enabled: true,
   offsetX: 50, // inset from left — lower-left chat rail in the approved layout
   offsetY: 350, // moved down 100px; stack grows upward from this lower-left anchor
-  width: 400,
+  width: 380,
   visibleCount: 2,
-  usernameFontSize: 20,
-  messageFontSize: 24, // shared readable size for chat messages and stream events
+  usernameFontSize: 19,
+  messageFontSize: 19, // shared compact size for chat messages and stream events
   lifetimeMs: 20000,
   backgroundOpacity: 0.58,
   borderRadius: 14,

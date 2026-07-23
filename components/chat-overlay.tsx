@@ -245,6 +245,8 @@ export function ChatOverlay({ settings, events = [] }: ChatOverlayProps) {
   // Decide whether a message is allowed to be DISPLAYED (never affects execution).
   const shouldDisplay = (m: NormalizedChatMessage): boolean => {
     const cfg = settingsRef.current
+    // Commands may still execute elsewhere, but they must never appear on stream.
+    if (m.message.trimStart().startsWith("!")) return false
     const lower = m.username.trim().toLowerCase()
     if (cfg.ignoredUsers.map((u) => u.trim().toLowerCase()).includes(lower)) return false
     if (cfg.hideBots && (m.isBot || isKnownBot(m.username, cfg.ignoredUsers))) return false

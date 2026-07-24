@@ -105,7 +105,8 @@ const HISTORY_MAX = 20
 
 // Message-flow animation timing.
 const ENTER_OFFSET_PX = 16 // new messages rise from ~16px below their final spot
-const ANIM_MS = 300 // enter / move / exit duration
+const MOVE_ANIM_MS = 800 // enter and stack movement duration
+const EXIT_FADE_MS = 700 // fade completely before removal
 const ANIM_EASE = "cubic-bezier(0.22, 1, 0.36, 1)" // smooth ease-out, no bounce/overshoot
 
 function prefersReducedMotion(): boolean {
@@ -235,7 +236,7 @@ export function ChatOverlay({ settings, events = [] }: ChatOverlayProps) {
           setMessages((prev) => prev.filter((m) => m.id !== id))
           removeTimersRef.current.delete(id)
         },
-        reduce ? 0 : ANIM_MS,
+        reduce ? 0 : EXIT_FADE_MS,
       )
       removeTimersRef.current.set(id, rt)
     }, lifetimeMs)
@@ -395,7 +396,8 @@ export function ChatOverlay({ settings, events = [] }: ChatOverlayProps) {
     // 3. Play: enable transitions and set every card to its resting state. Because
     //    the start value was just committed, the browser animates seed -> target.
     cardRefs.current.forEach((el) => {
-      el.style.transition = `transform ${ANIM_MS}ms ${ANIM_EASE}, opacity ${ANIM_MS}ms ${ANIM_EASE}`
+      const leaving = el.dataset.leaving === "true"
+      el.style.transition = `transform ${MOVE_ANIM_MS}ms ${ANIM_EASE}, opacity ${leaving ? EXIT_FADE_MS : MOVE_ANIM_MS}ms ${ANIM_EASE}`
       if (el.dataset.leaving === "true") {
         el.style.opacity = "0"
       } else {

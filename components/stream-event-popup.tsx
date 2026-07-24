@@ -55,7 +55,7 @@ const DURATION_BY_TYPE: Record<StreamEventType, number> = {
   raid: 9000,
 }
 
-const FADE_MS = 400
+const FADE_MS = 700
 const QUEUE_MAX = 20
 
 interface QueuedEvent {

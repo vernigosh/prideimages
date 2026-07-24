@@ -101,7 +101,12 @@ interface DepartingFlower {
 }
 
 // How long the fade/shrink-away runs after the color animation finishes.
-const DEPART_LEAVE_MS = 420
+const POWERUP_DURATION_MULTIPLIER = 3
+const DEPART_LEAVE_MS = 420 * POWERUP_DURATION_MULTIPLIER
+
+function powerUpDuration(highlightMs: number): number {
+  return Math.max(600, highlightMs) * POWERUP_DURATION_MULTIPLIER
+}
 
 // Shared garden baseline: the bottom offset (px) of the single container that
 // parents every ground actor (flowers, departing snapshots, the bunny — all
@@ -351,7 +356,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     const interval = setInterval(() => {
       const elapsed = Date.now() - bunnyStartTime
       const phase1Duration = 10000 // arriving - changed from 5000 to 10000
-      const phase2Duration = 5000 // eating/exploring - changed from 10000 to 5000
+      const phase2Duration = 15000 // eating/exploring power-up extended to 3x
       const phase3Duration = 10000 // playing/leaving - changed from 5000 to 10000
 
       if (elapsed < phase1Duration) {
@@ -1011,7 +1016,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       if (!prev.some((d) => d.activityId === activityId && d.phase === "waiting")) return prev
       return prev.map((d) => (d.activityId === activityId && d.phase === "waiting" ? { ...d, phase: "animating" } : d))
     })
-    const dur = Math.max(600, activityCfgRef.current.highlightMs)
+    const dur = powerUpDuration(activityCfgRef.current.highlightMs)
     const toLeave = setTimeout(() => {
       setDepartingFlowers((prev) =>
         prev.map((d) => (d.activityId === activityId && d.phase === "animating" ? { ...d, phase: "leaving" } : d)),
@@ -1038,7 +1043,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     const t = setTimeout(() => {
       setHighlightedFlowerIds((prev) => prev.filter((id) => id !== flowerId))
       highlightTimersRef.current.delete(flowerId)
-    }, Math.max(600, activityCfgRef.current.highlightMs))
+    }, powerUpDuration(activityCfgRef.current.highlightMs))
     highlightTimersRef.current.set(flowerId, t)
   }
 
@@ -1479,7 +1484,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             const pu = intensityFactors(activityCfg.highlightIntensity)
             const powerUpStyle = isPoweredUp
               ? ({
-                  animationDuration: `${Math.max(600, activityCfg.highlightMs)}ms`,
+                  animationDuration: `${powerUpDuration(activityCfg.highlightMs)}ms`,
                   // Consumed by the keyframes / static class below.
                   ["--pu-bright" as string]: `${pu.brightness}`,
                   ["--pu-sat" as string]: `${pu.saturate}`,
@@ -1514,7 +1519,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             const effectClass = animating ? (reduceMotion ? "gardenPowerUpStatic" : "gardenPowerUp") : ""
             const effectStyle = animating
               ? ({
-                  animationDuration: `${Math.max(600, activityCfg.highlightMs)}ms`,
+                  animationDuration: `${powerUpDuration(activityCfg.highlightMs)}ms`,
                   ["--pu-bright" as string]: `${pu.brightness}`,
                   ["--pu-sat" as string]: `${pu.saturate}`,
                 } as CSSProperties)

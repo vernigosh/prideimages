@@ -100,7 +100,7 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
             transform: translateX(0);
           }
           100% {
-            transform: translateX(calc(-100vw - 360px));
+            transform: translateX(calc(-100vw - 270px));
           }
         }
         
@@ -167,10 +167,10 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
             key={fawn.id}
             className="fixed"
             style={{
-              bottom: "48px",
-              right: "-360px",
-              width: "360px",
-              height: "360px",
+              bottom: "0px",
+              right: "-270px",
+              width: "270px",
+              height: "270px",
               animation: `raidRunAcross ${fawn.duration}s linear ${fawn.delay}s forwards`,
             }}
           >
@@ -178,12 +178,12 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
             <img
               src="/images/fawn-run-transparent.gif"
               alt="Running fawn"
-              width={360}
-              height={360}
+              width={270}
+              height={270}
               style={{
                 imageRendering: "pixelated",
-                width: "360px",
-                height: "360px",
+                width: "270px",
+                height: "270px",
               }}
             />
           </div>

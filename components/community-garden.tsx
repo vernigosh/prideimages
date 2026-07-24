@@ -100,12 +100,17 @@ interface DepartingFlower {
   phase: "waiting" | "animating" | "leaving"
 }
 
-// How long the fade/shrink-away runs after the color animation finishes.
-const POWERUP_DURATION_MULTIPLIER = 3
-const DEPART_LEAVE_MS = 420 * POWERUP_DURATION_MULTIPLIER
+// The color power-up lasts about five seconds and completes three full cycles.
+const POWERUP_DURATION_MS = 5000
+const POWERUP_COLOR_CYCLES = 3
+const DEPART_LEAVE_MS = 1260
 
-function powerUpDuration(highlightMs: number): number {
-  return Math.max(600, highlightMs) * POWERUP_DURATION_MULTIPLIER
+function powerUpDuration(_highlightMs: number): number {
+  return POWERUP_DURATION_MS
+}
+
+function powerUpCycleDuration(highlightMs: number): number {
+  return powerUpDuration(highlightMs) / POWERUP_COLOR_CYCLES
 }
 
 // Shared garden baseline: the bottom offset (px) of the single container that
@@ -1484,7 +1489,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             const pu = intensityFactors(activityCfg.highlightIntensity)
             const powerUpStyle = isPoweredUp
               ? ({
-                  animationDuration: `${powerUpDuration(activityCfg.highlightMs)}ms`,
+                  animationDuration: `${powerUpCycleDuration(activityCfg.highlightMs)}ms`,
                   // Consumed by the keyframes / static class below.
                   ["--pu-bright" as string]: `${pu.brightness}`,
                   ["--pu-sat" as string]: `${pu.saturate}`,
@@ -1519,7 +1524,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             const effectClass = animating ? (reduceMotion ? "gardenPowerUpStatic" : "gardenPowerUp") : ""
             const effectStyle = animating
               ? ({
-                  animationDuration: `${powerUpDuration(activityCfg.highlightMs)}ms`,
+                  animationDuration: `${powerUpCycleDuration(activityCfg.highlightMs)}ms`,
                   ["--pu-bright" as string]: `${pu.brightness}`,
                   ["--pu-sat" as string]: `${pu.saturate}`,
                 } as CSSProperties)
@@ -1598,7 +1603,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
           animation-name: gardenPowerUp;
           animation-duration: 1300ms;
           animation-timing-function: ease-in-out;
-          animation-iteration-count: 1;
+          animation-iteration-count: 3;
           transform-origin: center bottom;
           will-change: filter, transform;
         }

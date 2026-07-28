@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
+import { SPIN_BOX_CARD_STYLE, SPIN_BOX_COLORS } from "@/lib/spin-box"
 
 interface Trick {
   name: string
@@ -25,10 +26,6 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
       const randomIndex = Math.floor(Math.random() * totalItems)
       const finalPosition = (repetitions * totalItems + randomIndex) * itemHeight
 
-      console.log("[v0] SpinningWheel: Total tricks available:", totalItems)
-      console.log("[v0] SpinningWheel: Random index selected:", randomIndex)
-      console.log("[v0] SpinningWheel: Selected trick:", tricks[randomIndex]?.name)
-
       let startTime: number
       const duration = 8000
 
@@ -47,7 +44,6 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
         } else {
           setScrollPosition(finalPosition)
           const selectedTrick = tricks[randomIndex]
-          console.log("[v0] SpinningWheel: Final selected trick:", selectedTrick?.name)
           setTimeout(() => {
             onSpinComplete(selectedTrick)
           }, 500)
@@ -61,51 +57,63 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
   const extendedTricks = Array(20).fill(tricks).flat()
 
   return (
-    <div className="absolute left-8 top-1/2 transform -translate-y-1/2 w-1/3 max-w-2xl">
-      <div
-        className="rounded-3xl p-4 shadow-2xl border-2 border-black"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(255, 184, 173, 0.8) 0%, rgba(255, 154, 139, 0.8) 50%, rgba(255, 122, 107, 0.8) 100%)",
-          width: "600px",
-          height: "200px",
-        }}
-      >
-        <div className="text-center h-full flex flex-col justify-center">
-          <h2 className="text-4xl font-bold text-black mb-2 uppercase font-sans">DJ TECHNIQUE CHALLENGE</h2>
+    <div className="w-full h-full">
+      <div className="flex h-full flex-col justify-center gap-3 px-5 py-4" style={SPIN_BOX_CARD_STYLE}>
+        <div className="flex items-center justify-between gap-4">
+          <h2
+            className="font-sans text-2xl font-semibold uppercase leading-none"
+            style={{ color: SPIN_BOX_COLORS.accent }}
+          >
+            DJ Technique Challenge
+          </h2>
+          <span
+            className="font-sans text-sm font-semibold uppercase leading-none transition-opacity duration-300"
+            style={{
+              color: SPIN_BOX_COLORS.text,
+              opacity: isSpinning ? 0.9 : 0,
+            }}
+          >
+            <span className="animate-pulse">Spinning</span>
+          </span>
+        </div>
 
-          <div className="rounded-xl p-3 relative border-2 border-black bg-white flex-1 flex items-center">
-            <div className="relative w-full h-[60px] overflow-hidden">
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-[60px] overflow-hidden">
-                <ul
-                  ref={listRef}
-                  className="list-none p-0 m-0 absolute w-full"
-                  style={{
-                    transform: `translateY(-${scrollPosition}px)`,
-                    transition: isSpinning ? "none" : "transform 0.3s ease",
-                  }}
+        <div
+          className="relative flex flex-1 items-center overflow-hidden rounded-lg px-3"
+          style={{
+            background: SPIN_BOX_COLORS.windowBg,
+            border: SPIN_BOX_COLORS.windowBorder,
+          }}
+        >
+          <div className="relative h-[60px] w-full overflow-hidden">
+            <ul
+              ref={listRef}
+              className="absolute m-0 w-full list-none p-0"
+              style={{
+                transform: `translateY(-${scrollPosition}px)`,
+                transition: isSpinning ? "none" : "transform 0.3s ease",
+              }}
+            >
+              {extendedTricks.map((trick, index) => (
+                <li
+                  key={index}
+                  className="flex h-[60px] items-center justify-center px-8 text-center font-sans text-2xl font-semibold leading-tight"
+                  style={{ color: SPIN_BOX_COLORS.text }}
                 >
-                  {extendedTricks.map((trick, index) => (
-                    <li
-                      key={index}
-                      className="h-[60px] flex items-center justify-center text-center text-black font-bold text-xl md:text-2xl px-6 font-sans"
-                    >
-                      {trick.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
-                <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-b-[15px] border-l-transparent border-r-transparent border-b-black drop-shadow-lg rotate-90"></div>
-              </div>
-            </div>
+                  {trick.name}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {isSpinning && (
-            <div className="mt-3">
-              <div className="text-black text-4xl font-bold animate-pulse mb-1 uppercase font-sans">SPINNING...</div>
-            </div>
-          )}
+          <div
+            aria-hidden="true"
+            className="absolute left-2 top-1/2 h-0 w-0 -translate-y-1/2"
+            style={{
+              borderTop: "8px solid transparent",
+              borderBottom: "8px solid transparent",
+              borderLeft: `10px solid ${SPIN_BOX_COLORS.accent}`,
+            }}
+          />
         </div>
       </div>
     </div>

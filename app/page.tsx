@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { SpinningWheel } from "@/components/spinning-wheel"
 import { AdminInterface } from "@/components/admin-interface"
 import { ResultDisplay } from "@/components/result-display"
+import { SPIN_BOX_HEIGHT, SPIN_BOX_LEFT, SPIN_BOX_TOP, SPIN_BOX_WIDTH } from "@/lib/spin-box"
 import { ChatIntegration } from "@/components/chat-integration"
 import { TimeOverlay } from "@/components/time-overlay"
 import { OverlaySettings } from "@/components/overlay-settings"
@@ -718,15 +719,15 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
   const getUpperLeftElement = () => {
     if (isVisible) {
       return (
-        <div className="absolute left-8 top-1/2 -translate-y-1/2">
+        <div className="absolute" style={{ top: `${SPIN_BOX_TOP}px`, left: `${SPIN_BOX_LEFT}px` }}>
           {/* Flip Container */}
           <div
             className="relative transition-transform duration-700 ease-in-out"
             style={{
               transformStyle: "preserve-3d",
               transform: showResult ? "rotateX(180deg)" : "rotateX(0deg)",
-              width: "600px",
-              height: "200px",
+              width: `${SPIN_BOX_WIDTH}px`,
+              height: `${SPIN_BOX_HEIGHT}px`,
             }}
           >
             {/* Front Side - Spinning Wheel */}
@@ -771,7 +772,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
               }}
             >
               {selectedTrick && (
-                <div>
+                <div className="w-full h-full">
                   <ResultDisplay trick={selectedTrick} />
                 </div>
               )}

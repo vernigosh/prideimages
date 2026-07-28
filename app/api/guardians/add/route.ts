@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -9,7 +9,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Username is required" }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    // Service role client: RLS has no UPDATE policy on guardians, so anon-key
+    // writes could never raise a stored flower_count.
+    const supabase = createAdminClient()
     const lowerUsername = username.toLowerCase()
 
     // Check if user is already a guardian
@@ -26,12 +28,16 @@ export async function POST(request: Request) {
     }
 
     if (existing) {
-      // Update flower count if the new count is higher
+      // Only ever raise a guardian's all-time best. The `lt` guard makes this safe
+      // when several picks are in flight at once: the write is skipped unless the
+      // stored count is still lower than the incoming one, so a slower request can
+      // never overwrite a higher score with a stale value.
       if (flowerCount > existing.flower_count) {
         const { error: updateError } = await supabase
           .from("guardians")
           .update({ flower_count: flowerCount })
           .eq("username", lowerUsername)
+          .lt("flower_count", flowerCount)
 
         if (updateError) {
           console.error("Error updating guardian:", updateError)

@@ -1,7 +1,12 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { SPIN_BOX_CARD_STYLE, SPIN_BOX_COLORS } from "@/lib/spin-box"
+import {
+  SPIN_BOX_CARD_STYLE,
+  SPIN_BOX_COLORS,
+  SPIN_BOX_REEL_ITEM_HEIGHT,
+  SPIN_BOX_TEXT,
+} from "@/lib/spin-box"
 
 interface Trick {
   name: string
@@ -20,7 +25,7 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
 
   useEffect(() => {
     if (isSpinning && listRef.current) {
-      const itemHeight = 60
+      const itemHeight = SPIN_BOX_REEL_ITEM_HEIGHT
       const totalItems = tricks.length
       const repetitions = Math.ceil(15000 / (totalItems * itemHeight))
       const randomIndex = Math.floor(Math.random() * totalItems)
@@ -60,20 +65,24 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
     <div className="w-full h-full">
       <div className="flex h-full flex-col justify-center gap-3 px-5 py-4" style={SPIN_BOX_CARD_STYLE}>
         <div className="flex items-center justify-between gap-4">
-          <h2
-            className="font-sans text-2xl font-semibold uppercase leading-none"
-            style={{ color: SPIN_BOX_COLORS.accent }}
-          >
+          <h2 className="font-sans uppercase" style={SPIN_BOX_TEXT.heading}>
             DJ Technique Challenge
           </h2>
+          {/* Non-text status cue, so the heading keeps the full 32px standard. */}
           <span
-            className="font-sans text-sm font-semibold uppercase leading-none transition-opacity duration-300"
+            aria-hidden="true"
+            className="shrink-0 rounded-full transition-opacity duration-300"
             style={{
-              color: SPIN_BOX_COLORS.text,
-              opacity: isSpinning ? 0.9 : 0,
+              width: 14,
+              height: 14,
+              background: SPIN_BOX_COLORS.accent,
+              opacity: isSpinning ? 1 : 0,
             }}
           >
-            <span className="animate-pulse">Spinning</span>
+            <span className="block h-full w-full animate-ping rounded-full" style={{ background: SPIN_BOX_COLORS.accent }} />
+          </span>
+          <span className="sr-only" role="status">
+            {isSpinning ? "Spinning" : ""}
           </span>
         </div>
 
@@ -84,7 +93,10 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
             border: SPIN_BOX_COLORS.windowBorder,
           }}
         >
-          <div className="relative h-[60px] w-full overflow-hidden">
+          <div
+            className="relative w-full overflow-hidden"
+            style={{ height: `${SPIN_BOX_REEL_ITEM_HEIGHT}px` }}
+          >
             <ul
               ref={listRef}
               className="absolute m-0 w-full list-none p-0"
@@ -96,8 +108,8 @@ export function SpinningWheel({ tricks, isSpinning, onSpinComplete }: SpinningWh
               {extendedTricks.map((trick, index) => (
                 <li
                   key={index}
-                  className="flex h-[60px] items-center justify-center px-8 text-center font-sans text-2xl font-semibold leading-tight"
-                  style={{ color: SPIN_BOX_COLORS.text }}
+                  className="flex items-center justify-center px-8 text-center font-sans"
+                  style={{ ...SPIN_BOX_TEXT.item, height: `${SPIN_BOX_REEL_ITEM_HEIGHT}px` }}
                 >
                   {trick.name}
                 </li>

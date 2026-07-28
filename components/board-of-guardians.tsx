@@ -32,7 +32,8 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
 
   const fetchGuardians = async () => {
     try {
-      const response = await fetch("/api/guardians")
+      // no-store so OBS (a long-lived browser source) can't serve a stale board.
+      const response = await fetch("/api/guardians", { cache: "no-store" })
       const data = await response.json()
       if (data.guardians) {
         setGuardians(data.guardians)

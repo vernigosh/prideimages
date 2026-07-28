@@ -1,5 +1,7 @@
 "use client"
 
+import { SPIN_BOX_CARD_STYLE, SPIN_BOX_COLORS } from "@/lib/spin-box"
+
 interface Trick {
   name: string
   definition: string
@@ -11,22 +13,35 @@ interface ResultDisplayProps {
 
 export function ResultDisplay({ trick }: ResultDisplayProps) {
   return (
-    <div className="absolute left-8 top-8">
-      <div
-        className="rounded-3xl p-4 shadow-2xl border-2 border-black"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(255, 184, 173, 0.8) 0%, rgba(255, 154, 139, 0.8) 50%, rgba(255, 122, 107, 0.8) 100%)",
-          width: "600px", // 50% of original 1200px
-          height: "200px", // 50% of original 400px
-        }}
-      >
-        <div className="text-center h-full flex flex-col justify-center">
-          <h2 className="text-4xl font-bold text-black mb-3 uppercase font-sans">{trick.name}</h2>
-          <div className="rounded-xl p-3 border-2 border-black bg-white flex-1 flex items-center justify-center">
-            <p className="text-xl md:text-2xl text-black font-bold leading-relaxed font-sans">{trick.definition}</p>
-          </div>
-          <div className="mt-3 text-black text-lg font-bold uppercase font-sans">ACCEPTED, YOU HAVE 2 MINUTES.</div>
+    <div className="w-full h-full">
+      <div className="flex h-full flex-col justify-center gap-2 px-5 py-4" style={SPIN_BOX_CARD_STYLE}>
+        <h2
+          className="font-sans text-2xl font-semibold uppercase leading-none"
+          style={{ color: SPIN_BOX_COLORS.accent }}
+        >
+          {trick.name}
+        </h2>
+
+        <div
+          className="flex flex-1 items-center overflow-hidden rounded-lg px-3"
+          style={{
+            background: SPIN_BOX_COLORS.windowBg,
+            border: SPIN_BOX_COLORS.windowBorder,
+          }}
+        >
+          <p
+            className="font-sans text-xl font-medium leading-snug text-pretty"
+            style={{ color: SPIN_BOX_COLORS.text }}
+          >
+            {trick.definition}
+          </p>
+        </div>
+
+        <div
+          className="font-sans text-sm font-semibold uppercase leading-none"
+          style={{ color: SPIN_BOX_COLORS.accent }}
+        >
+          Accepted, you have 2 minutes.
         </div>
       </div>
     </div>

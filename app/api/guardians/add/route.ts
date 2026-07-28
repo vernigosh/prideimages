@@ -26,12 +26,16 @@ export async function POST(request: Request) {
     }
 
     if (existing) {
-      // Update flower count if the new count is higher
+      // Only ever raise a guardian's all-time best. The `lt` guard makes this safe
+      // when several picks are in flight at once: the write is skipped unless the
+      // stored count is still lower than the incoming one, so a slower request can
+      // never overwrite a higher score with a stale value.
       if (flowerCount > existing.flower_count) {
         const { error: updateError } = await supabase
           .from("guardians")
           .update({ flower_count: flowerCount })
           .eq("username", lowerUsername)
+          .lt("flower_count", flowerCount)
 
         if (updateError) {
           console.error("Error updating guardian:", updateError)

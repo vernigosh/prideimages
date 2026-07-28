@@ -14,7 +14,7 @@ CREATE POLICY "guardians_update_service"
 INSERT INTO public.guardians (username, flower_count)
 VALUES ('spazleg', 66)
 ON CONFLICT (username) DO UPDATE
-  SET flower_count = GREATEST(public.guardians.flower_count, EXCLUDED.flower_count);
+  SET flower_count = GREATEST(guardians.flower_count, EXCLUDED.flower_count);
 
 -- Verify the result before going live.
 SELECT username, flower_count, achieved_at

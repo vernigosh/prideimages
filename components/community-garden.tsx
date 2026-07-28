@@ -742,18 +742,23 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
         window.dispatchEvent(new CustomEvent("showGardenElite", { detail: { username } }))
       }
 
+      // The celebration only fires on the session crossing edge.
       if (newPickedTotal >= 50 && (userPickedTotals[username] || 0) < 50) {
         window.dispatchEvent(new CustomEvent("showNaturesGuardian", { detail: { username } }))
-        // Save guardian to database
-        console.log("[v0] Attempting to save guardian:", username, newPickedTotal)
+      }
+
+      // The board save fires on EVERY pick at or above the threshold, not just the
+      // crossing edge. Session totals reset each stream by design, so if we only
+      // saved at the crossing we would permanently record the value someone happened
+      // to land on when passing 50 and lose every pick after it. The endpoint keeps
+      // the higher of the stored and incoming counts, so repeat calls only ever
+      // raise a guardian's all-time best.
+      if (newPickedTotal >= 50) {
         fetch("/api/guardians/add", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, flowerCount: newPickedTotal }),
-        })
-          .then((res) => res.json())
-          .then((data) => console.log("[v0] Guardian save response:", data))
-          .catch((err) => console.error("[v0] Failed to save guardian:", err))
+        }).catch((err) => console.error("[v0] Failed to save guardian:", err))
       }
 
       if (newPickedTotal >= 60 && (userPickedTotals[username] || 0) < 60) {

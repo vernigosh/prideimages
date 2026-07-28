@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -9,7 +9,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Username is required" }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    // Service role client: RLS has no UPDATE policy on guardians, so anon-key
+    // writes could never raise a stored flower_count.
+    const supabase = createAdminClient()
     const lowerUsername = username.toLowerCase()
 
     // Check if user is already a guardian

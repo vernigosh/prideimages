@@ -16,6 +16,11 @@ interface DarkTimerProps {
   offsetY?: number
   countdownFontSize?: number
   embedded?: boolean
+  /** True only while the 20 minutes are actually counting down — goes false the
+   *  moment the countdown completes, not when the widget is finally hidden. The
+   *  garden's Dark Vernigosh treatment is driven from this so it tracks the real
+   *  segment rather than the lingering DARKNESS COMPLETE card. */
+  onCountdownActiveChange?: (active: boolean) => void
 }
 
 const DARK_DURATION = 20 * 60
@@ -36,6 +41,7 @@ export function DarkTimer({
   offsetY = 230,
   countdownFontSize = 40,
   embedded = false,
+  onCountdownActiveChange,
 }: DarkTimerProps) {
   const [timeLeft, setTimeLeft] = useState(DARK_DURATION)
   const [isComplete, setIsComplete] = useState(false)
@@ -44,6 +50,10 @@ export function DarkTimer({
   const isVisibleRef = useRef(isVisible)
   const timeLeftRef = useRef(DARK_DURATION)
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Held in a ref so adding the callback never re-runs (and thus never restarts)
+  // the countdown effect.
+  const countdownActiveCbRef = useRef(onCountdownActiveChange)
+  countdownActiveCbRef.current = onCountdownActiveChange
 
   isVisibleRef.current = isVisible
 
@@ -62,6 +72,7 @@ export function DarkTimer({
       setTimeLeft(DARK_DURATION)
       setIsComplete(false)
       onConnectionChange(false)
+      countdownActiveCbRef.current?.(false)
       return
     }
 
@@ -70,6 +81,7 @@ export function DarkTimer({
     setTimeLeft(DARK_DURATION)
     setIsComplete(false)
     onConnectionChange(true)
+    countdownActiveCbRef.current?.(true)
     lastTickRef.current = Date.now()
 
     const tick = () => {
@@ -83,6 +95,9 @@ export function DarkTimer({
 
         if (timeLeftRef.current <= 0) {
           setIsComplete(true)
+          // Countdown is over: restore the normal garden now, even though this
+          // widget stays on screen for another minute showing DARKNESS COMPLETE.
+          countdownActiveCbRef.current?.(false)
           // Auto-hide after 1 minute
           hideTimeoutRef.current = setTimeout(() => {
             onHide()
@@ -120,6 +135,9 @@ export function DarkTimer({
         hideTimeoutRef.current = null
       }
       document.removeEventListener("visibilitychange", handleVisibility)
+      // Unmounting (e.g. swapped into the pride-trivia flip container) must not
+      // leave the garden stuck in Dark Vernigosh.
+      countdownActiveCbRef.current?.(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible])

@@ -23,7 +23,8 @@ function DarkGardenFlamesBase({ active }: DarkGardenFlamesProps) {
   // Drives the opacity transition one frame after mount so the browser has a
   // 0 -> 1 change to animate instead of painting the flames already opaque.
   const [shown, setShown] = useState(false)
-  // Assets that failed to load (the placeholder GIFs are not in the project yet).
+  // Assets that failed to load. Kept as a safety net so a missing or renamed GIF
+  // degrades to a normal garden instead of broken-image icons in OBS.
   const [failed, setFailed] = useState<Record<string, boolean>>({})
   const unmountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rafRef = useRef<number | null>(null)
@@ -67,7 +68,7 @@ function DarkGardenFlamesBase({ active }: DarkGardenFlamesProps) {
         return (
           <img
             key={flame.id}
-            src={flame.src || "/placeholder.svg"}
+            src={flame.src}
             alt=""
             className="absolute pixelated"
             onError={() => setFailed((prev) => (prev[flame.id] ? prev : { ...prev, [flame.id]: true }))}
@@ -78,6 +79,10 @@ function DarkGardenFlamesBase({ active }: DarkGardenFlamesProps) {
               width: "auto",
               imageRendering: "pixelated",
               transform: `translateX(-50%)${flame.flip ? " scaleX(-1)" : ""}`,
+              // Per-anchor tone shift so five copies of one GIF don't read as
+              // identical stamps. Omitted entirely when unset to avoid paying for
+              // a no-op filter on every frame of the animation.
+              ...(flame.filter ? { filter: flame.filter } : {}),
               opacity: shown ? 0.85 : 0,
               transition: `opacity ${DARK_TRANSITION_MS}ms ease-in-out ${flame.delayMs}ms`,
             }}

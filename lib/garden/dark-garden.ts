@@ -1,23 +1,19 @@
 // Dark Vernigosh garden treatment. Single source of truth for the visual values so
 // the garden component stays readable and the look can be tuned in one place.
 //
-// ─── REPLACING THE PLACEHOLDER FLAME ASSETS ─────────────────────────────────────
-// Drop your looping flame GIFs at these exact paths in the project's public folder:
+// ─── FLAME ASSETS ───────────────────────────────────────────────────────────────
+// One pixel-art flame GIF drives every anchor, living beside the existing rain.gif
+// and bunny GIFs. To add more variety later, drop extra GIFs in the same folder and
+// point individual FLAME_ANCHORS entries at them — nothing else needs to change.
 //
-//   public/garden/effects/flame-1.gif
-//   public/garden/effects/flame-2.gif
-//   public/garden/effects/flame-3.gif
-//
-// That is the same folder the existing rain.gif and bunny GIFs already live in, so
-// no other change is needed. Until those files exist the flames simply do not
-// render (each <img> hides itself on load error), so the garden looks completely
-// normal rather than showing broken-image icons in OBS.
+// Note on desync: identical GIFs decoded from one cached file animate close to in
+// step, and CSS `animation-delay` cannot offset GIF frames. So the anchors below are
+// differentiated by the things that DO work on a GIF — scale, mirroring, and a small
+// brightness/saturation shift — rather than by timing alone.
 // ────────────────────────────────────────────────────────────────────────────────
 
 export const FLAME_ASSETS = {
-  one: "/garden/effects/flame-1.gif",
-  two: "/garden/effects/flame-2.gif",
-  three: "/garden/effects/flame-3.gif",
+  red: "/garden/effects/red-fire.gif",
 } as const
 
 export interface FlameAnchor {
@@ -33,17 +29,42 @@ export interface FlameAnchor {
   delayMs: number
   /** Mirrored horizontally, so repeated assets don't read as clones. */
   flip?: boolean
+  /**
+   * Per-flame tone shift. The single shared GIF would otherwise look like five
+   * identical stamps; nudging brightness and saturation makes some read as hotter
+   * and nearer, others as dimmer and further back.
+   */
+  filter?: string
 }
 
 // Five ambient flames. Deliberately spread across the full width (no corner
 // clustering) and kept clear of the horizontal centre band where the activity feed
 // sits above the garden. Sizes vary so the group reads as scattered, not as a row.
 export const FLAME_ANCHORS: FlameAnchor[] = [
-  { id: "flame-a", src: FLAME_ASSETS.one, x: 8, height: 92, bottom: 0, delayMs: 0 },
-  { id: "flame-b", src: FLAME_ASSETS.two, x: 27, height: 64, bottom: 6, delayMs: 140, flip: true },
-  { id: "flame-c", src: FLAME_ASSETS.three, x: 49, height: 104, bottom: -2, delayMs: 60 },
-  { id: "flame-d", src: FLAME_ASSETS.one, x: 71, height: 72, bottom: 8, delayMs: 210, flip: true },
-  { id: "flame-e", src: FLAME_ASSETS.two, x: 90, height: 86, bottom: 0, delayMs: 90 },
+  { id: "flame-a", src: FLAME_ASSETS.red, x: 8, height: 78, bottom: 0, delayMs: 0 },
+  {
+    id: "flame-b",
+    src: FLAME_ASSETS.red,
+    x: 27,
+    height: 52,
+    bottom: 6,
+    delayMs: 140,
+    flip: true,
+    // Smaller and cooler: reads as sitting further back.
+    filter: "brightness(0.78) saturate(0.9)",
+  },
+  { id: "flame-c", src: FLAME_ASSETS.red, x: 49, height: 88, bottom: -2, delayMs: 60, filter: "brightness(1.08)" },
+  {
+    id: "flame-d",
+    src: FLAME_ASSETS.red,
+    x: 71,
+    height: 58,
+    bottom: 8,
+    delayMs: 210,
+    flip: true,
+    filter: "brightness(0.84) saturate(0.95)",
+  },
+  { id: "flame-e", src: FLAME_ASSETS.red, x: 90, height: 72, bottom: 0, delayMs: 90, flip: true },
 ]
 
 /** Shared fade duration for flowers, flames, and the mood tint. */

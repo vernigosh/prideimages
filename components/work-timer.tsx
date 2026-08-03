@@ -8,10 +8,16 @@ import {
   OVERLAY_WEIGHT_LABEL,
   OVERLAY_WEIGHT_BODY,
 } from "@/lib/overlay-typography"
+import { getClockState, SHORT_BREAK, WORK_DURATION } from "@/lib/work-cycle"
 
 export interface WorkTimerSettings {
   offsetX: number // px from the right edge
   offsetY: number // px from vertical center (positive = down)
+  /** Top-right stack: px from the top edge of the browser source. Raising the stack
+   *  keeps the lower-middle of the frame clear for the overhead deck camera. */
+  stackTopOffset: number
+  /** px gap between the stacked timer / prompt / task card. */
+  stackGap: number
   scale: number
   ringSize: number // ring diameter in px
   countdownFontSize: number
@@ -25,7 +31,9 @@ export interface WorkTimerSettings {
 
 export const DEFAULT_WORK_TIMER_SETTINGS: WorkTimerSettings = {
   offsetX: 60,
-  offsetY: 230, // lower-right primary slot, clear of the camera area
+  offsetY: 230, // legacy standalone (non-embedded) vertical offset
+  stackTopOffset: 150, // sits just under the Rome clock, high in the safe area
+  stackGap: 16,
   scale: 1,
   ringSize: 180,
   countdownFontSize: 46,
@@ -46,33 +54,8 @@ interface WorkTimerProps {
   embedded?: boolean
 }
 
-const WORK_DURATION = 25 * 60
-const SHORT_BREAK = 5 * 60
-
-// Clock-synced timer: work from x:00-x:25 and x:30-x:55, breaks at x:25-x:30 and x:55-x:00
-function getClockState() {
-  const now = new Date()
-  const minutesIntoBlock = now.getMinutes() % 30
-  const totalSecondsIntoBlock = minutesIntoBlock * 60 + now.getSeconds()
-
-  let currentPhase: "work" | "break"
-  let remaining: number
-
-  if (totalSecondsIntoBlock < WORK_DURATION) {
-    currentPhase = "work"
-    remaining = WORK_DURATION - totalSecondsIntoBlock
-  } else {
-    currentPhase = "break"
-    const secondsIntoBreak = totalSecondsIntoBlock - WORK_DURATION
-    remaining = Math.max(SHORT_BREAK - secondsIntoBreak, 0)
-  }
-
-  // Cycle resets each half-hour block
-  const blockIndex = Math.floor(now.getMinutes() / 30)
-  const cycle = now.getHours() * 2 + blockIndex + 1
-
-  return { currentPhase, remaining, cycle }
-}
+// Clock-synced timer state now lives in lib/work-cycle.ts so the viewer task system
+// can read the identical phase without a second timer implementation.
 
 function getNextBreakTime() {
   const now = new Date()

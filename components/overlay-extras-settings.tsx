@@ -126,8 +126,10 @@ export function OverlayExtrasSettings({
             <Range label={`Scale (${workTimer.scale.toFixed(2)}x)`} min={0.5} max={1.6} step={0.05} value={workTimer.scale} onChange={(v) => setWorkTimer({ scale: v })} />
             <div className="grid grid-cols-2 gap-4">
               <Range label={`Offset X (${workTimer.offsetX}px from right)`} min={0} max={400} value={workTimer.offsetX} onChange={(v) => setWorkTimer({ offsetX: v })} />
-              <Range label={`Offset Y (${workTimer.offsetY}px)`} min={-300} max={300} value={workTimer.offsetY} onChange={(v) => setWorkTimer({ offsetY: v })} />
+              <Range label={`Stack top offset (${workTimer.stackTopOffset}px)`} min={0} max={600} value={workTimer.stackTopOffset} onChange={(v) => setWorkTimer({ stackTopOffset: v })} />
             </div>
+            <Range label={`Stack gap (${workTimer.stackGap}px)`} min={0} max={60} value={workTimer.stackGap} onChange={(v) => setWorkTimer({ stackGap: v })} />
+            <p className="text-xs text-gray-600">Stack top offset raises the timer, break prompt, and viewer task card together beneath the Rome clock. Lower values keep the overhead deck view clear.</p>
             <button type="button" onClick={resetWorkTimer} className="flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-black">
               <RotateCcw className="h-3.5 w-3.5" /> Reset defaults
             </button>

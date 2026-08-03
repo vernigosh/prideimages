@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { SpinningWheel } from "@/components/spinning-wheel"
 import { AdminInterface } from "@/components/admin-interface"
 import { ResultDisplay } from "@/components/result-display"
@@ -40,6 +40,12 @@ import {
 } from "@/components/chat-overlay" // Visible incoming Twitch chat
 import { DEFAULT_GARDEN_ACTIVITY_SETTINGS } from "@/components/community-garden"
 import { usePersistentSettings } from "@/lib/use-persistent-settings"
+import { useViewerTasks } from "@/hooks/use-viewer-tasks"
+import { RotatingTaskCard } from "@/components/viewer-tasks/rotating-task-card"
+import { TaskBreakPrompt } from "@/components/viewer-tasks/task-break-prompt"
+import { TaskDebugPanel } from "@/components/viewer-tasks/task-debug-panel"
+import type { NormalizedChatMessage } from "@/lib/chat-commands"
+import type { TaskCommandResponse } from "@/lib/viewer-tasks/task-types"
 
 interface Trick {
   name: string
@@ -254,6 +260,45 @@ export default function DJRandomizer() {
   const [workTimerSettings, setWorkTimerSettings, resetWorkTimerSettings] = usePersistentSettings(
     "overlay:workTimer",
     DEFAULT_WORK_TIMER_SETTINGS,
+  )
+
+  // Viewer task system (Motivation Monday). Reads incoming commands off the existing
+  // `overlayChatMessage` queue and the work timer's own phase events, so it adds no
+  // second chat listener and no second timer state.
+  const [taskDebugEnabled, setTaskDebugEnabled] = useState(false)
+  const [taskResponses, setTaskResponses] = useState<TaskCommandResponse[]>([])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    setTaskDebugEnabled(new URLSearchParams(window.location.search).get("taskDebug") === "1")
+  }, [])
+
+  const handleTaskCommandResponse = useCallback((response: TaskCommandResponse) => {
+    setTaskResponses((prev) => [response, ...prev].slice(0, 20))
+  }, [])
+
+  const {
+    displayedTask,
+    showBreakPrompt,
+    phase: taskPhase,
+    enabled: taskSystemEnabled,
+    activeTaskCount,
+    processTaskChatEvent,
+    advanceRotation,
+    enableTaskSystem,
+    disableTaskSystem,
+    clearCurrentTasks,
+    resetDailyTaskData,
+    simulateWorkStart,
+    simulateBreakStart,
+  } = useViewerTasks({ onTaskCommandResponse: handleTaskCommandResponse })
+
+  const simulateTaskMessage = useCallback(
+    (message: NormalizedChatMessage, bypassCooldown: boolean) => {
+      // Simulations never post to Twitch chat.
+      processTaskChatEvent(message, { sendToChat: false, bypassCooldown })
+    },
+    [processTaskChatEvent],
   )
   const [chatOverlaySettings, setChatOverlaySettings, resetChatOverlaySettings] = usePersistentSettings(
     "overlay:chat",
@@ -813,15 +858,21 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
 
     return (
       <div
-        className="pointer-events-none absolute z-10 flex items-center justify-center"
+        className="pointer-events-none absolute z-10 flex justify-center"
         style={{
-          top: "18%",
+          // Top-anchored rather than vertically centred: the stack sits high in the
+          // top-right safe area under the Rome clock, keeping the lower-middle of the
+          // frame clear for the overhead deck camera. A single in-flow parent still
+          // owns both axes, so one or two timer rings share the same centre line.
+          top: `${workTimerSettings.stackTopOffset}px`,
           right: `${workTimerSettings.offsetX}px`,
-          bottom: "22%",
           width: "400px",
         }}
       >
-        <div className="flex w-[400px] flex-col items-center justify-center gap-6">
+        <div
+          className="flex w-[400px] flex-col items-center"
+          style={{ gap: `${workTimerSettings.stackGap}px` }}
+        >
           {secondaryTimer}
           {showWorkTimer && (
             <WorkTimer
@@ -838,6 +889,13 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
                 nextChangeFontSize: 24,
               }}
             />
+          )}
+
+          {/* Viewer task slots. Both render below the timer and are absent from the
+              DOM when inactive, so the clock and ring above never shift. */}
+          {showWorkTimer && <TaskBreakPrompt visible={showBreakPrompt} />}
+          {showWorkTimer && (
+            <RotatingTaskCard task={displayedTask} visible={taskPhase === "work"} />
           )}
         </div>
       </div>
@@ -892,6 +950,27 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
 
 {/* Timer Elements */}
           {getTimerElements()}
+
+        {/* Viewer task simulator, enabled with ?taskDebug=1. Hidden in normal use. */}
+        {taskDebugEnabled && (
+          <TaskDebugPanel
+            responses={taskResponses}
+            phase={taskPhase}
+            activeTaskCount={activeTaskCount}
+            enabled={taskSystemEnabled}
+            onSimulate={simulateTaskMessage}
+            onWorkStart={simulateWorkStart}
+            onBreakStart={simulateBreakStart}
+            onAdvance={advanceRotation}
+            onClearCurrent={clearCurrentTasks}
+            onReset={() => {
+              resetDailyTaskData()
+              setTaskResponses([])
+            }}
+            onEnable={enableTaskSystem}
+            onDisable={disableTaskSystem}
+          />
+        )}
 
         {/* Pride Trivia Timer - Left side when visible */}
         {/* When both dark timer and pride trivia are active, use 3D flip animation */}

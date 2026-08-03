@@ -21,3 +21,13 @@ export function taskCompletedResponse(displayName: string, count: number): strin
 export function noTaskToCompleteResponse(displayName: string): string {
   return `${displayName}, you don't currently have a task to complete.`
 }
+
+/** Mod-only !hidetask. Deliberately neutral: it does not repeat the removed text
+ *  back into chat, which would defeat the point of removing it. */
+export function taskHiddenResponse(targetName: string): string {
+  return `Removed ${targetName}'s task from the rotation.`
+}
+
+export function nothingToHideResponse(targetName: string): string {
+  return `${targetName} doesn't have a task on screen right now.`
+}

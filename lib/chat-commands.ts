@@ -46,8 +46,9 @@ export const RECOGNIZED_COMMANDS = new Set<string>([
   "hidestartingsoon", "brb", "back", "hidebrb", "testflowerboard", "testeasteregg",
   "testraid", "hidecelebration", "pridetimer", "casualtrivia", "hidepridetimer",
   "trivia", "nextq", "nextquestion", "frontpage", "answer", "a", "b", "c", "d",
-  // Viewer task system (Motivation Monday)
-  "task", "repeat", "done",
+  // Viewer task system (Motivation Monday). "hidetask" is mod-only, enforced in
+  // parseTaskCommand — listing it here only affects overlay display filtering.
+  "task", "repeat", "done", "hidetask",
 ])
 
 // Bot / automated accounts hidden from the visible chat by default.

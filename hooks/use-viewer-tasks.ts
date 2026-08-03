@@ -7,8 +7,10 @@ import { parseTaskCommand } from "@/lib/viewer-tasks/parse-task-command"
 import {
   noPreviousTaskResponse,
   noTaskToCompleteResponse,
+  nothingToHideResponse,
   taskAddedResponse,
   taskCompletedResponse,
+  taskHiddenResponse,
   taskRepeatResponse,
 } from "@/lib/viewer-tasks/task-command-responses"
 import {
@@ -146,6 +148,44 @@ export function useViewerTasks({ onTaskCommandResponse, sendToChat = true }: Use
       const displayName = message.username || "Unknown"
       const userId = displayName.toLowerCase()
       const now = Date.now()
+
+      // --- Mod moderation path ---------------------------------------------------
+      // !hidetask acts on ANOTHER user, so it deliberately runs before the
+      // per-viewer cooldown (mods must be able to act immediately, and repeatedly)
+      // and never creates a task record for the mod who ran it.
+      if (parsed.type === "hidetask") {
+        const previous = sendToChatRef.current
+        if (options.sendToChat !== undefined) sendToChatRef.current = options.sendToChat
+        try {
+          const target = current.tasksByUser[parsed.targetUserId]
+          if (!target?.currentTask) {
+            emitResponse(userId, displayName, nothingToHideResponse(parsed.targetName))
+            return
+          }
+          // Clear lastTask/lastWorkTask as well as currentTask: leaving them set
+          // would let the offender restore the exact removed text with !repeat,
+          // which would defeat the moderation. completedToday is intentionally
+          // preserved — this removes a message, it is not a punishment.
+          const cleared: ViewerTask = {
+            ...target,
+            currentTask: null,
+            lastTask: null,
+            lastWorkTask: null,
+            status: "cleared",
+          }
+          const next: ViewerTaskState = {
+            ...current,
+            tasksByUser: { ...current.tasksByUser, [parsed.targetUserId]: cleared },
+            rotationOrder: current.rotationOrder.filter((id) => id !== parsed.targetUserId),
+          }
+          stateRef.current = next
+          setState(next)
+          emitResponse(userId, displayName, taskHiddenResponse(target.displayName || parsed.targetName))
+        } finally {
+          sendToChatRef.current = previous
+        }
+        return
+      }
 
       if (!options.bypassCooldown) {
         const lastUsed = cooldowns.current.get(userId) ?? 0

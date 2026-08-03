@@ -221,7 +221,11 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
           } else {
             // Break started
             window.dispatchEvent(new CustomEvent("breakStart", { detail: { cycle: s.cycle } }))
-            sendChatMessage("BREAK TIME! Take 5 minutes to rest and recharge!")
+            // Rest first, then the task instructions, so viewers who just arrived
+            // learn both commands without needing to catch the on-screen prompt.
+            sendChatMessage(
+              "BREAK TIME! Take 5 minutes to rest and recharge. Tasks are cleared - type !repeat to keep the same task, or !task <your task> to set a new one for the next work period.",
+            )
             triggerIntro("break")
           }
         }

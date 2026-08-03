@@ -29,13 +29,18 @@ let simCounter = 0
 
 /** Builds a message shaped exactly like the live normalized chat payload, so the
  *  panel exercises the same code path real viewers do. */
-function simulatedMessage(username: string, color: string, text: string): NormalizedChatMessage {
+function simulatedMessage(
+  username: string,
+  color: string,
+  text: string,
+  isMod = false,
+): NormalizedChatMessage {
   simCounter += 1
   return {
     id: `task-debug-${simCounter}-${Date.now()}`,
     username,
     color,
-    badges: { broadcaster: false, moderator: false, vip: false, subscriber: false },
+    badges: { broadcaster: false, moderator: isMod, vip: false, subscriber: false },
     message: text,
     emotes: [],
     isBot: false,
@@ -65,6 +70,14 @@ export function TaskDebugPanel({
     (viewerIndex: number, text: string) => {
       const viewer = VIEWERS[viewerIndex]
       onSimulate(simulatedMessage(viewer.name, viewer.color, text), bypassCooldown)
+    },
+    [onSimulate, bypassCooldown],
+  )
+
+  /** Sends as a moderator, for exercising the mod-gated !hidetask path. */
+  const sendAsMod = useCallback(
+    (text: string) => {
+      onSimulate(simulatedMessage("ModViewer", "#ffd166", text, true), bypassCooldown)
     },
     [onSimulate, bypassCooldown],
   )
@@ -155,6 +168,20 @@ export function TaskDebugPanel({
         </button>
         <button type="button" className={buttonClass} onClick={() => send(2, "!done")}>
           C: !done (grammar)
+        </button>
+
+        {/* Mod-only !hidetask. "Non-mod" must produce NO confirmation at all. */}
+        <button type="button" className={buttonClass} onClick={() => sendAsMod("!hidetask AlphaViewer")}>
+          Mod: !hidetask A
+        </button>
+        <button type="button" className={buttonClass} onClick={() => sendAsMod("!hidetask @BetaViewer")}>
+          Mod: !hidetask @B
+        </button>
+        <button type="button" className={buttonClass} onClick={() => sendAsMod("!hidetask NobodyHere")}>
+          Mod: hide unknown
+        </button>
+        <button type="button" className={buttonClass} onClick={() => send(2, "!hidetask AlphaViewer")}>
+          Non-mod: !hidetask
         </button>
 
         <button type="button" className={buttonClass} onClick={enabled ? onDisable : onEnable}>

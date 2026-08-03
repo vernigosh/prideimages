@@ -8,6 +8,8 @@ import { MasterGardenerCelebration } from "./master-gardener-celebration" // Imp
 import { NaturesGuardianCelebration } from "./natures-guardian-celebration" // Import the new Nature's Guardian celebration component
 import { GardenEliteCelebration } from "./garden-elite-celebration" // Import the new Garden Elite celebration component
 import { OVERLAY_FONT_STANDARD, OVERLAY_LINE_HEIGHT_STANDARD, OVERLAY_WEIGHT_LABEL } from "@/lib/overlay-typography"
+import { DarkGardenFlames } from "./garden/dark-garden-flames"
+import { DARK_FLOWER_FILTER, DARK_GARDEN_TINT, DARK_TRANSITION_MS } from "@/lib/garden/dark-garden"
 
 interface Flower {
   id: string
@@ -130,6 +132,10 @@ interface CommunityGardenProps {
   onHide: () => void
   onFlowerLegendsUpdate?: (legends: Array<{ username: string; count: number }>) => void
   activitySettings?: Partial<GardenActivitySettings>
+  /** Dark Vernigosh visual treatment. Driven by the existing dark-timer state in
+   *  app/page.tsx — this component never derives it, so there is only ever one
+   *  source of truth for whether Dark Vernigosh is running. */
+  darkMode?: boolean
 }
 
 const flowerTypes = {
@@ -201,7 +207,13 @@ async function sendChatMessage(message: string) {
   }
 }
 
-export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowerLegendsUpdate, activitySettings }: CommunityGardenProps) {
+export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowerLegendsUpdate, activitySettings, darkMode = false }: CommunityGardenProps) {
+  // Precomputed once per render and shared by every flower and departing flower,
+  // so toggling Dark Vernigosh costs one style value rather than per-sprite work.
+  const darkSpriteStyle: CSSProperties = {
+    filter: darkMode ? DARK_FLOWER_FILTER : "none",
+    transition: `filter ${DARK_TRANSITION_MS}ms ease-in-out`,
+  }
   const activityCfg: GardenActivitySettings = { ...DEFAULT_GARDEN_ACTIVITY_SETTINGS, ...activitySettings }
   const activityCfgRef = useRef(activityCfg)
   activityCfgRef.current = activityCfg
@@ -1413,6 +1425,22 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
             transition: "filter 2s ease-in-out",
           }}
         >
+          {/* Dark Vernigosh mood tint. First in DOM with no z-index, so it paints
+              beneath the flames, flowers, rain, and bunny and never obscures them.
+              Always mounted so the glow can animate both in and out. */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            aria-hidden="true"
+            style={{
+              background: DARK_GARDEN_TINT,
+              opacity: darkMode ? 1 : 0,
+              transition: `opacity ${DARK_TRANSITION_MS}ms ease-in-out`,
+            }}
+          />
+
+          {/* Ambient flames, behind the flowers. Self-unmounting when inactive. */}
+          <DarkGardenFlames active={darkMode} />
+
           {/* Rain Effect - scrolls across when watered */}
           {rainTimeoutRef && (
             <div
@@ -1507,8 +1535,15 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                 style={{ left: `${flower.x}%` }}
                 title={`${flowerTypes[flower.type].name}${flower.specificType ? ` (${flower.specificType})` : ""} by ${flower.plantedBy} (${currentStage}) - ${Math.floor(timeSincePlanted / 1000)}s old`}
               >
-                <div className={powerUpClass} style={powerUpStyle}>
-                  {getFlowerDisplay(flower)}
+                {/* Dedicated wrapper for the Dark Vernigosh filter. Kept separate
+                    from the power-up element because the power-up animates `filter`
+                    via keyframes — setting both on one element would let the
+                    animation clobber the crimson treatment. Nested filters compose,
+                    so a flower can be powered up and crimson at the same time. */}
+                <div style={darkSpriteStyle}>
+                  <div className={powerUpClass} style={powerUpStyle}>
+                    {getFlowerDisplay(flower)}
+                  </div>
                 </div>
                 {/* Show sparkles only on non-fully-mature flowers */}
                 {flower.stage !== "fully-mature" && (
@@ -1547,8 +1582,13 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
                   transition: `opacity ${DEPART_LEAVE_MS}ms ease, transform ${DEPART_LEAVE_MS}ms ease`,
                 }}
               >
-                <div className={effectClass} style={effectStyle}>
-                  {getFlowerDisplay(d.flower)}
+                {/* Same crimson wrapper as the live flowers, so a flower picked or
+                    eaten during Dark Vernigosh doesn't snap back to its normal
+                    colours for its fade-away. */}
+                <div style={darkSpriteStyle}>
+                  <div className={effectClass} style={effectStyle}>
+                    {getFlowerDisplay(d.flower)}
+                  </div>
                 </div>
               </div>
             )

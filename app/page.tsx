@@ -182,6 +182,11 @@ export default function DJRandomizer() {
   // Dark timer settings
   const [showDarkTimer, setShowDarkTimer] = useState(false)
   const [darkTimerConnected, setDarkTimerConnected] = useState(false)
+  // True only while the dark timer is actually counting down. Reported by DarkTimer
+  // itself rather than derived here, so there stays exactly one source of truth for
+  // Dark Vernigosh, and the garden returns to normal the moment the segment ends
+  // instead of a minute later when the DARKNESS COMPLETE card finally hides.
+  const [darkCountdownActive, setDarkCountdownActive] = useState(false)
 
   // Work timer settings
   const [showWorkTimer, setShowWorkTimer] = useState(false)
@@ -829,9 +834,11 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     return null
   }
 
-  // OBS-safe shared timer rail. A single in-flow parent owns both axes, so every
-  // ring has the same horizontal center and one/two timer groups remain centered
-  // between the clock/city above and garden below at any 16:9 browser-source size.
+  // OBS-safe shared top-right stack: clock above, then secondary timer, work timer,
+  // break prompt, and viewer task card. A single in-flow parent owns both axes, so
+  // every ring keeps the same horizontal centre and nothing drifts as items appear
+  // or disappear. Anchored to the top (not vertically centred) so the lower-middle
+  // of the frame stays clear for the overhead deck camera.
   const getTimerElements = () => {
     const secondaryKind = showDarkTimer && !showPrideTrivia ? "dark" : showSocialTimer ? "social" : null
     if (!showWorkTimer && !secondaryKind) return null
@@ -842,6 +849,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         isVisible
         embedded
         onConnectionChange={setDarkTimerConnected}
+        onCountdownActiveChange={setDarkCountdownActive}
         onHide={() => setShowDarkTimer(false)}
         countdownFontSize={timeFontSize}
       />
@@ -989,12 +997,13 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
                 style={{ backfaceVisibility: "hidden" }}
               >
                 <DarkTimer
-                  isVisible={true}
-                  onConnectionChange={setDarkTimerConnected}
-                  onHide={() => setShowDarkTimer(false)}
-                  workTimerActive={showWorkTimer}
-                  socialTimerActive={showSocialTimer}
-                />
+                    isVisible={true}
+                    onConnectionChange={setDarkTimerConnected}
+                    onCountdownActiveChange={setDarkCountdownActive}
+                    onHide={() => setShowDarkTimer(false)}
+                    workTimerActive={showWorkTimer}
+                    socialTimerActive={showSocialTimer}
+                  />
               </div>
               {/* Back - Pride Trivia Timer */}
               <div
@@ -1031,9 +1040,10 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
                   isVisible={showGarden}
                   onConnectionChange={setGardenConnected}
                   onHide={() => setShowGarden(false)}
-                  onFlowerLegendsUpdate={(legends) => setFlowerLegends(legends)}
-                  activitySettings={gardenActivitySettings}
-                />
+            onFlowerLegendsUpdate={(legends) => setFlowerLegends(legends)}
+            activitySettings={gardenActivitySettings}
+            darkMode={darkCountdownActive}
+          />
         )}
 
         {/* Flower Shop - Always at bottom when visible */}

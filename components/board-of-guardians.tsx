@@ -18,6 +18,7 @@ interface BoardOfGuardiansProps {
 export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
   const [guardians, setGuardians] = useState<Guardian[]>([])
   const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
@@ -35,11 +36,18 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
       // no-store so OBS (a long-lived browser source) can't serve a stale board.
       const response = await fetch("/api/guardians", { cache: "no-store" })
       const data = await response.json()
-      if (data.guardians) {
-        setGuardians(data.guardians)
+      if (!response.ok || !Array.isArray(data.guardians)) {
+        // A failed request is not "zero guardians" — say so on the overlay instead
+        // of rendering a board that looks empty but healthy.
+        console.error("[v0] Guardians fetch failed:", data?.error ?? response.status)
+        setFailed(true)
+        return
       }
+      setFailed(false)
+      setGuardians(data.guardians)
     } catch (error) {
-      console.error("Error fetching guardians:", error)
+      console.error("[v0] Error fetching guardians:", error)
+      setFailed(true)
     } finally {
       setLoading(false)
     }
@@ -81,6 +89,10 @@ export function BoardOfGuardians({ isVisible, onHide }: BoardOfGuardiansProps) {
 
         {loading ? (
           <p className="text-center text-white font-sans text-2xl font-black">LOADING...</p>
+        ) : failed ? (
+          <p className="text-center text-red-400 font-sans text-2xl font-black uppercase">
+            Board unavailable - try again
+          </p>
         ) : guardians.length === 0 ? (
           <p className="text-center text-gray-400 font-sans text-2xl font-black uppercase">
             No guardians yet!

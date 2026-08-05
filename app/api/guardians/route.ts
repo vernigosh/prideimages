@@ -19,8 +19,13 @@ export async function GET() {
       .order("flower_count", { ascending: false })
 
     if (error) {
-      console.error("Supabase error:", error)
-      return NextResponse.json({ guardians: [] })
+      // Never degrade a failed query to an empty list: an empty list is a valid
+      // answer ("no guardians yet") and hides the failure as a blank board.
+      console.error("[guardians] Supabase error:", error)
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } },
+      )
     }
 
     return NextResponse.json(
@@ -28,7 +33,12 @@ export async function GET() {
       { headers: { "Cache-Control": "no-store, max-age=0" } },
     )
   } catch (error) {
-    console.error("Error fetching guardians:", error)
-    return NextResponse.json({ guardians: [] })
+    // Also covers createAdminClient() throwing when SUPABASE_SERVICE_ROLE_KEY is
+    // missing from the deployed environment.
+    console.error("[guardians] Error fetching guardians:", error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } },
+    )
   }
 }

@@ -78,6 +78,14 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
   const connectToTwitch = async () => {
     if (!channel.trim()) return
 
+    // A second client would attach its own "message" handler and every chat command
+    // would be processed twice. Commands that dispatch straight through (!plant,
+    // !pick, !spin) have no id-based dedup, so they would fire twice per message.
+    if (clientRef.current) {
+      console.log("[v0] Twitch client already exists - reusing it instead of connecting again")
+      return
+    }
+
     setIsConnecting(true)
     console.log("Attempting to connect to Twitch chat...")
 
@@ -103,6 +111,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           secure: true,
         },
       })
+
+      // Claim the ref BEFORE awaiting connect(). Assigning it only after the await
+      // left a window where two rapid calls both passed the guard above and each
+      // built its own client.
+      clientRef.current = client
 
       console.log("TMI client created, setting up event handlers...")
 
@@ -524,10 +537,11 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
 
       console.log("Connecting to Twitch...")
       await client.connect()
-      clientRef.current = client
       console.log("Connection attempt completed")
     } catch (error) {
       console.error("Failed to connect to Twitch:", error)
+      // Release the claim so a retry is possible after a failed connect.
+      clientRef.current = null
       setIsConnecting(false)
       const errorMessage = error instanceof Error ? error.message : "Unknown error"
       addRecentCommand(`Failed to connect to Twitch: ${errorMessage} ❌`)

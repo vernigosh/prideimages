@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 interface RaidCelebrationProps {
   isVisible: boolean
@@ -20,12 +20,22 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
   const [showText, setShowText] = useState(false)
   const [visibleFawnIds, setVisibleFawnIds] = useState<Set<number>>(new Set())
 
+  // Held in a ref so the parent passing a fresh inline arrow on every render
+  // cannot re-trigger the effect below and respawn the herd mid-raid.
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  }, [onComplete])
+
   // Only show fawns for raids with 5+ viewers
   const showFawns = (viewerCount ?? 0) >= 5
 
   useEffect(() => {
     if (isVisible) {
       setShowText(true)
+      // Every timer for this run, so cleanup can cancel all of them. Previously
+      // only the completion timer was cleared and the per-fawn hide timers leaked.
+      const timers: ReturnType<typeof setTimeout>[] = []
 
       if (showFawns) {
         // Create fawns in waves with good spacing for surprise effect
@@ -60,35 +70,39 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
 
         // Set up individual timers to hide each fawn after it runs off screen
         newFawns.forEach((fawn) => {
-          setTimeout(() => {
-            setVisibleFawnIds(prev => {
-              const next = new Set(prev)
-              next.delete(fawn.id)
-              return next
-            })
-          }, (fawn.delay + fawn.duration) * 1000)
+          timers.push(
+            setTimeout(() => {
+              setVisibleFawnIds(prev => {
+                const next = new Set(prev)
+                next.delete(fawn.id)
+                return next
+              })
+            }, (fawn.delay + fawn.duration) * 1000),
+          )
         })
 
         // Auto-complete after all fawns have run off screen (last fawn: 28.5 + 2.5 = 31 seconds)
-        const timer = setTimeout(() => {
-          onComplete()
-          setFawns([])
-          setVisibleFawnIds(new Set())
-          setShowText(false)
-        }, 33000)
-
-        return () => clearTimeout(timer)
+        timers.push(
+          setTimeout(() => {
+            onCompleteRef.current()
+            setFawns([])
+            setVisibleFawnIds(new Set())
+            setShowText(false)
+          }, 33000),
+        )
       } else {
         // No fawns - just show text for 30 seconds
-        const timer = setTimeout(() => {
-          onComplete()
-          setShowText(false)
-        }, 30000)
-
-        return () => clearTimeout(timer)
+        timers.push(
+          setTimeout(() => {
+            onCompleteRef.current()
+            setShowText(false)
+          }, 30000),
+        )
       }
+
+      return () => timers.forEach(clearTimeout)
     }
-  }, [isVisible, onComplete, showFawns])
+  }, [isVisible, showFawns])
 
   if (!isVisible || (!showText && fawns.length === 0)) return null
 

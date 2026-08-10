@@ -10,6 +10,13 @@ import { GardenEliteCelebration } from "./garden-elite-celebration" // Import th
 import { OVERLAY_FONT_STANDARD, OVERLAY_LINE_HEIGHT_STANDARD, OVERLAY_WEIGHT_LABEL } from "@/lib/overlay-typography"
 import { DarkGardenFlames } from "./garden/dark-garden-flames"
 import { DARK_FLOWER_FILTER, DARK_GARDEN_TINT, DARK_TRANSITION_MS } from "@/lib/garden/dark-garden"
+import {
+  clearGardenData,
+  getRomeDateKey,
+  loadPickedTotals,
+  savePickedTotals,
+  type PickedTotals,
+} from "@/lib/garden/flower-storage"
 
 interface Flower {
   id: string
@@ -247,7 +254,12 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   const [rainTimeoutRef, setRainTimeoutRef] = useState<NodeJS.Timeout | null>(null) // Use state for rain timeout
   const [lastWaterTime, setLastWaterTime] = useState(0) // New state variable for tracking the last water time
   const [userFlowerCounts, setUserFlowerCounts] = useState<{ [username: string]: number }>({}) // New state for user flower totals
-  const [userPickedTotals, setUserPickedTotals] = useState<{ [username: string]: number }>({}) // New state for lifetime picked totals
+  const [userPickedTotals, setUserPickedTotals] = useState<PickedTotals>({}) // New state for lifetime picked totals
+  // Totals survive an overlay refresh for the rest of the Rome day. Hydrated after
+  // mount (not in the useState initializer) so server and client render the same
+  // markup, matching the pattern in lib/use-persistent-settings.ts.
+  const pickedTotalsHydratedRef = useRef(false)
+  const romeDateKeyRef = useRef(getRomeDateKey())
   const [gardenSaturation, setGardenSaturation] = useState(100) // Start at 100% saturation
   const [showFlowerCelebration, setShowFlowerCelebration] = useState(false) // Add flower celebration tracking state
   const [celebrationUsername, setCelebrationUsername] = useState("") // Add flower celebration tracking state
@@ -261,6 +273,36 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   const [naturesGuardianUsername, setNaturesGuardianUsername] = useState("") // Add state for Nature's Guardian celebration
   const [showGardenEliteCelebration, setShowGardenEliteCelebration] = useState(false) // Add state for Garden Elite celebration
   const [gardenEliteUsername, setGardenEliteUsername] = useState("") // Add state for Garden Elite celebration
+
+  // Restore today's picked totals after an OBS/browser refresh.
+  useEffect(() => {
+    const stored = loadPickedTotals(romeDateKeyRef.current)
+    if (Object.keys(stored).length > 0) {
+      // Merge under anything already picked in this fresh session rather than
+      // overwriting, so a pick that lands before hydration is not lost.
+      setUserPickedTotals((prev) => ({ ...stored, ...prev }))
+    }
+    pickedTotalsHydratedRef.current = true
+  }, [])
+
+  // Persist on every change, but never before hydration or we would immediately
+  // overwrite the stored totals with the empty initial state.
+  useEffect(() => {
+    if (!pickedTotalsHydratedRef.current) return
+    savePickedTotals(userPickedTotals, romeDateKeyRef.current)
+  }, [userPickedTotals])
+
+  // Roll over at Rome midnight so a stream running past midnight starts a fresh day
+  // instead of holding yesterday's totals until the next refresh.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentKey = getRomeDateKey()
+      if (currentKey === romeDateKeyRef.current) return
+      romeDateKeyRef.current = currentKey
+      setUserPickedTotals({})
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Update flower legends (10+ flowers) for stream credits
   useEffect(() => {
@@ -1310,6 +1352,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   const resetGarden = () => {
     setFlowers([])
     setUserPickedTotals({})
+    // An explicit !resetgarden is meant to wipe the day, so drop the stored copy
+    // too. Without this the totals would come straight back on the next refresh.
+    clearGardenData()
     setLastBunnyVisit(Date.now() - 6 * 60 * 1000) // Set to 6 minutes ago so bunny can spawn immediately
     setLastWaterTime(0)
     setGardenSaturation(100)

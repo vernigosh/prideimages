@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 interface BeeParadeCelebrationProps {
   isVisible: boolean
@@ -10,28 +10,38 @@ interface BeeParadeCelebrationProps {
 export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebrationProps) {
   const [showCelebration, setShowCelebration] = useState(false)
 
+  // Held in a ref because the parent passes a fresh inline arrow on every render.
+  // With onHide in the dependency array the effect re-ran constantly, restarting the
+  // 35s timer, so the parade never ended and the bees looped forever.
+  const onHideRef = useRef(onHide)
+  useEffect(() => {
+    onHideRef.current = onHide
+  }, [onHide])
+
   useEffect(() => {
     if (isVisible) {
-      console.log("[v0] Bee parade celebration starting")
       setShowCelebration(true)
+
+      // Both timers are tracked so cleanup cancels the fade-out too; previously the
+      // inner timeout could still fire onHide after unmount.
+      let fadeTimer: ReturnType<typeof setTimeout> | undefined
 
       // Hide after 35 seconds
       const hideTimer = setTimeout(() => {
-        console.log("[v0] Bee parade celebration ending")
         setShowCelebration(false)
 
         // Wait for fade out animation
-        setTimeout(() => {
-          console.log("[v0] Bee parade celebration calling onHide")
-          onHide()
+        fadeTimer = setTimeout(() => {
+          onHideRef.current()
         }, 1000)
       }, 35000)
 
       return () => {
         clearTimeout(hideTimer)
+        if (fadeTimer) clearTimeout(fadeTimer)
       }
     }
-  }, [isVisible, onHide])
+  }, [isVisible])
 
   if (!isVisible) return null
 
@@ -61,7 +71,10 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
           <div
             key={`top-${index}`}
             className="absolute top-1/4 animate-[fly-right_10s_linear_infinite]"
-            style={{ animationDelay: `${index * 0.8}s` }}
+            // backwards fill applies the 0% keyframe during the delay. Without it a
+            // delayed bee sits at its untransformed position, parked on screen and
+            // motionless until its delay elapses.
+            style={{ animationDelay: `${index * 0.8}s`, animationFillMode: "backwards" }}
           >
             <img
               src="/images/8-20bit-20pixel-20art-20sticker.gif"
@@ -77,7 +90,7 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
           <div
             key={`middle-${index}`}
             className="absolute top-1/2 right-0 animate-[fly-left_12s_linear_infinite]"
-            style={{ animationDelay: `${2 + index * 0.7}s` }}
+            style={{ animationDelay: `${2 + index * 0.7}s`, animationFillMode: "backwards" }}
           >
             <img
               src="/images/8-20bit-20pixel-20art-20sticker.gif"
@@ -93,7 +106,7 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
           <div
             key={`bottom-${index}`}
             className="absolute top-3/4 animate-[fly-right_14s_linear_infinite]"
-            style={{ animationDelay: `${6 + index * 1}s` }}
+            style={{ animationDelay: `${6 + index * 1}s`, animationFillMode: "backwards" }}
           >
             <img
               src="/images/8-20bit-20pixel-20art-20sticker.gif"

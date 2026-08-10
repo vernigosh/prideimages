@@ -837,7 +837,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       // Show picking message with lifetime total. The returned activity id links
       // the departing copies to this message so the effect starts when it shows.
       const pickActivityId = addActivity(
-        `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}! USE !FLOWERS TO CHECK INVENTORY!`,
+        `🌸 ${username.toUpperCase()} PICKED ${userPickableFlowers.length} FLOWERS! TOTAL PICKED: ${newPickedTotal}!`,
         5000,
         { type: "pick", username },
       )

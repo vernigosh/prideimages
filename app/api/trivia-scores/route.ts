@@ -1,28 +1,26 @@
-import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
+import { getSql, type TriviaScore } from "@/lib/neon/client"
+import { type NextRequest, NextResponse } from "next/server"
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    const { data, error } = await supabase
-      .from("trivia_scores")
-      .select("username, score")
-      .order("score", { ascending: false })
-      .limit(5)
+    const sql = getSql()
 
-    if (error) {
-      console.error("[v0] Error fetching trivia scores:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
+    const scores = (await sql`
+      SELECT username, score
+      FROM trivia_scores
+      ORDER BY score DESC
+      LIMIT 5
+    `) as TriviaScore[]
 
-    return NextResponse.json({ scores: data || [] })
+    return NextResponse.json({ scores })
   } catch (error) {
-    console.error("[v0] Error in trivia scores GET:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("[trivia-scores] Error fetching trivia scores:", error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Internal server error" },
+      { status: 500 },
+    )
   }
 }
 
@@ -34,42 +32,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: "No winners to update" })
     }
 
-    // Update scores for each winner (increment by 1)
-    for (const username of winners) {
-      const lowerUsername = username.toLowerCase()
-      
-      // First, try to get existing record
-      const { data: existing } = await supabase
-        .from("trivia_scores")
-        .select("score")
-        .eq("username", lowerUsername)
-        .single()
+    const sql = getSql()
 
-      if (existing) {
-        // Update existing record - increment score
-        const { error: updateError } = await supabase
-          .from("trivia_scores")
-          .update({ score: existing.score + 1, updated_at: new Date().toISOString() })
-          .eq("username", lowerUsername)
-        
-        if (updateError) {
-          console.error("[v0] Error updating score for", lowerUsername, updateError)
-        }
-      } else {
-        // Insert new record with score of 1
-        const { error: insertError } = await supabase
-          .from("trivia_scores")
-          .insert({ username: lowerUsername, score: 1 })
-        
-        if (insertError) {
-          console.error("[v0] Error inserting score for", lowerUsername, insertError)
-        }
+    // De-duplicate within the payload so the same name listed twice in one round
+    // cannot be counted twice.
+    const names = [...new Set(winners.map((w: string) => String(w).toLowerCase()))]
+
+    // One atomic upsert per winner. The previous Supabase version read the score
+    // and then wrote score + 1, which loses increments when two rounds resolve at
+    // once. Incrementing in SQL means the database does the arithmetic and no
+    // update can be lost.
+    for (const username of names) {
+      try {
+        await sql`
+          INSERT INTO trivia_scores (username, score)
+          VALUES (${username}, 1)
+          ON CONFLICT (username) DO UPDATE
+            SET score = trivia_scores.score + 1,
+                updated_at = NOW()
+        `
+      } catch (error) {
+        // One bad name should not drop the rest of the round's winners.
+        console.error("[trivia-scores] Error recording score for", username, error)
       }
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("[v0] Error in trivia scores POST:", error)
+    console.error("[trivia-scores] Error in trivia scores POST:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

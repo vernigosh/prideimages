@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin"
+import { getSql } from "@/lib/neon/client"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -9,57 +9,45 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Username is required" }, { status: 400 })
     }
 
-    // Service role client: RLS has no UPDATE policy on guardians, so anon-key
-    // writes could never raise a stored flower_count.
-    const supabase = createAdminClient()
-    const lowerUsername = username.toLowerCase()
+    const sql = getSql()
+    const lowerUsername = String(username).toLowerCase()
+    const count = Number(flowerCount) || 50
 
-    // Check if user is already a guardian
-    const { data: existing, error: fetchError } = await supabase
-      .from("guardians")
-      .select("id, flower_count")
-      .eq("username", lowerUsername)
-      .single()
+    // Single atomic upsert. The previous Supabase version did a SELECT, then an
+    // INSERT or UPDATE, which could double-insert when two picks for the same
+    // viewer landed at once (both reads missed, both inserted). The unique index
+    // on username collapses that into one row.
+    //
+    // The WHERE clause on the conflict branch means a stored count can only ever
+    // be raised, never lowered, so a slow request carrying a stale lower total
+    // cannot clobber a higher one.
+    //
+    // achieved_at is deliberately left alone on conflict: it records when the
+    // viewer first became a Guardian, not their most recent pick.
+    //
+    // xmax = 0 is true only for a freshly inserted row, which is how we tell a new
+    // induction from an updated record without a second query.
+    const rows = (await sql`
+      INSERT INTO guardians (username, flower_count)
+      VALUES (${lowerUsername}, ${count})
+      ON CONFLICT (username) DO UPDATE
+        SET flower_count = EXCLUDED.flower_count
+        WHERE guardians.flower_count < EXCLUDED.flower_count
+      RETURNING (xmax = 0) AS inserted
+    `) as { inserted: boolean }[]
 
-    if (fetchError && fetchError.code !== "PGRST116") {
-      // PGRST116 = no rows found, which is fine
-      console.error("Error checking existing guardian:", fetchError)
-      return NextResponse.json({ error: "Database error" }, { status: 500 })
+    // Zero rows means the conflict branch's WHERE filtered the write out, i.e. the
+    // viewer is already a Guardian with an equal or higher record. Still a success.
+    if (rows.length === 0) {
+      return NextResponse.json({ success: true, message: "Guardian already recorded" })
     }
 
-    if (existing) {
-      // Only ever raise a guardian's all-time best. The `lt` guard makes this safe
-      // when several picks are in flight at once: the write is skipped unless the
-      // stored count is still lower than the incoming one, so a slower request can
-      // never overwrite a higher score with a stale value.
-      if (flowerCount > existing.flower_count) {
-        const { error: updateError } = await supabase
-          .from("guardians")
-          .update({ flower_count: flowerCount })
-          .eq("username", lowerUsername)
-          .lt("flower_count", flowerCount)
-
-        if (updateError) {
-          console.error("Error updating guardian:", updateError)
-          return NextResponse.json({ error: "Failed to update guardian" }, { status: 500 })
-        }
-      }
-      return NextResponse.json({ success: true, message: "Guardian updated" })
-    }
-
-    // Add new guardian
-    const { error: insertError } = await supabase
-      .from("guardians")
-      .insert({ username: lowerUsername, flower_count: flowerCount || 50 })
-
-    if (insertError) {
-      console.error("Error inserting guardian:", insertError)
-      return NextResponse.json({ error: "Failed to add guardian" }, { status: 500 })
-    }
-
-    return NextResponse.json({ success: true, message: "Guardian added!" })
+    return NextResponse.json({
+      success: true,
+      message: rows[0].inserted ? "Guardian added!" : "Guardian updated",
+    })
   } catch (error) {
-    console.error("Error in add guardian:", error)
+    console.error("[guardians/add] Error adding guardian:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

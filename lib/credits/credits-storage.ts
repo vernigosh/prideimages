@@ -18,10 +18,14 @@ export const CREDITS_STORAGE_KEY = "verniStreamCreditsVersion1"
 export const CREDITS_STORAGE_VERSION = 1
 
 /** Idle gap after which stored credits are treated as belonging to a finished
- *  stream. Long enough to survive intermissions, technical difficulties, and a
- *  full OBS restart; short enough that yesterday's follows never leak into
- *  today's roll. */
-export const CREDITS_IDLE_EXPIRY_MS = 5 * 60 * 60 * 1000 // 5 hours
+ *  stream. Sized from actual stream length: sessions do run past 6 hours but
+ *  never reach 12, so a 12-hour window can never expire mid-stream, while still
+ *  guaranteeing yesterday's follows never leak into today's roll.
+ *
+ *  Note this measures the gap since the last *credited event*, not since the
+ *  stream started, so it is not a cap on stream length: any follow, sub, raid,
+ *  tip, bit, or redeem pushes the window forward. */
+export const CREDITS_IDLE_EXPIRY_MS = 12 * 60 * 60 * 1000 // 12 hours
 
 export interface StoredCredits {
   followers: string[]

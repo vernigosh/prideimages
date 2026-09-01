@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { NotificationCard } from "@/components/notification-card"
 
 interface RaidCelebrationProps {
   isVisible: boolean
@@ -132,47 +133,28 @@ export function RaidCelebration({ isVisible, raiderName, viewerCount, onComplete
             opacity: 0;
           }
         }
-        
-        @keyframes raidPulse {
-          0%, 100% {
-            transform: translateX(-50%) scale(1);
-          }
-          50% {
-            transform: translateX(-50%) scale(1.05);
-          }
-        }
       `}</style>
       <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
-        {/* Raid announcement text */}
+        {/* Announcement text sits in the shared notification box. The fawns keep
+            running full-screen along the bottom — that animation is the celebration. */}
         {showText && (
-          <div 
-            className="fixed top-1/2 left-1/2 text-center"
-            style={{
-              transform: "translateX(-50%) translateY(-50%)",
-              animation: "raidFadeInOut 30s ease-in-out forwards, raidPulse 2s ease-in-out infinite",
-              fontFamily: "Roboto, sans-serif",
-            }}
-          >
-            <div 
-              className="text-5xl font-black text-white uppercase tracking-wider"
-              style={{
-                textShadow: "3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000"
-              }}
-            >
-              RAID INCOMING!
-            </div>
-            {raiderName && (
-              <div 
-                className="text-3xl font-bold mt-2"
-                style={{
-                  color: "#ffd2e9",
-                  textShadow: "3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000"
-                }}
-              >
-                {raiderName} {viewerCount ? `with ${viewerCount} viewers!` : "has arrived!"}
-              </div>
-            )}
-          </div>
+          <NotificationCard
+            visible={showText}
+            zIndex={9999}
+            cardAnimation="raidFadeInOut 30s ease-in-out forwards"
+            lines={[
+              { text: "RAID INCOMING!", size: "display" },
+              ...(raiderName
+                ? [
+                    {
+                      text: `${raiderName} ${viewerCount ? `with ${viewerCount} viewers!` : "has arrived!"}`,
+                      size: "title" as const,
+                      color: "#ffd2e9",
+                    },
+                  ]
+                : []),
+            ]}
+          />
         )}
 
         {/* Running fawns - only render if still visible */}

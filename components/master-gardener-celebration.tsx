@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import { NotificationCard } from "@/components/notification-card"
 
 interface MasterGardenerCelebrationProps {
   isVisible: boolean
@@ -38,24 +39,24 @@ export function MasterGardenerCelebration({ isVisible, username, onHide }: Maste
   if (!isVisible) return null
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center pointer-events-none transition-opacity duration-500 ${
-        showCelebration ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      <div className="relative text-center -mt-72">
-        <div className="relative mb-4">
-          <Image
-            src="/images/pixelrainbow.gif"
-            alt="Rainbow celebration"
-            width={250}
-            height={250}
-            className="mx-auto drop-shadow-2xl"
-          />
-        </div>
+    <>
+      <NotificationCard
+        visible={showCelebration}
+        fadeMs={500}
+        media={
+          <Image src="/images/pixelrainbow.gif" alt="Rainbow celebration" width={250} height={250} />
+        }
+        lines={[
+          { text: `${username.toUpperCase()} PICKED 30 FLOWERS!`, size: "display" },
+          { text: "GARDEN CHAMPION!", size: "title", color: "#34d399" },
+        ]}
+      />
 
-        {/* Floating flowers - positioned at edges */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {/* Floating flowers stay pinned to the screen edges, framing the card. */}
+      <div
+        className="fixed inset-0 z-40 pointer-events-none overflow-hidden transition-opacity duration-500"
+        style={{ opacity: showCelebration ? 1 : 0 }}
+      >
           {/* Left side */}
           {[...Array(10)].map((_, i) => (
             <div
@@ -86,35 +87,7 @@ export function MasterGardenerCelebration({ isVisible, username, onHide }: Maste
               {["✨", "⭐", "🌷", "🌻", "🌺", "🌸"][i % 6]}
             </div>
           ))}
-        </div>
-
-        <div className="space-y-2 px-8">
-          <h1
-            className="font-bold drop-shadow-lg"
-            style={{
-              fontSize: "2.75rem",
-              background: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            {username.toUpperCase()} PICKED 30 FLOWERS!
-          </h1>
-          <h2
-            className="font-bold drop-shadow-lg"
-            style={{
-              fontSize: "2.25rem",
-              background: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            GARDEN CHAMPION!
-          </h2>
-        </div>
       </div>
-    </div>
+    </>
   )
 }

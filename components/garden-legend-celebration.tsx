@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { NotificationCard } from "@/components/notification-card"
 
 interface GardenLegendCelebrationProps {
   isVisible: boolean
@@ -35,43 +36,29 @@ export function GardenLegendCelebration({ isVisible, username, onHide }: GardenL
   if (!isVisible) return null
 
   return (
-    <div
-      className={`fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-1000 ${
-        showCelebration ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #ffd70030, #ffb50030)` }} />
-
-      <div className="relative text-center -mt-72">
-        <div className="mb-4 flex justify-center">
+    <>
+      <NotificationCard
+        visible={showCelebration}
+        media={
           <img
             src="/images/pixelrainbow.gif"
             alt="Rainbow celebration"
-            className="pixelated animate-pulse"
-            style={{
-              imageRendering: "pixelated",
-              width: "220px",
-              height: "auto",
-            }}
+            className="pixelated"
+            style={{ imageRendering: "pixelated", width: "220px", height: "auto" }}
           />
-        </div>
+        }
+        lines={[
+          { text: "FLOWER SPECIALIST!", size: "display" },
+          { text: `${username.toUpperCase()} PICKED 20 FLOWERS!`, size: "title", color: "#a3e635" },
+          { text: "FLOWER SPECIALIST UNLOCKED!", size: "body" },
+        ]}
+      />
 
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black text-white font-sans uppercase animate-bounce drop-shadow-lg">
-            FLOWER SPECIALIST!
-          </h1>
-          <h2 className="text-3xl font-bold font-sans uppercase drop-shadow-lg" style={{ color: "#84cc16" }}>
-            {username.toUpperCase()} PICKED 20 FLOWERS!
-          </h2>
-          <p className="text-2xl font-bold text-white font-sans uppercase animate-pulse drop-shadow-lg">
-            FLOWER SPECIALIST UNLOCKED!
-          </p>
-        </div>
-
-      </div>
-
-      {/* Floating flowers animation - positioned at edges */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* Floating flowers stay pinned to the screen edges, framing the card. */}
+      <div
+        className="fixed inset-0 z-40 pointer-events-none overflow-hidden transition-opacity duration-1000"
+        style={{ opacity: showCelebration ? 1 : 0 }}
+      >
         {/* Left side flowers */}
         {[...Array(8)].map((_, i) => (
           <div
@@ -103,6 +90,6 @@ export function GardenLegendCelebration({ isVisible, username, onHide }: GardenL
           </div>
         ))}
       </div>
-    </div>
+    </>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { io, Socket } from "socket.io-client"
+import { isEmptyCredits, loadCredits, saveCredits } from "@/lib/credits/credits-storage"
 
 export interface StreamCredits {
   followers: string[]
@@ -39,17 +40,12 @@ const EVENTS_MAX = 50
 
 export function useStreamElements() {
   const [recentTippers, setRecentTippers] = useState<Array<{ name: string; amount: number }>>([])
-  const [streamCredits, setStreamCredits] = useState<StreamCredits>({
-    followers: [],
-    subscribers: [],
-    giftSubs: [],
-    tippers: [],
-    cheerers: [],
-    raiders: [],
-    merchBuyers: [],
-    charityDonors: [],
-    redeemers: [],
-  })
+  // Lazy initialiser so the very first render already has any credits from
+  // earlier in this stream. Previously this was a hardcoded empty object, so an
+  // OBS refresh mid-stream permanently lost every follow/raid/tip/bit while the
+  // Neon- and localStorage-backed credits sections survived.
+  const [streamCredits, setStreamCredits] = useState<StreamCredits>(() => loadCredits())
+  const hasHydratedRef = useRef(false)
   // Discrete realtime events (newest last). Bounded to EVENTS_MAX.
   const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([])
   const [isConnected, setIsConnected] = useState(false)
@@ -57,6 +53,18 @@ export function useStreamElements() {
   // signature -> insertion timestamp; bounded + TTL-expired.
   const dedupeRef = useRef<Map<string, number>>(new Map())
   const eventSeqRef = useRef(0)
+
+  // Persist on every change so a refresh at any point keeps the roll intact.
+  // The first run is skipped: on a cold start with nothing stored this would
+  // write an empty payload and refresh the idle timestamp, which would keep a
+  // finished stream's window alive instead of letting it expire.
+  useEffect(() => {
+    if (!hasHydratedRef.current) {
+      hasHydratedRef.current = true
+      if (isEmptyCredits(streamCredits)) return
+    }
+    saveCredits(streamCredits)
+  }, [streamCredits])
 
   useEffect(() => {
     const fetchTokenAndConnect = async () => {

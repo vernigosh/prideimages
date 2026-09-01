@@ -359,7 +359,7 @@ export default function DJRandomizer() {
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = () => {
-      setShowSocialTimer(false)
+      // Symmetric with handleStartSocialTimer: the two segments coexist in the rail.
       setShowDarkTimer(true)
     }
 
@@ -368,7 +368,8 @@ export default function DJRandomizer() {
     }
 
     const handleStartSocialTimer = () => {
-      setShowDarkTimer(false)
+      // Deliberately does not hide the dark timer: a social shout-out during a dark
+      // segment should leave the dark countdown running, not cancel it.
       setShowSocialTimer(true)
     }
 
@@ -840,10 +841,14 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
   // or disappear. Anchored to the top (not vertically centred) so the lower-middle
   // of the frame stays clear for the overhead deck camera.
   const getTimerElements = () => {
-    const secondaryKind = showDarkTimer && !showPrideTrivia ? "dark" : showSocialTimer ? "social" : null
-    if (!showWorkTimer && !secondaryKind) return null
+    // Dark and social are independent segments that can overlap: starting a 2-minute
+    // social shout-out no longer cancels an in-progress 20-minute dark segment. Both
+    // stack in this rail when active. Dark is still suppressed here during pride
+    // trivia, where it gets swapped into the trivia flip container instead.
+    const showDarkInRail = showDarkTimer && !showPrideTrivia
+    if (!showWorkTimer && !showDarkInRail && !showSocialTimer) return null
 
-    const secondaryTimer = secondaryKind === "dark" ? (
+    const darkTimer = showDarkInRail ? (
       <DarkTimer
         key="dark-timer"
         isVisible
@@ -853,7 +858,9 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         onHide={() => setShowDarkTimer(false)}
         countdownFontSize={timeFontSize}
       />
-    ) : secondaryKind === "social" ? (
+    ) : null
+
+    const socialTimer = showSocialTimer ? (
       <SocialTimer
         key="social-timer"
         isVisible
@@ -881,7 +888,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           className="flex w-[400px] flex-col items-center"
           style={{ gap: `${workTimerSettings.stackGap}px` }}
         >
-          {secondaryTimer}
+          {darkTimer}
+          {socialTimer}
           {showWorkTimer && (
             <WorkTimer
               key="work-timer"
@@ -1325,19 +1333,13 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         blurbFontWeight={blurbFontWeight}
         setBlurbFontWeight={setBlurbFontWeight}
         showDarkTimer={showDarkTimer}
-  setShowDarkTimer={(visible) => {
-    if (visible) setShowSocialTimer(false)
-    setShowDarkTimer(visible)
-  }}
-  darkTimerConnected={darkTimerConnected}
-  showWorkTimer={showWorkTimer}
-  setShowWorkTimer={setShowWorkTimer}
-  workTimerConnected={workTimerConnected}
-  showSocialTimer={showSocialTimer}
-  setShowSocialTimer={(visible) => {
-    if (visible) setShowDarkTimer(false)
-    setShowSocialTimer(visible)
-  }}
+        setShowDarkTimer={setShowDarkTimer}
+        darkTimerConnected={darkTimerConnected}
+        showWorkTimer={showWorkTimer}
+        setShowWorkTimer={setShowWorkTimer}
+        workTimerConnected={workTimerConnected}
+        showSocialTimer={showSocialTimer}
+        setShowSocialTimer={setShowSocialTimer}
         socialTimerConnected={socialTimerConnected}
         showGarden={showGarden}
         setShowGarden={setShowGarden}

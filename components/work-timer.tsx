@@ -162,13 +162,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
     }, c.introDuration)
   }
 
-  // TEMP-V0-TEST: remove after verifying the intro notification box.
-  useEffect(() => {
-    const h = (e: Event) => triggerIntro((e as CustomEvent).detail?.phase ?? "work")
-    window.addEventListener("v0TestIntro", h)
-    return () => window.removeEventListener("v0TestIntro", h)
-  }, [])
-
   // Single effect: use requestAnimationFrame instead of setInterval
   // RAF automatically pauses when OBS hides the browser source (scene change)
   // so no state updates queue up in the background

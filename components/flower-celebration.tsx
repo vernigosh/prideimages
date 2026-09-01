@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { NotificationCard } from "@/components/notification-card"
+import { CroppedRainbow, NotificationCard } from "@/components/notification-card"
 
 interface FlowerCelebrationProps {
   isVisible: boolean
@@ -41,14 +41,7 @@ export function FlowerCelebration({ isVisible, username, onHide }: FlowerCelebra
     <>
       <NotificationCard
         visible={showCelebration}
-        media={
-          <img
-            src="/images/pixelrainbow.gif"
-            alt="Rainbow celebration"
-            className="pixelated"
-            style={{ imageRendering: "pixelated", width: "160px", height: "auto" }}
-          />
-        }
+        media={<CroppedRainbow height={72} />}
         lines={[
           { text: "GOLDEN GREENTHUMB!", size: "display" },
           { text: `${username.toUpperCase()} PICKED 10 FLOWERS!`, size: "title", color: "#ffd700" },

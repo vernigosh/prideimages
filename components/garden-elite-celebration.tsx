@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { NotificationCard } from "@/components/notification-card"
+import { CroppedRainbow, NotificationCard } from "@/components/notification-card"
 
 interface GardenEliteCelebrationProps {
   username: string
@@ -43,9 +43,7 @@ export function GardenEliteCelebration({ username, isVisible, onHide }: GardenEl
       <NotificationCard
         visible={showCelebration}
         fadeMs={500}
-        media={
-          <img src="/images/pixelrainbow.gif" alt="Rainbow" style={{ width: "260px", height: "auto" }} />
-        }
+        media={<CroppedRainbow height={80} />}
         lines={[
           { text: username.toUpperCase(), size: "display" },
           { text: "PICKED 40 FLOWERS!", size: "title" },

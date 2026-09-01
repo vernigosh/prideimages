@@ -28,6 +28,50 @@ export const NOTIFICATION_CARD_STYLE = {
   boxShadow: CARD_SHADOW,
 } as const
 
+/**
+ * pixelrainbow.gif is a 480x480 canvas whose visible art is a short band around rows
+ * ~318-348; the rest is transparent padding. Floating over a live scene that padding
+ * was invisible, but inside a notification box it renders as a large dead gap between
+ * the gif and the text.
+ *
+ * This shows a window over just the art band and scales the gif up so the rainbow
+ * reads at a usable size. The crop is vertical only (full width, generous band) so
+ * animation frames that move horizontally are never clipped.
+ */
+export function CroppedRainbow({ height = 72 }: { height?: number }) {
+  const NATURAL = 480
+  const BAND_TOP = 316
+  const BAND_HEIGHT = 34
+  // The art also sits in the left ~third of the canvas, so the window is narrowed
+  // and offset horizontally too, keeping the rainbow centered in the card.
+  const BAND_LEFT = 8
+  const BAND_WIDTH = 120
+  const scale = height / BAND_HEIGHT
+
+  return (
+    <div
+      className="overflow-hidden"
+      style={{ width: BAND_WIDTH * scale, height, maxWidth: "100%" }}
+      role="img"
+      aria-label="Rainbow celebration"
+    >
+      <img
+        src="/images/pixelrainbow.gif"
+        alt=""
+        aria-hidden="true"
+        style={{
+          imageRendering: "pixelated",
+          width: NATURAL * scale,
+          height: NATURAL * scale,
+          marginTop: -BAND_TOP * scale,
+          marginLeft: -BAND_LEFT * scale,
+          display: "block",
+        }}
+      />
+    </div>
+  )
+}
+
 export interface NotificationLine {
   text: string
   color?: string

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { io, Socket } from "socket.io-client"
+import { isEmptyCredits, loadCredits, saveCredits } from "@/lib/credits/credits-storage"
 
 export interface StreamCredits {
   followers: string[]
@@ -39,17 +40,12 @@ const EVENTS_MAX = 50
 
 export function useStreamElements() {
   const [recentTippers, setRecentTippers] = useState<Array<{ name: string; amount: number }>>([])
-  const [streamCredits, setStreamCredits] = useState<StreamCredits>({
-    followers: [],
-    subscribers: [],
-    giftSubs: [],
-    tippers: [],
-    cheerers: [],
-    raiders: [],
-    merchBuyers: [],
-    charityDonors: [],
-    redeemers: [],
-  })
+  // Lazy initialiser so the very first render already has any credits from
+  // earlier in this stream. Previously this was a hardcoded empty object, so an
+  // OBS refresh mid-stream permanently lost every follow/raid/tip/bit while the
+  // Neon- and localStorage-backed credits sections survived.
+  const [streamCredits, setStreamCredits] = useState<StreamCredits>(() => loadCredits())
+  const hasHydratedRef = useRef(false)
   // Discrete realtime events (newest last). Bounded to EVENTS_MAX.
   const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([])
   const [isConnected, setIsConnected] = useState(false)
@@ -57,6 +53,18 @@ export function useStreamElements() {
   // signature -> insertion timestamp; bounded + TTL-expired.
   const dedupeRef = useRef<Map<string, number>>(new Map())
   const eventSeqRef = useRef(0)
+
+  // Persist on every change so a refresh at any point keeps the roll intact.
+  // The first run is skipped: on a cold start with nothing stored this would
+  // write an empty payload and refresh the idle timestamp, which would keep a
+  // finished stream's window alive instead of letting it expire.
+  useEffect(() => {
+    if (!hasHydratedRef.current) {
+      hasHydratedRef.current = true
+      if (isEmptyCredits(streamCredits)) return
+    }
+    saveCredits(streamCredits)
+  }, [streamCredits])
 
   useEffect(() => {
     const fetchTokenAndConnect = async () => {
@@ -197,6 +205,21 @@ export function useStreamElements() {
       // The event structure is: { type: "follow", data: { username, displayName, ... }, ... }
       const eventType = eventData.type
       const data = eventData.data || {}
+
+      // Test alerts fired from the StreamElements dashboard arrive on the
+      // `event:test` channel and are functionally identical to real ones. They must
+      // still render on screen so alerts can be previewed, but they must never enter
+      // the end-of-stream credit roll -- otherwise previewing a follow leaves a fake
+      // name in the roll for the rest of the session. Gating the credit write here
+      // (rather than matching on username) keeps this correct regardless of whatever
+      // placeholder name StreamElements attaches to a test payload.
+      const recordCredits: typeof setStreamCredits = (updater) => {
+        if (isTest) {
+          console.log("[v0] Test event - skipping credits write for type:", eventType)
+          return
+        }
+        setStreamCredits(updater)
+      }
       
       console.log("[v0] Processing event - type:", eventType, "data:", JSON.stringify(data))
 
@@ -204,7 +227,7 @@ export function useStreamElements() {
       if (eventType === "follow") {
         const username = data.displayName || data.username || data.name
         if (username) {
-          setStreamCredits((prev) => ({
+          recordCredits((prev) => ({
             ...prev,
             followers: prev.followers.includes(username) ? prev.followers : [...prev.followers, username],
           }))
@@ -221,7 +244,7 @@ export function useStreamElements() {
           const tier = data.tier || "1000"
           const gifted = data.gifted || false
           const gifter = data.sender || data.gifter
-          setStreamCredits((prev) => ({
+          recordCredits((prev) => ({
             ...prev,
             subscribers: [
               ...prev.subscribers.filter((s) => s.name !== username),
@@ -233,7 +256,7 @@ export function useStreamElements() {
           
           // Also track gift subs by gifter
           if (gifted && gifter) {
-            setStreamCredits((prev) => {
+            recordCredits((prev) => {
               const existing = prev.giftSubs.find((g) => g.gifter === gifter)
               const newCount = (existing?.count || 0) + 1
               return {
@@ -254,7 +277,7 @@ export function useStreamElements() {
         const username = data.displayName || data.username || data.name
         const bits = data.amount || 0
         if (username && bits > 0) {
-          setStreamCredits((prev) => {
+          recordCredits((prev) => {
             const existing = prev.cheerers.find((c) => c.name === username)
             const newBits = (existing?.bits || 0) + bits
             return {
@@ -279,7 +302,7 @@ export function useStreamElements() {
             { name: username, amount },
             ...prev.slice(0, 4),
           ])
-          setStreamCredits((prev) => {
+          recordCredits((prev) => {
             const existing = prev.tippers.find((t) => t.name === username)
             const newAmount = (existing?.amount || 0) + amount
             return {
@@ -300,7 +323,7 @@ export function useStreamElements() {
         const username = data.displayName || data.username || data.name
         const viewers = data.amount || data.viewers || 0
         if (username) {
-          setStreamCredits((prev) => ({
+          recordCredits((prev) => ({
             ...prev,
             raiders: [...prev.raiders, { name: username, viewers }],
           }))
@@ -314,7 +337,7 @@ export function useStreamElements() {
         const gifter = data.displayName || data.username || data.name || data.sender
         const count = data.amount || 1
         if (gifter) {
-          setStreamCredits((prev) => {
+          recordCredits((prev) => {
             const existing = prev.giftSubs.find((g) => g.gifter === gifter)
             const newCount = (existing?.count || 0) + count
             return {
@@ -336,7 +359,7 @@ export function useStreamElements() {
         const amount = data.amount || 0
         const items = data.items?.map((item: any) => item.name) || []
         if (username) {
-          setStreamCredits((prev) => {
+          recordCredits((prev) => {
             const existing = prev.merchBuyers.find((m) => m.name === username)
             if (existing) {
               return {
@@ -361,7 +384,7 @@ export function useStreamElements() {
         const username = data.displayName || data.username || data.name
         const amount = data.amount || 0
         if (username && amount > 0) {
-          setStreamCredits((prev) => {
+          recordCredits((prev) => {
             const existing = prev.charityDonors.find((c) => c.name === username)
             const newAmount = (existing?.amount || 0) + amount
             return {
@@ -381,7 +404,7 @@ export function useStreamElements() {
         const username = data.displayName || data.username || data.name
         const redeemName = data.redemption || data.title || data.reward || "Unknown Redeem"
         if (username) {
-          setStreamCredits((prev) => {
+          recordCredits((prev) => {
             const existing = prev.redeemers.find((r) => r.name === username)
             if (existing) {
               return {

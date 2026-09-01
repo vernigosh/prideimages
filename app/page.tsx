@@ -359,7 +359,7 @@ export default function DJRandomizer() {
   // Add event listeners for timer commands
   useEffect(() => {
     const handleStartDarkTimer = () => {
-      setShowSocialTimer(false)
+      // Symmetric with handleStartSocialTimer: the two segments coexist in the rail.
       setShowDarkTimer(true)
     }
 
@@ -368,7 +368,8 @@ export default function DJRandomizer() {
     }
 
     const handleStartSocialTimer = () => {
-      setShowDarkTimer(false)
+      // Deliberately does not hide the dark timer: a social shout-out during a dark
+      // segment should leave the dark countdown running, not cancel it.
       setShowSocialTimer(true)
     }
 
@@ -693,9 +694,10 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
   const handleSpin = (username: string) => {
     if (isSpinning) return
 
-    // Hide timers and celebrations but keep garden and work timer visible
-    if (showDarkTimer) setShowDarkTimer(false)
-    if (showSocialTimer) setShowSocialTimer(false)
+    // Clear competing celebrations, but never the timers. A trick spin, a redeem,
+    // or any other on-screen effect is a transient flourish and must not cancel a
+    // running dark/social/work segment: the spinner renders in the upper-left
+    // element while timers own their own rail, so they never actually collided.
     if (showFlowerShop) setShowFlowerShop(false)
     if (showFlowerCelebration) setShowFlowerCelebration(false)
     if (showLeaderboard) setShowLeaderboard(false)
@@ -840,10 +842,14 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
   // or disappear. Anchored to the top (not vertically centred) so the lower-middle
   // of the frame stays clear for the overhead deck camera.
   const getTimerElements = () => {
-    const secondaryKind = showDarkTimer && !showPrideTrivia ? "dark" : showSocialTimer ? "social" : null
-    if (!showWorkTimer && !secondaryKind) return null
+    // Dark and social are independent segments that can overlap: starting a 2-minute
+    // social shout-out no longer cancels an in-progress 20-minute dark segment. Both
+    // stack in this rail when active. Dark is still suppressed here during pride
+    // trivia, where it gets swapped into the trivia flip container instead.
+    const showDarkInRail = showDarkTimer && !showPrideTrivia
+    if (!showWorkTimer && !showDarkInRail && !showSocialTimer) return null
 
-    const secondaryTimer = secondaryKind === "dark" ? (
+    const darkTimer = showDarkInRail ? (
       <DarkTimer
         key="dark-timer"
         isVisible
@@ -853,7 +859,9 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         onHide={() => setShowDarkTimer(false)}
         countdownFontSize={timeFontSize}
       />
-    ) : secondaryKind === "social" ? (
+    ) : null
+
+    const socialTimer = showSocialTimer ? (
       <SocialTimer
         key="social-timer"
         isVisible
@@ -881,7 +889,8 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
           className="flex w-[400px] flex-col items-center"
           style={{ gap: `${workTimerSettings.stackGap}px` }}
         >
-          {secondaryTimer}
+          {darkTimer}
+          {socialTimer}
           {showWorkTimer && (
             <WorkTimer
               key="work-timer"
@@ -1183,7 +1192,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
 
       {/* Status Text - Below the line, above admin */}
       <div className="py-8 text-center" style={{ backgroundColor: "#ffb8ad" }}>
-        <h2 className="text-3xl font-bold text-black mb-4">🎮 Unified Stream Overlay 🎮</h2>
+        <h2 className="text-3xl font-bold text-black mb-4">🎮 Unified Stream Overlay ����</h2>
         <div className="grid md:grid-cols-6 gap-6 max-w-8xl mx-auto">
           <div className="text-center">
             <h3 className="text-xl font-bold text-black mb-2">⏰ Time Display</h3>
@@ -1325,19 +1334,13 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         blurbFontWeight={blurbFontWeight}
         setBlurbFontWeight={setBlurbFontWeight}
         showDarkTimer={showDarkTimer}
-  setShowDarkTimer={(visible) => {
-    if (visible) setShowSocialTimer(false)
-    setShowDarkTimer(visible)
-  }}
-  darkTimerConnected={darkTimerConnected}
-  showWorkTimer={showWorkTimer}
-  setShowWorkTimer={setShowWorkTimer}
-  workTimerConnected={workTimerConnected}
-  showSocialTimer={showSocialTimer}
-  setShowSocialTimer={(visible) => {
-    if (visible) setShowDarkTimer(false)
-    setShowSocialTimer(visible)
-  }}
+        setShowDarkTimer={setShowDarkTimer}
+        darkTimerConnected={darkTimerConnected}
+        showWorkTimer={showWorkTimer}
+        setShowWorkTimer={setShowWorkTimer}
+        workTimerConnected={workTimerConnected}
+        showSocialTimer={showSocialTimer}
+        setShowSocialTimer={setShowSocialTimer}
         socialTimerConnected={socialTimerConnected}
         showGarden={showGarden}
         setShowGarden={setShowGarden}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import { NotificationCard } from "@/components/notification-card"
 
 interface NaturesGuardianCelebrationProps {
   isVisible: boolean
@@ -38,40 +39,46 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
   if (!isVisible) return null
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center pointer-events-none transition-opacity duration-500 ${
-        showCelebration ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      <div className="relative text-center -mt-72">
-        <div className="relative mb-4 flex items-center justify-center gap-4">
-          <Image
-            src="/images/pixel-knight.gif"
-            alt="Pixel Knight Guardian"
-            width={140}
-            height={140}
-            className="drop-shadow-2xl"
-            style={{ imageRendering: "pixelated" }}
-          />
-          <Image
-            src="/images/pixelrainbow.gif"
-            alt="Rainbow celebration"
-            width={280}
-            height={280}
-            className="drop-shadow-2xl"
-          />
-          <Image
-            src="/images/pixel-knight.gif"
-            alt="Pixel Knight Guardian"
-            width={140}
-            height={140}
-            className="drop-shadow-2xl scale-x-[-1]"
-            style={{ imageRendering: "pixelated" }}
-          />
-        </div>
+    <>
+      <NotificationCard
+        visible={showCelebration}
+        fadeMs={500}
+        media={
+          // Knights scaled down and the rainbow narrowed so all three fit the card
+          // width in a vertical canvas instead of overflowing it.
+          <div className="flex items-center justify-center gap-3">
+            {/* No drop shadow: these used to sit over the live scene where a shadow
+                aided separation. On the dark card it just smudges the art. */}
+            <Image
+              src="/images/pixel-knight.gif"
+              alt="Pixel Knight Guardian"
+              width={96}
+              height={96}
+              style={{ imageRendering: "pixelated" }}
+            />
+            <Image src="/images/pixelrainbow.gif" alt="Rainbow celebration" width={200} height={200} />
+            <Image
+              src="/images/pixel-knight.gif"
+              alt="Pixel Knight Guardian"
+              width={96}
+              height={96}
+              className="scale-x-[-1]"
+              style={{ imageRendering: "pixelated" }}
+            />
+          </div>
+        }
+        lines={[
+          { text: `${username.toUpperCase()} PICKED 50 FLOWERS!`, size: "display" },
+          { text: "NATURE'S GUARDIAN", size: "title", color: "#fbbf24" },
+          { text: "PROTECTOR OF THE GARDEN!", size: "body" },
+        ]}
+      />
 
-        {/* Floating elements - positioned at edges */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {/* Floating elements stay pinned to the screen edges, framing the card. */}
+      <div
+        className="fixed inset-0 z-40 pointer-events-none overflow-hidden transition-opacity duration-500"
+        style={{ opacity: showCelebration ? 1 : 0 }}
+      >
           {/* Left side */}
           {[...Array(12)].map((_, i) => (
             <div
@@ -102,35 +109,7 @@ export function NaturesGuardianCelebration({ isVisible, username, onHide }: Natu
               {["🛡️", "👑", "✨", "⭐", "🌷", "🌻", "🌺", "🌸"][i % 8]}
             </div>
           ))}
-        </div>
-
-        <div className="space-y-2 px-8">
-          <h1
-            className="font-bold drop-shadow-lg"
-            style={{
-              fontSize: "3rem",
-              background: "linear-gradient(135deg, #059669 0%, #8b5cf6 50%, #f59e0b 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            {username.toUpperCase()} PICKED 50 FLOWERS!
-          </h1>
-          <h2
-            className="font-bold drop-shadow-lg"
-            style={{
-              fontSize: "2.25rem",
-              background: "linear-gradient(135deg, #059669 0%, #8b5cf6 50%, #f59e0b 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            NATURE'S GUARDIAN - PROTECTOR OF THE GARDEN!
-          </h2>
-        </div>
       </div>
-    </div>
+    </>
   )
 }

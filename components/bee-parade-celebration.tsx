@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { NotificationCard } from "@/components/notification-card"
 
 interface BeeParadeCelebrationProps {
   isVisible: boolean
@@ -51,18 +52,15 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
         showCelebration ? "opacity-100" : "opacity-0"
       }`}
     >
-      {/* Background overlay */}
-      <div className="absolute inset-0 bg-black/20" />
-
-      {/* Celebration text */}
-      <div className="absolute top-[15%] left-1/2 transform -translate-x-1/2 text-center">
-        <div className="text-4xl font-black text-white font-sans uppercase animate-pulse mb-2 text-balance drop-shadow-lg">
-          GARDEN IN FULL BLOOM!
-        </div>
-        <div className="text-2xl font-bold text-yellow-400 font-sans uppercase animate-bounce text-balance drop-shadow-lg">
-          THE BEES THANK THE COMMUNITY WITH A PARADE
-        </div>
-      </div>
+      {/* Announcement text sits in the shared notification box. The bees keep
+          flying full-screen behind it — the parade is the celebration itself. */}
+      <NotificationCard
+        visible={showCelebration}
+        lines={[
+          { text: "GARDEN IN FULL BLOOM!", size: "display" },
+          { text: "THE BEES THANK THE COMMUNITY WITH A PARADE", size: "body", color: "#facc15" },
+        ]}
+      />
 
       {/* Bee parade animation */}
       <div className="absolute inset-0 overflow-hidden">
@@ -89,7 +87,10 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
         {[0, 1, 2, 3, 4, 5].map((index) => (
           <div
             key={`middle-${index}`}
-            className="absolute top-1/2 right-0 animate-[fly-left_12s_linear_infinite]"
+            // 62% rather than 50%: the centered notification card occupies roughly
+            // 40-60% of the height, and a middle row at 50% flew behind it for most
+            // of its traverse.
+            className="absolute top-[62%] right-0 animate-[fly-left_12s_linear_infinite]"
             style={{ animationDelay: `${2 + index * 0.7}s`, animationFillMode: "backwards" }}
           >
             <img
@@ -105,7 +106,7 @@ export function BeeParadeCelebration({ isVisible, onHide }: BeeParadeCelebration
         {[0, 1, 2, 3].map((index) => (
           <div
             key={`bottom-${index}`}
-            className="absolute top-3/4 animate-[fly-right_14s_linear_infinite]"
+            className="absolute top-[82%] animate-[fly-right_14s_linear_infinite]"
             style={{ animationDelay: `${6 + index * 1}s`, animationFillMode: "backwards" }}
           >
             <img

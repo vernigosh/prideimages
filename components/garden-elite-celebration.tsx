@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { CroppedRainbow, NotificationCard } from "@/components/notification-card"
 
 interface GardenEliteCelebrationProps {
   username: string
@@ -38,15 +39,23 @@ export function GardenEliteCelebration({ username, isVisible, onHide }: GardenEl
   }))
 
   return (
-    <div
-      className={`fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-500 ${
-        showCelebration ? "opacity-100" : "opacity-0"
-      }`}
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(168, 85, 247, 0.15) 100%)",
-      }}
-    >
+    <>
+      <NotificationCard
+        visible={showCelebration}
+        fadeMs={500}
+        media={<CroppedRainbow height={80} />}
+        lines={[
+          { text: username.toUpperCase(), size: "display" },
+          { text: "PICKED 40 FLOWERS!", size: "title" },
+          { text: "GARDEN LEGEND!", size: "body", color: "#7dd3fc" },
+        ]}
+      />
+
+      {/* Floating flowers stay pinned to the screen edges, framing the card. */}
+      <div
+        className="fixed inset-0 z-40 pointer-events-none overflow-hidden transition-opacity duration-500"
+        style={{ opacity: showCelebration ? 1 : 0 }}
+      >
       {/* Left side flowers */}
       {flowers.slice(0, 11).map((flower, i) => (
         <div
@@ -77,25 +86,7 @@ export function GardenEliteCelebration({ username, isVisible, onHide }: GardenEl
           {i % 3 === 0 ? "⭐" : i % 2 === 0 ? "🌺" : "🌸"}
         </div>
       ))}
-
-      <div className="text-center px-4 relative z-10 -mt-72">
-        <img
-          src="/images/pixelrainbow.gif"
-          alt="Rainbow"
-          className="mx-auto mb-3"
-          style={{ width: "260px", height: "auto" }}
-        />
-
-        <h1 className="text-5xl md:text-6xl font-black mb-3 text-white drop-shadow-lg font-sans">
-          {username.toUpperCase()}
-        </h1>
-
-        <h2 className="text-4xl md:text-5xl font-black mb-2 text-white drop-shadow-lg font-sans">PICKED 40 FLOWERS!</h2>
-
-        <h3 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg font-sans">
-          GARDEN LEGEND!
-        </h3>
       </div>
-    </div>
+    </>
   )
 }

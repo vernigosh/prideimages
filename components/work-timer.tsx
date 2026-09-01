@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  OVERLAY_FONT_DISPLAY,
   OVERLAY_FONT_STANDARD,
   OVERLAY_WEIGHT_PRIMARY,
   OVERLAY_WEIGHT_LABEL,
   OVERLAY_WEIGHT_BODY,
 } from "@/lib/overlay-typography"
 import { getClockState, SHORT_BREAK, WORK_DURATION } from "@/lib/work-cycle"
+import { NotificationCard } from "@/components/notification-card"
 
 export interface WorkTimerSettings {
   offsetX: number // px from the right edge
@@ -136,7 +136,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
   const [phase, setPhase] = useState<"work" | "break">("work")
   const [timeLeft, setTimeLeft] = useState(WORK_DURATION)
   const [cycleCount, setCycleCount] = useState(1)
-  const [showPulse, setShowPulse] = useState(false)
   const [intro, setIntro] = useState<{ text: string; phase: "work" | "break" } | null>(null)
   const rafRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
@@ -214,8 +213,6 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
           if (s.currentPhase === "work") {
             // New work cycle started
             window.dispatchEvent(new CustomEvent("workCycleStart", { detail: { cycle: s.cycle } }))
-            setShowPulse(true)
-            setTimeout(() => setShowPulse(false), 10000) // 10 second pulse
             sendChatMessage("FOCUS TIME! 25 minutes of productivity starts now!")
             triggerIntro("work")
           } else {
@@ -286,39 +283,22 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
 
   return (
     <>
-      {/* Purple pulse overlay for new work cycle */}
-      {showPulse && (
-        <div
-          className="fixed inset-0 pointer-events-none z-50"
-          style={{
-            background: "radial-gradient(ellipse at center, rgba(147, 51, 234, 0.3) 0%, rgba(147, 51, 234, 0.15) 50%, transparent 70%)",
-            animation: "pulse 2s ease-in-out infinite",
-          }}
-        />
-      )}
-
-      {/* Temporary intro banner - only shown briefly on an actual phase transition.
-          Single display-size line, max two lines, no subtitle. */}
+      {/* Phase-change announcement, in the same notification box as celebrations.
+          The full-screen purple pulse that used to accompany this was removed: it
+          tinted the entire canvas, which does not translate between the vertical
+          and horizontal versions of this overlay. */}
       {intro && (
-        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="flex max-w-[80vw] flex-col items-center rounded-xl border border-white/10 bg-neutral-900/85 px-16 py-10 shadow-2xl"
-            style={{ animation: "pulse 2.5s ease-in-out infinite" }}
-          >
-            <span
-              className="font-sans uppercase text-white text-center text-balance"
-              style={{
-                fontSize: `${OVERLAY_FONT_DISPLAY}px`,
-                lineHeight: 1,
-                letterSpacing: 0,
-                fontWeight: OVERLAY_WEIGHT_PRIMARY,
-                color: intro.phase === "work" ? "#b18cff" : "#7fb0ff",
-              }}
-            >
-              {intro.text}
-            </span>
-          </div>
-        </div>
+        <NotificationCard
+          visible
+          fadeMs={300}
+          lines={[
+            {
+              text: intro.text,
+              size: "display",
+              color: intro.phase === "work" ? "#b18cff" : "#7fb0ff",
+            },
+          ]}
+        />
       )}
 
       {/* Persistent compact timer */}

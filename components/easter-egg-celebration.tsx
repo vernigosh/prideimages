@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { NOTIFICATION_CARD_STYLE } from "@/components/notification-card"
 
 interface EasterEggCelebrationProps {
   isVisible: boolean
@@ -73,10 +74,12 @@ export function EasterEggCelebration({ isVisible, username, onHide }: EasterEggC
           className={`transition-all duration-1000 ${movedToSide ? "w-24 h-24" : "w-40 h-40"}`}
         />
         
-        {/* Text content */}
+        {/* Text content, in the shared notification box treatment. Kept inline
+            rather than using NotificationCard because this banner has its own
+            move-to-the-side animation after 30s so it stops covering the video. */}
         <div 
-          className={`flex flex-col transition-all duration-1000 ${movedToSide ? "mx-4" : "mx-8"}`}
-          style={{ textAlign: movedToSide ? "left" : "center" }}
+          className={`flex flex-col transition-all duration-1000 ${movedToSide ? "mx-4 px-5 py-3" : "mx-8 px-8 py-5"}`}
+          style={{ textAlign: movedToSide ? "left" : "center", ...NOTIFICATION_CARD_STYLE }}
         >
           <div
             className={`font-black font-sans uppercase tracking-wider transition-all duration-1000 ${movedToSide ? "text-3xl mb-1" : "text-4xl mb-2"}`}

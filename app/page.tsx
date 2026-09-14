@@ -846,6 +846,11 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
     // social shout-out no longer cancels an in-progress 20-minute dark segment. Both
     // stack in this rail when active. Dark is still suppressed here during pride
     // trivia, where it gets swapped into the trivia flip container instead.
+    // Credits take over the right side of the frame, where this timer rail also
+    // lives. While the credit roll is on screen the timers are hidden entirely to
+    // avoid overlapping it; they reappear on their own once credits are dismissed.
+    if (showStreamCredits) return null
+
     const showDarkInRail = showDarkTimer && !showPrideTrivia
     if (!showWorkTimer && !showDarkInRail && !showSocialTimer) return null
 

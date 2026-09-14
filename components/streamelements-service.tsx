@@ -49,6 +49,9 @@ export function useStreamElements() {
   // Discrete realtime events (newest last). Bounded to EVENTS_MAX.
   const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([])
   const [isConnected, setIsConnected] = useState(false)
+  // Non-null when the StreamElements token is expired or rejected, so the overlay
+  // can surface a visible warning instead of silently recording nothing.
+  const [tokenError, setTokenError] = useState<string | null>(null)
   const socketRef = useRef<Socket | null>(null)
   // signature -> insertion timestamp; bounded + TTL-expired.
   const dedupeRef = useRef<Map<string, number>>(new Map())
@@ -81,8 +84,37 @@ export function useStreamElements() {
       }
     }
 
+    // Decode a JWT payload without verifying it (client-side diagnostic only).
+    // We only read the non-secret `exp` claim so an expired token can be reported
+    // up front instead of surfacing as a silent, whole-stream auth failure.
+    const decodeJwtExpiry = (jwtToken: string): number | null => {
+      try {
+        const payload = jwtToken.split(".")[1]
+        if (!payload) return null
+        const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
+        const claim = JSON.parse(json)
+        return typeof claim.exp === "number" ? claim.exp : null
+      } catch {
+        return null
+      }
+    }
+
     const connectToStreamElements = (jwtToken: string) => {
       try {
+        // Fail loudly and early on an expired token. StreamElements rejects the
+        // socket auth silently, so without this check a lapsed token looks
+        // identical to "no events happened" for the entire stream.
+        const exp = decodeJwtExpiry(jwtToken)
+        if (exp !== null && exp * 1000 < Date.now()) {
+          const expiredOn = new Date(exp * 1000).toISOString().slice(0, 10)
+          console.error(
+            `[v0] StreamElements TOKEN EXPIRED on ${expiredOn}. Credits (follows, subs, ` +
+              `gift subs, tips, cheers, raids) will NOT record until STREAMELEMENTS_JWT_TOKEN ` +
+              `is replaced with a fresh, non-expired token.`,
+          )
+          setTokenError(`StreamElements token expired on ${expiredOn}`)
+        }
+
         // Use Socket.io realtime instead of Astro WebSockets
         const socket = io("https://realtime.streamelements.com", {
           transports: ["websocket"],
@@ -103,10 +135,16 @@ export function useStreamElements() {
         socket.on("authenticated", (data: any) => {
           const { channelId } = data
           console.log("[v0] StreamElements authenticated, channel:", channelId)
+          setTokenError(null)
         })
 
         socket.on("unauthorized", (error: any) => {
-          console.log("[v0] StreamElements auth failed:", error)
+          console.error(
+            "[v0] StreamElements AUTH FAILED - token is invalid or expired. No credits will " +
+              "record until STREAMELEMENTS_JWT_TOKEN is replaced. Details:",
+            error,
+          )
+          setTokenError("StreamElements auth failed - token invalid or expired")
         })
 
         // Listen for all events - these are the main event handlers
@@ -453,5 +491,6 @@ export function useStreamElements() {
     streamCredits,
     streamEvents,
     isConnected,
+    tokenError,
   }
 }

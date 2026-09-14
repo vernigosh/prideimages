@@ -340,7 +340,7 @@ export default function DJRandomizer() {
   } | null>(null)
 
   // StreamElements service for tracking stream events
-  const { streamCredits, streamEvents } = useStreamElements()
+  const { streamCredits, streamEvents, tokenError } = useStreamElements()
 
 
   // Use test data if available, otherwise use live data
@@ -926,6 +926,14 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
 
   return (
     <div className="min-h-screen overflow-hidden">
+      {/* StreamElements token warning - only visible to the streamer, never during a
+          healthy connection. Makes an expired/rejected token obvious immediately
+          instead of silently recording zero credits for a whole stream. */}
+      {tokenError && (
+        <div className="fixed top-0 left-0 right-0 z-[9999] bg-red-600 text-white text-center text-sm font-semibold py-2 px-4">
+          {tokenError} — credits will not record. Update STREAMELEMENTS_JWT_TOKEN with a fresh token.
+        </div>
+      )}
       {/* OBS Overlay Section */}
       <div
         className={`h-screen flex items-center justify-center relative overflow-hidden ${

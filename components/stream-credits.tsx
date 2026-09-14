@@ -86,7 +86,7 @@ export function StreamCreditsComponent({
   const hasMods = sessionMods.length > 0
 
   return (
-    <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[9998] w-[650px] h-[700px] bg-black/80 rounded-xl overflow-hidden">
+    <div className="fixed right-8 top-1/2 -translate-y-1/2 z-[9998] w-[650px] h-[700px] bg-black/80 rounded-xl overflow-hidden">
       <div
         ref={containerRef}
         className="absolute inset-x-0 text-center px-8"

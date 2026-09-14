@@ -202,9 +202,23 @@ export function useStreamElements() {
     }
 
     const handleEvent = (eventData: any, isTest = false) => {
-      // The event structure is: { type: "follow", data: { username, displayName, ... }, ... }
-      const eventType = eventData.type
-      const data = eventData.data || {}
+      // StreamElements delivers two different shapes on this socket:
+      //   overlay realtime: { listener: "follower-latest", event: { name, amount, ... } }
+      //   activity/API:     { type: "follow",             data:  { username, ... } }
+      // We normalize both to { eventType, data }.
+      //
+      // This mismatch was the ACTUAL root cause of the empty credits roll: the live
+      // socket sends the overlay `listener`/`event` shape, so reading `eventData.type`
+      // /`eventData.data` matched nothing and no follow/sub/tip/cheer/raid/gift was
+      // ever recorded. Persistence then had nothing to save, which made it look like
+      // a storage/migration bug when the data never entered the pipeline at all.
+      const isOverlayShape = typeof eventData?.listener === "string"
+      const rawType: string | undefined = isOverlayShape
+        ? eventData.listener.replace(/-latest$/, "")
+        : eventData?.type
+      const data = (isOverlayShape ? eventData.event : eventData?.data) || {}
+      // Overlay uses "follower"; the rest of this handler keys on "follow".
+      const eventType = rawType === "follower" ? "follow" : rawType
 
       // Test alerts fired from the StreamElements dashboard arrive on the
       // `event:test` channel and are functionally identical to real ones. They must

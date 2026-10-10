@@ -1,5 +1,6 @@
 "use client"
 
+import { TimerBackdrop } from "@/components/timer-backdrop"
 import { useState, useEffect, useRef } from "react"
 import {
   OVERLAY_FONT_STANDARD,
@@ -310,9 +311,10 @@ export function WorkTimer({ isVisible, onConnectionChange, onHide, settings, onI
         }}
       >
         <div
-          className="flex flex-col items-center gap-[7px]"
+          className="relative isolate flex flex-col items-center gap-[7px]"
           style={{ transform: `scale(${cfg.scale})`, transformOrigin: "center" }}
         >
+          <TimerBackdrop />
           <div className="relative" style={{ width: `${cfg.ringSize}px`, height: `${cfg.ringSize}px` }}>
             <svg className="absolute h-full w-full -rotate-90" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="10" />

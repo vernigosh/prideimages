@@ -255,6 +255,9 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
   const [lastWaterTime, setLastWaterTime] = useState(0) // New state variable for tracking the last water time
   const [userFlowerCounts, setUserFlowerCounts] = useState<{ [username: string]: number }>({}) // New state for user flower totals
   const [userPickedTotals, setUserPickedTotals] = useState<PickedTotals>({}) // New state for lifetime picked totals
+  // The event-listener effect doesn't re-run on every pick, so read totals through a ref to avoid a stale snapshot.
+  const userPickedTotalsRef = useRef<PickedTotals>(userPickedTotals)
+  userPickedTotalsRef.current = userPickedTotals
   // Totals survive an overlay refresh for the rest of the Rome day. Hydrated after
   // mount (not in the useState initializer) so server and client render the same
   // markup, matching the pattern in lib/use-persistent-settings.ts.
@@ -393,7 +396,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
     }
 
     addActivity("🐰 A WILD BUNNY APPEARS IN THE GARDEN!", 4000)
-    addActivity("🌱 NO MATURE FLOWERS AVAILABLE - BUNNY WILL EAT WEEDS INSTEAD!", 4000)
+    addActivity("��� NO MATURE FLOWERS AVAILABLE - BUNNY WILL EAT WEEDS INSTEAD!", 4000)
 
     // Set bunny to eat 0 flowers since there are no mature ones
     setBunnyEatenCount(0)
@@ -988,7 +991,7 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
       // Dispatch leaderboard data to the leaderboard component
       window.dispatchEvent(
         new CustomEvent("showLeaderboard", {
-          detail: { userPickedTotals },
+          detail: { userPickedTotals: userPickedTotalsRef.current },
         }),
       )
     }

@@ -48,7 +48,7 @@ export const DEFAULT_GARDEN_ACTIVITY_SETTINGS: GardenActivitySettings = {
   width: 640,
   fontSize: OVERLAY_FONT_STANDARD, // 32 (standard)
   lifetimeMs: 6000,
-  backgroundOpacity: 0,
+  backgroundOpacity: 0.72,
   highlightEnabled: true,
   highlightMs: 1300, // ~1200-1400ms classic power-up
   highlightIntensity: "medium",
@@ -1434,16 +1434,14 @@ export function CommunityGarden({ isVisible, onConnectionChange, onHide, onFlowe
           >
             <div
               className="mx-auto text-center"
-              style={
-                activityCfg.backgroundOpacity > 0
-                  ? {
-                      backgroundColor: `rgba(10, 10, 12, ${activityCfg.backgroundOpacity})`,
-                      borderRadius: "12px",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      padding: "14px 22px",
-                    }
-                  : undefined
-              }
+              style={{
+                // Always boxed so alerts stay readable over light clothing; a saved
+                // opacity of 0 (the old "no box" default) falls back to the default.
+                backgroundColor: `rgba(10, 10, 12, ${activityCfg.backgroundOpacity > 0 ? activityCfg.backgroundOpacity : DEFAULT_GARDEN_ACTIVITY_SETTINGS.backgroundOpacity})`,
+                borderRadius: "12px",
+                border: "1px solid rgba(255,255,255,0.12)",
+                padding: "14px 22px",
+              }}
             >
               <span
                 className="text-white font-sans uppercase animate-pulse text-balance"

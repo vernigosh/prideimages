@@ -915,7 +915,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
 
           {/* Viewer task slots. Both render below the timer and are absent from the
               DOM when inactive, so the clock and ring above never shift. */}
-          {showWorkTimer && <TaskBreakPrompt visible={showBreakPrompt} />}
+          {showWorkTimer && <TaskBreakPrompt visible={showBreakPrompt && activeTaskCount > 0} />}
           {showWorkTimer && (
             <RotatingTaskCard task={displayedTask} visible={taskPhase === "work"} />
           )}

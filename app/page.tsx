@@ -42,7 +42,6 @@ import { DEFAULT_GARDEN_ACTIVITY_SETTINGS } from "@/components/community-garden"
 import { usePersistentSettings } from "@/lib/use-persistent-settings"
 import { useViewerTasks } from "@/hooks/use-viewer-tasks"
 import { RotatingTaskCard } from "@/components/viewer-tasks/rotating-task-card"
-import { TaskBreakPrompt } from "@/components/viewer-tasks/task-break-prompt"
 import { TaskDebugPanel } from "@/components/viewer-tasks/task-debug-panel"
 import type { NormalizedChatMessage } from "@/lib/chat-commands"
 import type { TaskCommandResponse } from "@/lib/viewer-tasks/task-types"
@@ -284,7 +283,6 @@ export default function DJRandomizer() {
 
   const {
     displayedTask,
-    showBreakPrompt,
     phase: taskPhase,
     enabled: taskSystemEnabled,
     activeTaskCount,
@@ -915,8 +913,7 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
 
           {/* Viewer task slots. Both render below the timer and are absent from the
               DOM when inactive, so the clock and ring above never shift. */}
-          {showWorkTimer && <TaskBreakPrompt visible={showBreakPrompt} />}
-          {showWorkTimer && (
+                    {showWorkTimer && (
             <RotatingTaskCard task={displayedTask} visible={taskPhase === "work"} />
           )}
         </div>

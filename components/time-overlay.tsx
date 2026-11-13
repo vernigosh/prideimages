@@ -12,6 +12,8 @@ interface TimeOverlayProps {
   shadowColor: string
   shadowSize: number
   fontWeight: "normal" | "bold" | "black"
+  locationLabel?: string
+  subLabel?: string
 }
 
 export function TimeOverlay({
@@ -23,6 +25,8 @@ export function TimeOverlay({
   shadowColor,
   shadowSize,
   fontWeight,
+  locationLabel = "Rome",
+  subLabel,
 }: TimeOverlayProps) {
   const [currentTime, setCurrentTime] = useState<Date | null>(null)
 
@@ -104,8 +108,23 @@ export function TimeOverlay({
             textShadow,
           }}
         >
-          Rome
+          {locationLabel}
         </span>
+        {subLabel && (
+          <span
+            className="font-sans uppercase"
+            style={{
+              fontSize: `${OVERLAY_FONT_STANDARD}px`,
+              lineHeight: OVERLAY_LINE_HEIGHT_STANDARD,
+              letterSpacing: 0,
+              fontWeight: OVERLAY_WEIGHT_LABEL,
+              color: "#bf94ff",
+              textShadow,
+            }}
+          >
+            {subLabel}
+          </span>
+        )}
       </div>
     </div>
   )

@@ -154,6 +154,19 @@ export default function DJRandomizer() {
     "top-right",
   )
   const [timeZone, setTimeZone] = useState("Europe/Rome") // Changed default to Rome
+  // TwitchCon mode swaps the clock to San Diego time. Persisted so an OBS source
+  // refresh mid-event keeps showing San Diego until !rome switches it back.
+  const [twitchconClock, setTwitchconClock] = useState(false)
+  useEffect(() => {
+    setTwitchconClock(localStorage.getItem("twitchcon-clock") === "1")
+    const handleTwitchcon = (event: Event) => {
+      const on = (event as CustomEvent<{ on: boolean }>).detail?.on ?? true
+      setTwitchconClock(on)
+      localStorage.setItem("twitchcon-clock", on ? "1" : "0")
+    }
+    window.addEventListener("setTwitchconClock", handleTwitchcon)
+    return () => window.removeEventListener("setTwitchconClock", handleTwitchcon)
+  }, [])
   const [timeFontSize, setTimeFontSize] = useState(40) // Changed default from 48 to 40
   const [showSeconds, setShowSeconds] = useState(false)
   const [textColor, setTextColor] = useState("#ffffff") // Reverted back to white as user preferred
@@ -941,7 +954,9 @@ window.addEventListener("showStartingTimer", handleShowStartingTimer as EventLis
         {showTimeOverlay && (
           <TimeOverlay
             position={timePosition}
-            timeZone={timeZone}
+            timeZone={twitchconClock ? "America/Los_Angeles" : timeZone}
+            locationLabel={twitchconClock ? "San Diego" : "Rome"}
+            subLabel={twitchconClock ? "TwitchCon" : undefined}
             fontSize={timeFontSize}
             showSeconds={showSeconds}
             textColor={textColor}

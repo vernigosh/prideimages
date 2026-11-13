@@ -280,6 +280,12 @@ export function ChatIntegration({ onSpin, onHide, onConnectionChange }: ChatInte
           console.log("Hide DJ command detected")
           onHide(username)
           addRecentCommand(`${command} by ${username}`)
+        } else if (command === "!twitchcon" && (isMod || isBroadcaster || isVip)) {
+          window.dispatchEvent(new CustomEvent("setTwitchconClock", { detail: { on: true } }))
+          addRecentCommand(`${command} by ${username}`)
+        } else if ((command === "!rome" || command === "!hidetwitchcon") && (isMod || isBroadcaster || isVip)) {
+          window.dispatchEvent(new CustomEvent("setTwitchconClock", { detail: { on: false } }))
+          addRecentCommand(`${command} by ${username}`)
         } else if (command === "!dark" && (isMod || isBroadcaster || isVip)) {
           console.log("Dark timer start command detected")
           window.dispatchEvent(new CustomEvent("startDarkTimer", { detail: { username } }))

@@ -118,7 +118,7 @@ export function TimeOverlay({
               lineHeight: OVERLAY_LINE_HEIGHT_STANDARD,
               letterSpacing: 0,
               fontWeight: OVERLAY_WEIGHT_LABEL,
-              color: "#bf94ff",
+              color: "#9146FF",
               textShadow,
             }}
           >
